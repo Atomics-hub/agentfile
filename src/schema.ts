@@ -112,6 +112,41 @@ export const agentfileSchema = z.object({
     acceptance: z.array(z.string().min(1)).default([]),
     review: z.array(z.string().min(1)).default([])
   })
+}).superRefine((agentfile, ctx) => {
+  const overlappingScope = agentfile.scope.include.filter((path) => agentfile.scope.exclude.includes(path));
+  for (const path of overlappingScope) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["scope", "exclude"],
+      message: `scope path cannot be both included and excluded: ${path}`
+    });
+  }
+
+  addDuplicateIdIssues(agentfile.policies, "policy", ["policies"], ctx);
+  addDuplicateIdIssues(agentfile.checks, "check", ["checks"], ctx);
+  addDuplicateIdIssues(agentfile.workflow.steps, "workflow step", ["workflow", "steps"], ctx);
 });
 
 export type Agentfile = z.infer<typeof agentfileSchema>;
+
+function addDuplicateIdIssues(
+  values: Array<{ id: string }>,
+  label: string,
+  path: [string, ...string[]],
+  ctx: z.RefinementCtx
+): void {
+  const seen = new Set<string>();
+
+  for (const value of values) {
+    if (seen.has(value.id)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path,
+        message: `duplicate ${label} id: ${value.id}`
+      });
+      continue;
+    }
+
+    seen.add(value.id);
+  }
+}

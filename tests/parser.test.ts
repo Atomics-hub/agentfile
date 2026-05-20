@@ -122,6 +122,95 @@ workflow:
     - Done.
 `)).toThrow(/permissions\.shell\.deny: shell command cannot be both allowed and denied: npm test/);
   });
+
+  it("rejects duplicate IR identifiers and exact scope conflicts", () => {
+    expect(() => parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: invalid-scope
+task:
+  id: invalid-scope
+  goal: Exercise semantic validation.
+scope:
+  include:
+    - src/**
+  exclude:
+    - src/**
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`)).toThrow(/scope\.exclude: scope path cannot be both included and excluded: src\/\*\*/);
+
+    expect(() => parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: duplicate-policy-id
+task:
+  id: duplicate-policy-id
+  goal: Exercise semantic validation.
+scope:
+  include:
+    - src/**
+policies:
+  - id: repeated
+    level: must
+    statement: Keep behavior stable.
+  - id: repeated
+    level: must_not
+    statement: Do not leak secrets.
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`)).toThrow(/policies: duplicate policy id: repeated/);
+
+    expect(() => parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: duplicate-check-id
+task:
+  id: duplicate-check-id
+  goal: Exercise semantic validation.
+scope:
+  include:
+    - src/**
+checks:
+  - id: repeated
+    command: npm test
+  - id: repeated
+    description: Manual review
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`)).toThrow(/checks: duplicate check id: repeated/);
+
+    expect(() => parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: duplicate-step-id
+task:
+  id: duplicate-step-id
+  goal: Exercise semantic validation.
+scope:
+  include:
+    - src/**
+workflow:
+  id: implement
+  steps:
+    - id: repeated
+      do: First step.
+    - id: repeated
+      do: Second step.
+  acceptance:
+    - Done.
+`)).toThrow(/workflow\.steps: duplicate workflow step id: repeated/);
+  });
 });
 
 describe("Agentfile compiler", () => {
@@ -399,5 +488,27 @@ mission malformed-handoff {
   }
 }
 `)).toThrow(/unsupported handoff list target/);
+  });
+
+  it("rejects contradictory exact scope paths and duplicate proof commands", () => {
+    expect(() => parsePactSource(`
+mission contradictory-scope {
+  goal "Exercise exact scope diagnostics"
+  touch src/**
+  never src/**
+}
+`)).toThrow(/scope path cannot appear in both touch and never: src\/\*\*/);
+
+    expect(() => parsePactSource(`
+mission duplicate-proof {
+  goal "Exercise duplicate proof diagnostics"
+  touch src/**
+
+  prove {
+    run "npm test"
+    run "npm test"
+  }
+}
+`)).toThrow(/duplicate proof command: npm test/);
   });
 });

@@ -76,6 +76,8 @@ scope:
     - src/billing/**
 ```
 
+Exact path entries may not appear in both `scope.include` and `scope.exclude`.
+
 ### `permissions`
 
 The authority granted to the agent.
@@ -131,6 +133,8 @@ checks:
     required: true
 ```
 
+Check ids must be unique within a contract.
+
 ### `workflow`
 
 The execution plan, acceptance, and handoff requirements for the agent run.
@@ -146,6 +150,16 @@ workflow:
   review:
     - Explain the changed control flow.
 ```
+
+Workflow step ids must be unique within `workflow.steps`.
+
+### Identifier Uniqueness
+
+Contracts must not reuse ids within the same semantic list:
+
+- `policies[*].id` values must be unique.
+- `checks[*].id` values must be unique.
+- `workflow.steps[*].id` values must be unique.
 
 ## Policy Defaults
 

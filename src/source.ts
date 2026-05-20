@@ -147,12 +147,12 @@ function parseMissionLine(
   }
 
   if (line.startsWith("touch ")) {
-    state.touch.push(...parseList(line.slice("touch ".length)));
+    addScopePaths(state.touch, state.never, parseList(line.slice("touch ".length)), filePath, lineNo);
     return;
   }
 
   if (line.startsWith("never ")) {
-    state.never.push(...parseList(line.slice("never ".length)));
+    addScopePaths(state.never, state.touch, parseList(line.slice("never ".length)), filePath, lineNo);
     return;
   }
 
@@ -353,6 +353,9 @@ function parseProveLine(
     if (state.shellDeny.includes(command)) {
       throw syntaxError(`proof command is denied by shell policy: ${command}`, filePath, lineNo);
     }
+    if (state.checks.some((check) => check.command === command)) {
+      throw syntaxError(`duplicate proof command: ${command}`, filePath, lineNo);
+    }
     if (!state.shellAllow.includes(command)) {
       pushUnique(state.shellAllow, command);
     }
@@ -478,6 +481,21 @@ function parseApprovalList(source: string, filePath: string | undefined, lineNo:
   }
 
   return approvals;
+}
+
+function addScopePaths(
+  target: string[],
+  opposite: string[],
+  values: string[],
+  filePath: string | undefined,
+  lineNo: number
+): void {
+  for (const value of values) {
+    if (opposite.includes(value)) {
+      throw syntaxError(`scope path cannot appear in both touch and never: ${value}`, filePath, lineNo);
+    }
+    pushUnique(target, value);
+  }
 }
 
 function quotedArg(line: string, keyword: string): string | undefined {
