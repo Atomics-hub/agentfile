@@ -80,7 +80,8 @@ export function parsePactSource(source: string, filePath?: string): Agentfile {
     },
     permissions: {
       shell: {
-        allow: state.shellAllow
+        allow: state.shellAllow,
+        deny: state.shellDeny
       },
       network: {
         default: state.network
@@ -91,7 +92,8 @@ export function parsePactSource(source: string, filePath?: string): Agentfile {
         deny: state.never
       },
       secrets: {
-        access: state.secrets
+        access: state.secrets,
+        allow: state.secretAllow
       },
       approvals: {
         requiredFor: state.approvals
@@ -141,18 +143,94 @@ function parseMissionLine(
 
   const canRun = line.match(/^can\s+run\s+"([^"]+)"$/);
   if (canRun) {
-    state.shellAllow.push(canRun[1]);
+    const command = canRun[1];
+    if (state.shellDeny.includes(command)) {
+      throw syntaxError(`conflicting shell policy for command: ${command}`, filePath, lineNo);
+    }
+    pushUnique(state.shellAllow, command);
+    return;
+  }
+
+  const cannotRun = line.match(/^cannot\s+run\s+"([^"]+)"$/);
+  if (cannotRun) {
+    const command = cannotRun[1];
+    if (state.shellAllow.includes(command)) {
+      throw syntaxError(`conflicting shell policy for command: ${command}`, filePath, lineNo);
+    }
+    pushUnique(state.shellDeny, command);
+    return;
+  }
+
+  if (line === "can use network") {
+    ensureCapabilityConsistency(
+      state.networkSpecified,
+      state.network,
+      "allow",
+      "network policy",
+      filePath,
+      lineNo
+    );
+    state.network = "allow";
+    state.networkSpecified = true;
     return;
   }
 
   if (line === "cannot use network") {
+    ensureCapabilityConsistency(
+      state.networkSpecified,
+      state.network,
+      "deny",
+      "network policy",
+      filePath,
+      lineNo
+    );
     state.network = "deny";
+    state.networkSpecified = true;
     ensureApproval(state, "network_access");
     return;
   }
 
+  if (line === "can read secrets") {
+    ensureCapabilityConsistency(
+      state.secretsSpecified,
+      state.secrets,
+      "allow",
+      "secrets policy",
+      filePath,
+      lineNo
+    );
+    state.secrets = "allow";
+    state.secretsSpecified = true;
+    return;
+  }
+
+  const canReadSecret = line.match(/^can\s+read\s+secret\s+"([^"]+)"$/);
+  if (canReadSecret) {
+    ensureCapabilityConsistency(
+      state.secretsSpecified,
+      state.secrets,
+      "allow",
+      "secrets policy",
+      filePath,
+      lineNo
+    );
+    state.secrets = "allow";
+    state.secretsSpecified = true;
+    pushUnique(state.secretAllow, canReadSecret[1]);
+    return;
+  }
+
   if (line === "cannot read secrets") {
+    ensureCapabilityConsistency(
+      state.secretsSpecified,
+      state.secrets,
+      "deny",
+      "secrets policy",
+      filePath,
+      lineNo
+    );
     state.secrets = "deny";
+    state.secretsSpecified = true;
     return;
   }
 
@@ -234,8 +312,11 @@ function parseProveLine(
   const run = line.match(/^run\s+"([^"]+)"$/);
   if (run) {
     const command = run[1];
+    if (state.shellDeny.includes(command)) {
+      throw syntaxError(`proof command is denied by shell policy: ${command}`, filePath, lineNo);
+    }
     if (!state.shellAllow.includes(command)) {
-      state.shellAllow.push(command);
+      pushUnique(state.shellAllow, command);
     }
     state.checks.push({
       id: slug(command),
@@ -276,8 +357,12 @@ function emptyState(): PactState {
     touch: [],
     never: [],
     shellAllow: [],
+    shellDeny: [],
     network: "deny",
+    networkSpecified: false,
     secrets: "deny",
+    secretsSpecified: false,
+    secretAllow: [],
     approvals: ["dependency_change", "network_access", "scope_expansion"],
     policies: [],
     checks: [],
@@ -294,8 +379,12 @@ interface PactState {
   touch: string[];
   never: string[];
   shellAllow: string[];
+  shellDeny: string[];
   network: "allow" | "deny";
+  networkSpecified: boolean;
   secrets: "allow" | "deny";
+  secretsSpecified: boolean;
+  secretAllow: string[];
   approvals: string[];
   policies: Agentfile["policies"];
   checks: Agentfile["checks"];
@@ -319,6 +408,25 @@ function quotedArg(line: string, keyword: string): string | undefined {
 function ensureApproval(state: PactState, approval: string): void {
   if (!state.approvals.includes(approval)) {
     state.approvals.push(approval);
+  }
+}
+
+function ensureCapabilityConsistency(
+  specified: boolean,
+  current: "allow" | "deny",
+  next: "allow" | "deny",
+  label: string,
+  filePath: string | undefined,
+  lineNo: number
+): void {
+  if (specified && current !== next) {
+    throw syntaxError(`conflicting ${label}: already ${current}`, filePath, lineNo);
+  }
+}
+
+function pushUnique(values: string[], value: string): void {
+  if (!values.includes(value)) {
+    values.push(value);
   }
 }
 

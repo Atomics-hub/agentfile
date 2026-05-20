@@ -132,4 +132,63 @@ mission duplicate-steps {
       "run-focused-tests-3"
     ]);
   });
+
+  it("supports explicit authority grants and denials", () => {
+    const contract = parsePactSource(`
+mission release-prep {
+  goal "Prepare a private release candidate"
+  touch scripts/**, docs/**
+
+  can use network
+  can read secret "NPM_TOKEN"
+  cannot run "npm publish"
+
+  prove {
+    run "npm test"
+    expect "The release checklist stays internal"
+  }
+}
+`);
+
+    expect(contract.permissions.network.default).toBe("allow");
+    expect(contract.permissions.secrets.access).toBe("allow");
+    expect(contract.permissions.secrets.allow).toEqual(["NPM_TOKEN"]);
+    expect(contract.permissions.shell.allow).toContain("npm test");
+    expect(contract.permissions.shell.deny).toEqual(["npm publish"]);
+  });
+
+  it("rejects contradictory source authority", () => {
+    expect(() => parsePactSource(`
+mission contradictory-authority {
+  goal "Exercise semantic diagnostics"
+  touch src/**
+
+  can use network
+  cannot use network
+}
+`)).toThrow(/conflicting network policy/);
+
+    expect(() => parsePactSource(`
+mission contradictory-shell {
+  goal "Exercise shell diagnostics"
+  touch src/**
+
+  can run "npm test"
+  cannot run "npm test"
+}
+`)).toThrow(/conflicting shell policy/);
+
+    expect(() => parsePactSource(`
+mission contradictory-proof {
+  goal "Exercise proof diagnostics"
+  touch src/**
+
+  cannot run "npm test"
+
+  prove {
+    run "npm test"
+  }
+}
+`)).toThrow(/proof command is denied by shell policy/);
+  });
 });

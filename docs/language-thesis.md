@@ -57,7 +57,10 @@ Capabilities and denied effects.
 
 ```agent
 can run "npm test -- auth"
+cannot run "npm publish"
+can use network
 cannot use network
+can read secret "OPENAI_API_KEY"
 cannot read secrets
 cannot add dependency
 ```

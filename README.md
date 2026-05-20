@@ -15,6 +15,7 @@ mission fix-login-refresh-race {
 
   can run "npm test -- auth"
   can run "npm run lint"
+  cannot run "npm publish"
 
   cannot use network
   cannot read secrets
@@ -40,6 +41,8 @@ mission fix-login-refresh-race {
   }
 }
 ```
+
+The source language can express both grants and denials for authority. For example: `can use network`, `cannot run "npm publish"`, and `can read secret "OPENAI_API_KEY"`.
 
 That source language lowers into a machine-checkable contract:
 
