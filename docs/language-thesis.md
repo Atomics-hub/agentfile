@@ -73,6 +73,8 @@ ask approval for release_publish
 
 Invariants and safety rules.
 
+Pact source accepts direct policy statements with `must`, `must_not`, `should`, and `may`, plus narrower sugar like `must preserve "..."` and `must_not leak "..."`.
+
 ```agent
 must preserve "Public auth APIs"
 must_not leak "Refresh tokens"
