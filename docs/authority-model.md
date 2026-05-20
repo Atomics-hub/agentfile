@@ -118,6 +118,12 @@ gate:
   require human approval when plan expands scope
 ```
 
+In Pact source, that gate can lower from explicit approval requirements:
+
+```agent
+ask approval for scope_expansion, destructive_write
+```
+
 ## Receipts
 
 Every run should produce a receipt:

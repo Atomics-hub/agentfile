@@ -7,6 +7,7 @@ The project follows semantic versioning once the first public release is tagged.
 ## 0.1.0
 
 - Experimental `.agent` source parser for Pact-style mission syntax.
+- Pact source now supports explicit `ask approval for ...` gates for project-specific authority stops.
 - Pact diagnostics now catch missing `goal`/`touch` declarations and duplicate `goal`/`background` lines before lowering to IR.
 - Initial Agentfile Contract Language draft.
 - YAML parser and validator.

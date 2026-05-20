@@ -64,6 +64,7 @@ cannot use network
 can read secret "OPENAI_API_KEY"
 cannot read secrets
 cannot add dependency
+ask approval for release_publish
 ```
 
 ### `must` And `must_not`

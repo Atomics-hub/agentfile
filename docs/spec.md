@@ -161,3 +161,9 @@ If a permission field is omitted, integrations should use the safer interpretati
 - Dependency changes: approval required.
 
 The CLI reports these defaults in compiled JSON.
+
+Pact source may add project-specific approval gates with lines such as:
+
+```agent
+ask approval for release_publish, destructive_write
+```

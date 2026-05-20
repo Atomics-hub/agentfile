@@ -244,6 +244,26 @@ mission targeted-network {
     ]);
   });
 
+  it("supports explicit approval gates", () => {
+    const contract = parsePactSource(`
+mission guarded-release {
+  goal "Prepare a private release candidate"
+  touch scripts/**, docs/**
+
+  ask approval for release_publish, destructive_write
+  ask approval for network_access
+}
+`);
+
+    expect(contract.permissions.approvals.requiredFor).toEqual([
+      "dependency_change",
+      "network_access",
+      "scope_expansion",
+      "release_publish",
+      "destructive_write"
+    ]);
+  });
+
   it("reports missing required mission fields with friendly diagnostics", () => {
     expect(() => parsePactSource(`
 mission missing-goal {
@@ -330,5 +350,14 @@ mission contradictory-network-deny {
   can use network host "api.github.com"
 }
 `)).toThrow(/conflicting network policy/);
+
+    expect(() => parsePactSource(`
+mission malformed-approval {
+  goal "Exercise approval diagnostics"
+  touch src/**
+
+  ask approval for release publish
+}
+`)).toThrow(/invalid approval identifier/);
   });
 });

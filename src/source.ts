@@ -275,6 +275,14 @@ function parseMissionLine(
     return;
   }
 
+  const askApproval = line.match(/^ask\s+approval\s+for\s+(.+)$/);
+  if (askApproval) {
+    for (const approval of parseApprovalList(askApproval[1], filePath, lineNo)) {
+      ensureApproval(state, approval);
+    }
+    return;
+  }
+
   const mustPreserve = line.match(/^must\s+preserve\s+"([^"]+)"$/);
   if (mustPreserve) {
     state.policies.push({
@@ -442,6 +450,18 @@ function parseList(source: string): string[] {
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function parseApprovalList(source: string, filePath: string | undefined, lineNo: number): string[] {
+  const approvals = parseList(source);
+
+  for (const approval of approvals) {
+    if (!/^[a-z0-9][a-z0-9._-]*$/.test(approval)) {
+      throw syntaxError(`invalid approval identifier: ${approval}`, filePath, lineNo);
+    }
+  }
+
+  return approvals;
 }
 
 function quotedArg(line: string, keyword: string): string | undefined {
