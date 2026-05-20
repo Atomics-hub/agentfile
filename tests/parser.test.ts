@@ -244,6 +244,39 @@ mission targeted-network {
     ]);
   });
 
+  it("reports missing required mission fields with friendly diagnostics", () => {
+    expect(() => parsePactSource(`
+mission missing-goal {
+  touch src/**
+}
+`)).toThrow(/mission requires a goal declaration/);
+
+    expect(() => parsePactSource(`
+mission missing-scope {
+  goal "Exercise scope diagnostics"
+}
+`)).toThrow(/mission must declare at least one touch path/);
+  });
+
+  it("rejects duplicate core mission declarations", () => {
+    expect(() => parsePactSource(`
+mission duplicate-goal {
+  goal "First"
+  goal "Second"
+  touch src/**
+}
+`)).toThrow(/duplicate goal declaration/);
+
+    expect(() => parsePactSource(`
+mission duplicate-background {
+  goal "Exercise background diagnostics"
+  background "First"
+  background "Second"
+  touch src/**
+}
+`)).toThrow(/duplicate background declaration/);
+  });
+
   it("rejects contradictory source authority", () => {
     expect(() => parsePactSource(`
 mission contradictory-authority {

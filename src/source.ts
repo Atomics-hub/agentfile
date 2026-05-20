@@ -1,4 +1,4 @@
-import { AgentfileError } from "./diagnostics.js";
+import { AgentfileError, formatZodError } from "./diagnostics.js";
 import { parseAgentfile } from "./parser.js";
 import { agentfileSchema, type Agentfile } from "./schema.js";
 
@@ -61,7 +61,9 @@ export function parsePactSource(source: string, filePath?: string): Agentfile {
     throw new AgentfileError(`unclosed ${sections.at(-1)} block`, filePath);
   }
 
-  const contract = agentfileSchema.parse({
+  validatePactState(state, filePath);
+
+  const contract = agentfileSchema.safeParse({
     agentfile: "0.1.0",
     kind: "TaskContract",
     info: {
@@ -110,7 +112,11 @@ export function parsePactSource(source: string, filePath?: string): Agentfile {
     }
   });
 
-  return contract;
+  if (!contract.success) {
+    throw new AgentfileError(formatZodError(contract.error), filePath);
+  }
+
+  return contract.data;
 }
 
 function parseMissionLine(
@@ -122,13 +128,21 @@ function parseMissionLine(
 ): void {
   const goal = quotedArg(line, "goal");
   if (goal) {
+    if (state.goalLine) {
+      throw syntaxError("duplicate goal declaration", filePath, lineNo);
+    }
     state.goal = goal;
+    state.goalLine = lineNo;
     return;
   }
 
   const background = quotedArg(line, "background");
   if (background) {
+    if (state.backgroundLine) {
+      throw syntaxError("duplicate background declaration", filePath, lineNo);
+    }
     state.background = background;
+    state.backgroundLine = lineNo;
     return;
   }
 
@@ -392,7 +406,9 @@ function emptyState(): PactState {
 interface PactState {
   id: string;
   goal: string;
+  goalLine?: number;
   background?: string;
+  backgroundLine?: number;
   touch: string[];
   never: string[];
   shellAllow: string[];
@@ -409,6 +425,16 @@ interface PactState {
   steps: Agentfile["workflow"]["steps"];
   acceptance: string[];
   review: string[];
+}
+
+function validatePactState(state: PactState, filePath?: string): void {
+  if (!state.goalLine) {
+    throw new AgentfileError("mission requires a goal declaration", filePath);
+  }
+
+  if (state.touch.length === 0) {
+    throw new AgentfileError("mission must declare at least one touch path", filePath);
+  }
 }
 
 function parseList(source: string): string[] {
