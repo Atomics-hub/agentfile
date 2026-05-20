@@ -133,6 +133,8 @@ checks:
     required: true
 ```
 
+Each check must define exactly one proof mechanism: `command` for executable verification or `description` for a required manual review check.
+
 Check ids must be unique within a contract.
 
 ### `workflow`

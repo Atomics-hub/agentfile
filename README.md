@@ -33,6 +33,7 @@ mission fix-login-refresh-race {
 
   prove {
     run "npm test -- auth"
+    check "Review auth logs to confirm refresh tokens are never emitted"
     expect "Concurrent refreshes make exactly one upstream request"
   }
 
@@ -45,7 +46,7 @@ mission fix-login-refresh-race {
 }
 ```
 
-The source language can express grants, denials, and approval gates for authority. For example: `can use network`, `can use network host "api.github.com"`, `cannot run "npm publish"`, `can read secret "OPENAI_API_KEY"`, and `ask approval for release_publish`.
+The source language can express grants, denials, approval gates, and both automated and manual proof requirements. For example: `can use network`, `can use network host "api.github.com"`, `cannot run "npm publish"`, `can read secret "OPENAI_API_KEY"`, `check "Review the release checklist"`, and `ask approval for release_publish`.
 
 It can also express direct invariant statements with `must "..."`, `must_not "..."`, `should "..."`, and `may "..."` in addition to the more opinionated sugar forms like `must preserve "..."` and `must_not leak "..."`.
 

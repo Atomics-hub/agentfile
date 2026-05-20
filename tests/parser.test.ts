@@ -211,6 +211,48 @@ workflow:
     - Done.
 `)).toThrow(/workflow\.steps: duplicate workflow step id: repeated/);
   });
+
+  it("requires each IR check to define exactly one proof mechanism", () => {
+    expect(() => parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: missing-check-proof
+task:
+  id: missing-check-proof
+  goal: Exercise check validation.
+scope:
+  include:
+    - src/**
+checks:
+  - id: review
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`)).toThrow(/checks\.0\.command: check requires either command or description/);
+
+    expect(() => parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: contradictory-check-proof
+task:
+  id: contradictory-check-proof
+  goal: Exercise check validation.
+scope:
+  include:
+    - src/**
+checks:
+  - id: review
+    command: npm test
+    description: Review the result
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`)).toThrow(/checks\.0\.description: check cannot define both command and description/);
+  });
 });
 
 describe("Agentfile compiler", () => {
@@ -345,6 +387,34 @@ mission release-prep {
     expect(contract.permissions.secrets.allow).toEqual(["NPM_TOKEN"]);
     expect(contract.permissions.shell.allow).toContain("npm test");
     expect(contract.permissions.shell.deny).toEqual(["npm publish"]);
+  });
+
+  it("supports required manual proof checks", () => {
+    const contract = parsePactSource(`
+mission release-review {
+  goal "Prepare a private release candidate"
+  touch docs/**, scripts/**
+
+  prove {
+    check "Review the release checklist wording"
+    run "npm test"
+    expect "The release checklist stays internal"
+  }
+}
+`);
+
+    expect(contract.checks).toEqual([
+      {
+        id: "review-the-release-checklist-wording",
+        description: "Review the release checklist wording",
+        required: true
+      },
+      {
+        id: "npm-test",
+        command: "npm test",
+        required: true
+      }
+    ]);
   });
 
   it("supports allowlisted network hosts", () => {
@@ -657,5 +727,17 @@ mission duplicate-proof {
   }
 }
 `)).toThrow(/duplicate proof command: npm test/);
+
+    expect(() => parsePactSource(`
+mission duplicate-proof-check {
+  goal "Exercise duplicate proof check diagnostics"
+  touch src/**
+
+  prove {
+    check "Review the staging diff"
+    check "Review the staging diff"
+  }
+}
+`)).toThrow(/duplicate proof check: Review the staging diff/);
   });
 });

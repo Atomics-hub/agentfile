@@ -103,6 +103,7 @@ Evidence requirements.
 ```agent
 prove {
   run "npm test -- auth"
+  check "Review auth logs to confirm refresh tokens are never emitted"
   expect "Concurrent refreshes make exactly one upstream request"
 }
 ```

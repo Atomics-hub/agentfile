@@ -380,6 +380,19 @@ function parseProveLine(
     return;
   }
 
+  const check = quotedArg(line, "check");
+  if (check) {
+    if (state.checks.some((proofCheck) => proofCheck.description === check)) {
+      throw syntaxError(`duplicate proof check: ${check}`, filePath, lineNo);
+    }
+    state.checks.push({
+      id: nextGeneratedId(state.checks, check, "check"),
+      description: check,
+      required: true
+    });
+    return;
+  }
+
   const expect = quotedArg(line, "expect");
   if (expect) {
     state.acceptance.push(expect);

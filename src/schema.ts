@@ -36,6 +36,29 @@ export const approvalsSchema = z.object({
   ])
 });
 
+export const checkSchema = z.object({
+  id: z.string().min(1).regex(/^[a-z0-9][a-z0-9._-]*$/),
+  command: z.string().min(1).optional(),
+  description: z.string().min(1).optional(),
+  required: z.boolean().default(true)
+}).superRefine((check, ctx) => {
+  if (!check.command && !check.description) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["command"],
+      message: "check requires either command or description"
+    });
+  }
+
+  if (check.command && check.description) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["description"],
+      message: "check cannot define both command and description"
+    });
+  }
+});
+
 export const permissionsSchema = z.object({
   shell: shellPolicySchema.default({ allow: [], deny: [] }),
   network: networkPolicySchema.default({ default: "deny", allow: [] }),
@@ -97,12 +120,7 @@ export const agentfileSchema = z.object({
     appliesTo: z.array(z.string().min(1)).default([]),
     statement: z.string().min(1)
   })).default([]),
-  checks: z.array(z.object({
-    id: z.string().min(1).regex(/^[a-z0-9][a-z0-9._-]*$/),
-    command: z.string().min(1).optional(),
-    description: z.string().min(1).optional(),
-    required: z.boolean().default(true)
-  })).default([]),
+  checks: z.array(checkSchema).default([]),
   workflow: z.object({
     id: z.string().min(1).regex(/^[a-z0-9][a-z0-9._-]*$/),
     steps: z.array(z.object({
