@@ -447,6 +447,38 @@ mission release-review {
     ]);
   });
 
+  it("supports optional proof commands and manual checks", () => {
+    const contract = parsePactSource(`
+mission optional-proof {
+  goal "Exercise optional proof lowering"
+  touch src/**
+
+  prove {
+    run optional "npm run perf"
+    check optional "Review the benchmark diff"
+    expect "Required acceptance still lowers normally"
+  }
+}
+`);
+
+    expect(contract.checks).toEqual([
+      {
+        id: "npm-run-perf",
+        command: "npm run perf",
+        required: false
+      },
+      {
+        id: "review-the-benchmark-diff",
+        description: "Review the benchmark diff",
+        required: false
+      }
+    ]);
+    expect(contract.permissions.shell.allow).toContain("npm run perf");
+    expect(contract.workflow.acceptance).toEqual([
+      "Required acceptance still lowers normally"
+    ]);
+  });
+
   it("supports allowlisted network hosts", () => {
     const contract = parsePactSource(`
 mission targeted-network {

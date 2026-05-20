@@ -370,9 +370,10 @@ function parseProveLine(
   filePath: string | undefined,
   lineNo: number
 ): void {
-  const run = line.match(/^run\s+"([^"]+)"$/);
+  const run = line.match(/^run(?:\s+(optional))?\s+"([^"]+)"$/);
   if (run) {
-    const command = run[1];
+    const required = run[1] !== "optional";
+    const command = run[2];
     if (state.shellDeny.includes(command)) {
       throw syntaxError(`proof command is denied by shell policy: ${command}`, filePath, lineNo);
     }
@@ -385,20 +386,22 @@ function parseProveLine(
     state.checks.push({
       id: slug(command),
       command,
-      required: true
+      required
     });
     return;
   }
 
-  const check = quotedArg(line, "check");
+  const check = line.match(/^check(?:\s+(optional))?\s+"([^"]+)"$/);
   if (check) {
-    if (state.checks.some((proofCheck) => proofCheck.description === check)) {
-      throw syntaxError(`duplicate proof check: ${check}`, filePath, lineNo);
+    const required = check[1] !== "optional";
+    const description = check[2];
+    if (state.checks.some((proofCheck) => proofCheck.description === description)) {
+      throw syntaxError(`duplicate proof check: ${description}`, filePath, lineNo);
     }
     state.checks.push({
-      id: nextGeneratedId(state.checks, check, "check"),
-      description: check,
-      required: true
+      id: nextGeneratedId(state.checks, description, "check"),
+      description,
+      required
     });
     return;
   }

@@ -34,7 +34,9 @@ mission fix-login-refresh-race {
 
   prove {
     run "npm test -- auth"
+    run optional "npm run perf -- auth"
     check "Review auth logs to confirm refresh tokens are never emitted"
+    check optional "Review benchmark drift before landing"
     expect "Concurrent refreshes make exactly one upstream request"
   }
 
@@ -47,7 +49,7 @@ mission fix-login-refresh-race {
 }
 ```
 
-The source language can express grants, denials, approval gates, and both automated and manual proof requirements. For example: `can use network`, `can use network host "api.github.com"`, `cannot run "npm publish"`, `can read secret "OPENAI_API_KEY"`, `check "Review the release checklist"`, and `ask approval for release_publish`.
+The source language can express grants, denials, approval gates, and both automated and manual proof requirements. For example: `can use network`, `can use network host "api.github.com"`, `cannot run "npm publish"`, `can read secret "OPENAI_API_KEY"`, `check "Review the release checklist"`, `run optional "npm run perf"`, `check optional "Review benchmark drift"`, and `ask approval for release_publish`.
 
 Filesystem scope can now distinguish read-only and writable areas with `read ...` and `write ...`. `touch ...` remains available as shorthand for paths that should be both readable and writable, and `write` implies read access when lowered into the contract IR.
 
