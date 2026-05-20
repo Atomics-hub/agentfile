@@ -1,0 +1,76 @@
+agentfile: "0.1.0"
+kind: TaskContract
+
+info:
+  title: fix-login-refresh-race
+  version: "0.1.0"
+  license: MIT
+  summary: Prevent duplicate token refresh requests during concurrent auth calls.
+  labels:
+    - auth
+    - concurrency
+
+task:
+  id: fix-login-refresh-race
+  goal: Make concurrent auth refreshes share one in-flight refresh operation.
+  background: The current client can issue duplicate refresh requests when several API calls receive 401 responses at the same time.
+
+scope:
+  include:
+    - src/auth/**
+    - tests/auth/**
+  exclude:
+    - src/billing/**
+    - infra/**
+
+permissions:
+  shell:
+    allow:
+      - npm test -- auth
+      - npm run lint
+  network:
+    default: deny
+  filesystem:
+    read:
+      - src/auth/**
+      - tests/auth/**
+    write:
+      - src/auth/**
+      - tests/auth/**
+    deny:
+      - .env
+      - .env.*
+  secrets:
+    access: deny
+  approvals:
+    requiredFor:
+      - dependency_change
+      - network_access
+      - scope_expansion
+
+policies:
+  - id: preserve-public-auth-api
+    level: must
+    statement: Public auth APIs must not change.
+  - id: no-token-logging
+    level: must_not
+    statement: Refresh tokens must never be logged.
+  - id: no-runtime-dependency
+    level: must_not
+    statement: No new runtime dependency may be added.
+
+checks:
+  - id: auth-tests
+    command: npm test -- auth
+    required: true
+  - id: lint
+    command: npm run lint
+    required: true
+
+workflow:
+  id: implement-fix
+  acceptance:
+    - Concurrent refresh calls result in exactly one upstream token request.
+    - Failed refreshes still clear the in-flight operation.
+  review:
+    - Explain the changed control flow and any remaining race assumptions.

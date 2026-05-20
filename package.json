@@ -1,0 +1,61 @@
+{
+  "name": "agentfile-contract",
+  "version": "0.1.0",
+  "description": "The Agentfile Contract Language for safe, reviewable AI coding agent work.",
+  "type": "module",
+  "license": "MIT",
+  "author": "",
+  "homepage": "https://github.com/agentfile/agentfile#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agentfile/agentfile.git"
+  },
+  "bugs": {
+    "url": "https://github.com/agentfile/agentfile/issues"
+  },
+  "keywords": [
+    "agents",
+    "ai",
+    "llm",
+    "coding-agent",
+    "policy",
+    "cli",
+    "contract"
+  ],
+  "bin": {
+    "agentfile": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "examples",
+    "docs",
+    "README.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "CODE_OF_CONDUCT.md",
+    "LICENSE",
+    "SECURITY.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/cli.ts",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "audit": "npm audit --audit-level=moderate",
+    "check": "npm run lint && npm test && npm run build && npm run audit"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "yaml": "^2.8.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.10",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vitest": "^4.1.6"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
