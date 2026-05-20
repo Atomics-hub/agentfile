@@ -1,8 +1,14 @@
 #!/usr/bin/env node
-import { access, readFile, writeFile } from "node:fs/promises";
+import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import { constants } from "node:fs";
+import { dirname } from "node:path";
 import { Command } from "commander";
-import { compileAgentfile, type CompileTarget } from "./compiler.js";
+import {
+  compileAgentfile,
+  defaultOutputPathForTarget,
+  isSyncTarget,
+  type CompileTarget
+} from "./compiler.js";
 import { AgentfileError } from "./diagnostics.js";
 import { parseSource } from "./source.js";
 
@@ -39,7 +45,11 @@ program
   .command("compile")
   .description("Compile an Agentfile contract.")
   .argument("[file]", "Agentfile path")
-  .option("-t, --target <target>", "prompt, json, or agents-md", "prompt")
+  .option(
+    "-t, --target <target>",
+    "prompt, json, agents-md, claude-md, cursor-mdc, or copilot-md",
+    "prompt"
+  )
   .action(async (file: string, options: { target: string }) => {
     const target = parseTarget(options.target);
     const resolved = await resolveFile(file);
@@ -51,18 +61,28 @@ program
   .command("sync")
   .description("Generate an agent instruction file from an Agentfile contract.")
   .argument("[file]", "Agentfile path")
-  .option("-o, --output <file>", "output path", "AGENTS.md")
+  .option("-t, --target <target>", "agents-md, claude-md, cursor-mdc, or copilot-md", "agents-md")
+  .option("-o, --output <file>", "output path")
   .option("-f, --force", "overwrite an existing output file", false)
-  .action(async (file: string, options: { output: string; force: boolean }) => {
-    const resolved = await resolveFile(file);
-    const agentfile = await load(resolved);
-
-    if (!options.force && await exists(options.output)) {
-      throw new AgentfileError(`refusing to overwrite ${options.output}; pass --force to replace it`);
+  .action(async (file: string, options: { target: string; output?: string; force: boolean }) => {
+    const target = parseTarget(options.target);
+    if (!isSyncTarget(target)) {
+      throw new AgentfileError(
+        `sync target "${target}" is not file-backed. Expected "agents-md", "claude-md", "cursor-mdc", or "copilot-md".`
+      );
     }
 
-    await writeFile(options.output, compileAgentfile(agentfile, "agents-md"), "utf8");
-    console.log(`Wrote ${options.output}`);
+    const resolved = await resolveFile(file);
+    const agentfile = await load(resolved);
+    const output = options.output ?? defaultOutputPathForTarget(target);
+
+    if (!options.force && await exists(output)) {
+      throw new AgentfileError(`refusing to overwrite ${output}; pass --force to replace it`);
+    }
+
+    await mkdir(dirname(output), { recursive: true });
+    await writeFile(output, compileAgentfile(agentfile, target), "utf8");
+    console.log(`Wrote ${output}`);
   });
 
 program
@@ -107,11 +127,20 @@ async function load(filePath: string) {
 }
 
 function parseTarget(value: string): CompileTarget {
-  if (value === "prompt" || value === "json" || value === "agents-md") {
+  if (
+    value === "prompt" ||
+    value === "json" ||
+    value === "agents-md" ||
+    value === "claude-md" ||
+    value === "cursor-mdc" ||
+    value === "copilot-md"
+  ) {
     return value;
   }
 
-  throw new AgentfileError(`unknown compile target "${value}". Expected "prompt", "json", or "agents-md".`);
+  throw new AgentfileError(
+    `unknown compile target "${value}". Expected "prompt", "json", "agents-md", "claude-md", "cursor-mdc", or "copilot-md".`
+  );
 }
 
 async function resolveFile(filePath?: string): Promise<string> {
@@ -119,13 +148,23 @@ async function resolveFile(filePath?: string): Promise<string> {
     return filePath;
   }
 
-  for (const candidate of ["agentfile.yaml", "agentfile.json", ".agent/agentfile.yaml", "Agentfile"]) {
+  for (const candidate of [
+    "agentfile.yaml",
+    "agentfile.json",
+    ".agent/agentfile.yaml",
+    "agentfile.agent",
+    ".agent/agentfile.agent",
+    ".agent/agentfile.json",
+    "Agentfile"
+  ]) {
     if (await exists(candidate)) {
       return candidate;
     }
   }
 
-  throw new AgentfileError("no Agentfile found. Tried agentfile.yaml, agentfile.json, .agent/agentfile.yaml, Agentfile");
+  throw new AgentfileError(
+    "no Agentfile found. Tried agentfile.yaml, agentfile.json, .agent/agentfile.yaml, agentfile.agent, .agent/agentfile.agent, .agent/agentfile.json, Agentfile"
+  );
 }
 
 async function exists(filePath: string): Promise<boolean> {

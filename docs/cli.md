@@ -18,7 +18,10 @@ If no file is provided, the CLI searches:
 1. `agentfile.yaml`
 2. `agentfile.json`
 3. `.agent/agentfile.yaml`
-4. `Agentfile`
+4. `agentfile.agent`
+5. `.agent/agentfile.agent`
+6. `.agent/agentfile.json`
+7. `Agentfile`
 
 ## `agentfile compile [file] --target <target>`
 
@@ -29,12 +32,22 @@ Targets:
 - `prompt`: plain-text prompt for a coding agent.
 - `json`: normalized policy JSON for automation.
 - `agents-md`: generated `AGENTS.md` content.
+- `claude-md`: generated `CLAUDE.md` project memory.
+- `cursor-mdc`: generated Cursor project rule content for `.cursor/rules/agentfile.mdc`.
+- `copilot-md`: generated GitHub Copilot repository instructions.
 
-## `agentfile sync [file] --output <file>`
+## `agentfile sync [file] --target <target> --output <file>`
 
-Generate an agent instruction file. Defaults to `AGENTS.md`.
+Generate an agent instruction file.
 
-The command refuses to overwrite existing files unless `--force` is passed.
+Targets and default output paths:
+
+- `agents-md` -> `AGENTS.md`
+- `claude-md` -> `CLAUDE.md`
+- `cursor-mdc` -> `.cursor/rules/agentfile.mdc`
+- `copilot-md` -> `.github/copilot-instructions.md`
+
+The command creates parent directories for nested default targets and refuses to overwrite existing files unless `--force` is passed.
 
 ## `agentfile explain [file]`
 

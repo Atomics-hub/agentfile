@@ -11,10 +11,8 @@
 
 ## v0.2
 
-- Parse `.agent` source into the contract IR.
 - Add formatter and golden fixtures for `.agent`.
 - Add trace format for agent actions and verification.
-- Add `sync` targets for `AGENTS.md`, `CLAUDE.md`, Cursor rules, and Copilot instructions.
 - Add GitHub Actions integration.
 - Add JSON Schema export.
 - Add contract diff command.

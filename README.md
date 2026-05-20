@@ -175,6 +175,14 @@ Generate an `AGENTS.md` instruction file:
 agentfile sync examples/fix-login-race.agentfile --output AGENTS.md
 ```
 
+Generate other instruction surfaces from the same contract:
+
+```sh
+agentfile sync examples/fix-login-race.agent --target claude-md
+agentfile sync examples/fix-login-race.agent --target cursor-mdc
+agentfile sync examples/fix-login-race.agent --target copilot-md
+```
+
 Explain the contract:
 
 ```sh
@@ -191,7 +199,7 @@ Agentfile is early. The v0.1 goal is intentionally narrow:
 - Prompt and JSON compilation targets.
 - Security-first defaults.
 - `agentfile init` for fast adoption.
-- Compiler targets for common agent instruction files.
+- Compiler targets for `AGENTS.md`, `CLAUDE.md`, Cursor rules, and GitHub Copilot instructions.
 - A benchmark harness proving that agents complete tasks more reliably with contracts than with plain issue text.
 
 ## Design Principles
