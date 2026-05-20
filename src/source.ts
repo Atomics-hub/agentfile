@@ -31,15 +31,25 @@ export function parsePactSource(source: string, filePath?: string): Agentfile {
       if (!closed) {
         throw syntaxError("unexpected closing brace", filePath, lineNo);
       }
+      if (closed === "mission") {
+        state.missionClosed = true;
+      }
       continue;
     }
 
     if (sections.length === 0) {
       const match = line.match(/^mission\s+([a-z0-9][a-z0-9._-]*)\s*\{$/);
+      if (match && state.missionStarted) {
+        throw syntaxError("source may only declare one mission", filePath, lineNo);
+      }
+      if (state.missionClosed) {
+        throw syntaxError("unexpected content after mission block", filePath, lineNo);
+      }
       if (!match) {
         throw syntaxError("expected mission declaration", filePath, lineNo);
       }
       state.id = match[1];
+      state.missionStarted = true;
       sections.push("mission");
       continue;
     }
@@ -306,16 +316,22 @@ function parseMissionLine(
   }
 
   if (line === "prove {") {
+    ensureSectionLine(state.proveLine, "prove", filePath, lineNo);
+    state.proveLine = lineNo;
     sections.push("prove");
     return;
   }
 
   if (line === "plan {") {
+    ensureSectionLine(state.planLine, "plan", filePath, lineNo);
+    state.planLine = lineNo;
     sections.push("plan");
     return;
   }
 
   if (line === "handoff {") {
+    ensureSectionLine(state.handoffLine, "handoff", filePath, lineNo);
+    state.handoffLine = lineNo;
     sections.push("handoff");
     return;
   }
@@ -411,6 +427,8 @@ function emptyState(): PactState {
   return {
     id: "untitled",
     goal: "",
+    missionStarted: false,
+    missionClosed: false,
     touch: [],
     never: [],
     shellAllow: [],
@@ -433,6 +451,8 @@ function emptyState(): PactState {
 interface PactState {
   id: string;
   goal: string;
+  missionStarted: boolean;
+  missionClosed: boolean;
   goalLine?: number;
   background?: string;
   backgroundLine?: number;
@@ -452,6 +472,9 @@ interface PactState {
   steps: Agentfile["workflow"]["steps"];
   acceptance: string[];
   review: string[];
+  planLine?: number;
+  proveLine?: number;
+  handoffLine?: number;
 }
 
 function validatePactState(state: PactState, filePath?: string): void {
@@ -517,6 +540,17 @@ function trailingArg(line: string, keyword: string): string | undefined {
 function ensureApproval(state: PactState, approval: string): void {
   if (!state.approvals.includes(approval)) {
     state.approvals.push(approval);
+  }
+}
+
+function ensureSectionLine(
+  existingLine: number | undefined,
+  section: Section,
+  filePath: string | undefined,
+  lineNo: number
+): void {
+  if (existingLine) {
+    throw syntaxError(`duplicate ${section} block`, filePath, lineNo);
   }
 }
 

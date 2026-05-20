@@ -415,6 +415,65 @@ mission duplicate-background {
 `)).toThrow(/duplicate background declaration/);
   });
 
+  it("rejects multiple mission blocks and duplicate workflow sections", () => {
+    expect(() => parsePactSource(`
+mission first {
+  goal "First mission"
+  touch src/**
+}
+
+mission second {
+  goal "Second mission"
+  touch tests/**
+}
+`)).toThrow(/source may only declare one mission/);
+
+    expect(() => parsePactSource(`
+mission duplicate-plan {
+  goal "Exercise duplicate plan diagnostics"
+  touch src/**
+
+  plan {
+    step "Inspect the change"
+  }
+
+  plan {
+    step "Apply the change"
+  }
+}
+`)).toThrow(/duplicate plan block/);
+
+    expect(() => parsePactSource(`
+mission duplicate-prove {
+  goal "Exercise duplicate prove diagnostics"
+  touch src/**
+
+  prove {
+    expect "Tests pass"
+  }
+
+  prove {
+    expect "Lint passes"
+  }
+}
+`)).toThrow(/duplicate prove block/);
+
+    expect(() => parsePactSource(`
+mission duplicate-handoff {
+  goal "Exercise duplicate handoff diagnostics"
+  touch src/**
+
+  handoff {
+    note risks
+  }
+
+  handoff {
+    list changed_files
+  }
+}
+`)).toThrow(/duplicate handoff block/);
+  });
+
   it("rejects contradictory source authority", () => {
     expect(() => parsePactSource(`
 mission contradictory-authority {

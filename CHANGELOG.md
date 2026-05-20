@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Pact source now rejects multiple `mission` blocks and duplicate `plan`, `prove`, or `handoff` sections in the same file.
 - IR validation now rejects duplicate policy/check/workflow-step ids and exact include/exclude scope conflicts.
 - Pact source diagnostics now reject exact `touch`/`never` path contradictions and duplicate proof commands.
 - Experimental `.agent` source parser for Pact-style mission syntax.

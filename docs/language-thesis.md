@@ -36,6 +36,8 @@ The source language should avoid pretending to be a full general-purpose runtime
 
 A delegated unit of software work.
 
+For now, a source file contains exactly one `mission` block.
+
 ```agent
 mission fix-login-refresh-race {
   goal "Share one in-flight refresh across concurrent auth calls"
@@ -80,6 +82,8 @@ must_not leak "Refresh tokens"
 
 Ordered execution intent that lowers into workflow steps in the IR.
 
+`plan` is currently a singular block within a mission.
+
 ```agent
 plan {
   step "Inspect the existing auth refresh gate"
@@ -92,6 +96,8 @@ plan {
 
 Evidence requirements.
 
+`prove` is currently a singular block within a mission.
+
 ```agent
 prove {
   run "npm test -- auth"
@@ -102,6 +108,8 @@ prove {
 ### `handoff`
 
 Review and continuity requirements.
+
+`handoff` is currently a singular block within a mission.
 
 ```agent
 handoff {
