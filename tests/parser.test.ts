@@ -178,6 +178,12 @@ describe("Pact source parser", () => {
         do: "Update the refresh flow to reuse and clear one in-flight operation"
       }
     ]);
+    expect(contract.workflow.review).toEqual([
+      "Explain changed control flow.",
+      "Explain remaining race assumptions.",
+      "List changed files.",
+      "Note risks."
+    ]);
     expect(contract.checks).toHaveLength(2);
   });
 
@@ -261,6 +267,29 @@ mission guarded-release {
       "scope_expansion",
       "release_publish",
       "destructive_write"
+    ]);
+  });
+
+  it("supports structured handoff requirements", () => {
+    const contract = parsePactSource(`
+mission handoff-requirements {
+  goal "Exercise handoff lowering"
+  touch src/**
+
+  handoff {
+    explain "changed control flow."
+    list changed_files
+    note risks
+    note "follow-up monitoring"
+  }
+}
+`);
+
+    expect(contract.workflow.review).toEqual([
+      "Explain changed control flow.",
+      "List changed files.",
+      "Note risks.",
+      "Note follow-up monitoring."
     ]);
   });
 
@@ -359,5 +388,16 @@ mission malformed-approval {
   ask approval for release publish
 }
 `)).toThrow(/invalid approval identifier/);
+
+    expect(() => parsePactSource(`
+mission malformed-handoff {
+  goal "Exercise handoff diagnostics"
+  touch src/**
+
+  handoff {
+    list risks
+  }
+}
+`)).toThrow(/unsupported handoff list target/);
   });
 });

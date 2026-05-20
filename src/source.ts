@@ -381,7 +381,23 @@ function parseHandoffLine(
 ): void {
   const explain = quotedArg(line, "explain");
   if (explain) {
-    state.review.push(`Explain ${explain}.`);
+    state.review.push(reviewSentence("Explain", explain));
+    return;
+  }
+
+  const list = line.match(/^list\s+([a-z0-9][a-z0-9._-]*)$/);
+  if (list) {
+    if (list[1] === "changed_files") {
+      state.review.push("List changed files.");
+      return;
+    }
+
+    throw syntaxError(`unsupported handoff list target: ${list[1]}`, filePath, lineNo);
+  }
+
+  const note = trailingArg(line, "note");
+  if (note) {
+    state.review.push(reviewSentence("Note", note));
     return;
   }
 
@@ -469,6 +485,17 @@ function quotedArg(line: string, keyword: string): string | undefined {
   return match?.[1];
 }
 
+function trailingArg(line: string, keyword: string): string | undefined {
+  const match = line.match(new RegExp(`^${keyword}\\s+(.+)$`));
+  if (!match) {
+    return undefined;
+  }
+
+  const value = match[1].trim();
+  const quoted = value.match(/^"([^"]+)"$/);
+  return quoted?.[1] ?? value;
+}
+
 function ensureApproval(state: PactState, approval: string): void {
   if (!state.approvals.includes(approval)) {
     state.approvals.push(approval);
@@ -505,6 +532,10 @@ function nextStepId(steps: Agentfile["workflow"]["steps"], description: string):
   const base = slug(description) || "step";
   const matching = steps.filter((step) => step.id === base || step.id.startsWith(`${base}-`)).length;
   return matching === 0 ? base : `${base}-${matching + 1}`;
+}
+
+function reviewSentence(verb: string, detail: string): string {
+  return `${verb} ${detail.replace(/[.!?]+$/u, "")}.`;
 }
 
 function stripComment(line: string): string {

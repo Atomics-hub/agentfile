@@ -39,6 +39,8 @@ mission fix-login-refresh-race {
   handoff {
     explain "changed control flow"
     explain "remaining race assumptions"
+    list changed_files
+    note risks
   }
 }
 ```
