@@ -53,6 +53,75 @@ workflow:
     - Done.
 `)).toThrow(/agentfile/);
   });
+
+  it("rejects contradictory IR authority states", () => {
+    expect(() => parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: invalid-network
+task:
+  id: invalid-network
+  goal: Exercise semantic validation.
+scope:
+  include:
+    - src/**
+permissions:
+  network:
+    default: allow
+    allow:
+      - api.github.com
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`)).toThrow(/permissions\.network\.allow: network allowlist requires permissions\.network\.default to be deny/);
+
+    expect(() => parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: invalid-secrets
+task:
+  id: invalid-secrets
+  goal: Exercise semantic validation.
+scope:
+  include:
+    - src/**
+permissions:
+  secrets:
+    access: deny
+    allow:
+      - OPENAI_API_KEY
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`)).toThrow(/permissions\.secrets\.allow: secret allowlist requires permissions\.secrets\.access to be allow/);
+
+    expect(() => parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: invalid-shell
+task:
+  id: invalid-shell
+  goal: Exercise semantic validation.
+scope:
+  include:
+    - src/**
+permissions:
+  shell:
+    allow:
+      - npm test
+    deny:
+      - npm test
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`)).toThrow(/permissions\.shell\.deny: shell command cannot be both allowed and denied: npm test/);
+  });
 });
 
 describe("Agentfile compiler", () => {
@@ -157,6 +226,24 @@ mission release-prep {
     expect(contract.permissions.shell.deny).toEqual(["npm publish"]);
   });
 
+  it("supports allowlisted network hosts", () => {
+    const contract = parsePactSource(`
+mission targeted-network {
+  goal "Allow a narrow outbound dependency"
+  touch src/**
+
+  can use network host "api.github.com"
+  can use network host "objects.githubusercontent.com"
+}
+`);
+
+    expect(contract.permissions.network.default).toBe("deny");
+    expect(contract.permissions.network.allow).toEqual([
+      "api.github.com",
+      "objects.githubusercontent.com"
+    ]);
+  });
+
   it("rejects contradictory source authority", () => {
     expect(() => parsePactSource(`
 mission contradictory-authority {
@@ -190,5 +277,25 @@ mission contradictory-proof {
   }
 }
 `)).toThrow(/proof command is denied by shell policy/);
+
+    expect(() => parsePactSource(`
+mission contradictory-network-hosts {
+  goal "Exercise network host diagnostics"
+  touch src/**
+
+  can use network host "api.github.com"
+  can use network
+}
+`)).toThrow(/conflicting network policy/);
+
+    expect(() => parsePactSource(`
+mission contradictory-network-deny {
+  goal "Exercise deny diagnostics"
+  touch src/**
+
+  cannot use network
+  can use network host "api.github.com"
+}
+`)).toThrow(/conflicting network policy/);
   });
 });

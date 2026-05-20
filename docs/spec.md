@@ -87,6 +87,8 @@ permissions:
       - npm test -- auth
   network:
     default: deny
+    allow:
+      - api.github.com
   filesystem:
     read:
       - src/auth/**
@@ -150,8 +152,11 @@ workflow:
 If a permission field is omitted, integrations should use the safer interpretation:
 
 - Network: deny.
+- Network allowlist entries are only valid when `permissions.network.default` is `deny`.
 - Secrets: deny.
+- Secret allowlist entries are only valid when `permissions.secrets.access` is `allow`.
 - Shell: deny except explicit allowlist.
+- Shell entries may not appear in both allow and deny lists.
 - Scope expansion: approval required.
 - Dependency changes: approval required.
 

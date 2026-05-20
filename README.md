@@ -42,7 +42,7 @@ mission fix-login-refresh-race {
 }
 ```
 
-The source language can express both grants and denials for authority. For example: `can use network`, `cannot run "npm publish"`, and `can read secret "OPENAI_API_KEY"`.
+The source language can express both grants and denials for authority. For example: `can use network`, `can use network host "api.github.com"`, `cannot run "npm publish"`, and `can read secret "OPENAI_API_KEY"`.
 
 That source language lowers into a machine-checkable contract:
 

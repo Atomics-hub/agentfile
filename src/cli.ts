@@ -81,6 +81,9 @@ program
     console.log(`Included paths: ${agentfile.scope.include.join(", ")}`);
     console.log(`Allowed commands: ${agentfile.permissions.shell.allow.length}`);
     console.log(`Network: ${agentfile.permissions.network.default}`);
+    if (agentfile.permissions.network.allow.length > 0) {
+      console.log(`Network allowlist: ${agentfile.permissions.network.allow.join(", ")}`);
+    }
     console.log(`Secrets: ${agentfile.permissions.secrets.access}`);
     console.log(`Checks: ${agentfile.checks.length}`);
   });

@@ -36,6 +36,39 @@ export const approvalsSchema = z.object({
   ])
 });
 
+export const permissionsSchema = z.object({
+  shell: shellPolicySchema.default({ allow: [], deny: [] }),
+  network: networkPolicySchema.default({ default: "deny", allow: [] }),
+  filesystem: filesystemPolicySchema.default({ read: [], write: [], deny: [] }),
+  secrets: accessSchema.default({ access: "deny", allow: [] }),
+  approvals: approvalsSchema.default({})
+}).superRefine((permissions, ctx) => {
+  const shellOverlap = permissions.shell.allow.filter((command) => permissions.shell.deny.includes(command));
+  for (const command of shellOverlap) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["shell", "deny"],
+      message: `shell command cannot be both allowed and denied: ${command}`
+    });
+  }
+
+  if (permissions.network.default === "allow" && permissions.network.allow.length > 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["network", "allow"],
+      message: "network allowlist requires permissions.network.default to be deny"
+    });
+  }
+
+  if (permissions.secrets.access === "deny" && permissions.secrets.allow.length > 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["secrets", "allow"],
+      message: "secret allowlist requires permissions.secrets.access to be allow"
+    });
+  }
+});
+
 export const agentfileSchema = z.object({
   agentfile: z.literal("0.1.0"),
   kind: z.literal("TaskContract"),
@@ -57,13 +90,7 @@ export const agentfileSchema = z.object({
     include: z.array(z.string().min(1)).min(1),
     exclude: z.array(z.string().min(1)).default([])
   }),
-  permissions: z.object({
-    shell: shellPolicySchema.default({ allow: [], deny: [] }),
-    network: networkPolicySchema.default({ default: "deny", allow: [] }),
-    filesystem: filesystemPolicySchema.default({ read: [], write: [], deny: [] }),
-    secrets: accessSchema.default({ access: "deny", allow: [] }),
-    approvals: approvalsSchema.default({})
-  }).default({}),
+  permissions: permissionsSchema.default({}),
   policies: z.array(z.object({
     id: z.string().min(1).regex(/^[a-z0-9][a-z0-9._-]*$/),
     level: z.enum(["must", "must_not", "should", "may"]),

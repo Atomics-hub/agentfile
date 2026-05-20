@@ -84,7 +84,8 @@ export function parsePactSource(source: string, filePath?: string): Agentfile {
         deny: state.shellDeny
       },
       network: {
-        default: state.network
+        default: state.network,
+        allow: state.networkAllow
       },
       filesystem: {
         read: state.touch,
@@ -162,6 +163,9 @@ function parseMissionLine(
   }
 
   if (line === "can use network") {
+    if (state.networkAllow.length > 0) {
+      throw syntaxError("conflicting network policy: already restricted to allowlisted hosts", filePath, lineNo);
+    }
     ensureCapabilityConsistency(
       state.networkSpecified,
       state.network,
@@ -176,6 +180,9 @@ function parseMissionLine(
   }
 
   if (line === "cannot use network") {
+    if (state.networkAllow.length > 0) {
+      throw syntaxError("conflicting network policy: already allowlisted hosts", filePath, lineNo);
+    }
     ensureCapabilityConsistency(
       state.networkSpecified,
       state.network,
@@ -187,6 +194,15 @@ function parseMissionLine(
     state.network = "deny";
     state.networkSpecified = true;
     ensureApproval(state, "network_access");
+    return;
+  }
+
+  const canUseNetworkHost = line.match(/^can\s+use\s+network\s+host\s+"([^"]+)"$/);
+  if (canUseNetworkHost) {
+    if (state.networkSpecified) {
+      throw syntaxError(`conflicting network policy: already ${state.network}`, filePath, lineNo);
+    }
+    pushUnique(state.networkAllow, canUseNetworkHost[1]);
     return;
   }
 
@@ -360,6 +376,7 @@ function emptyState(): PactState {
     shellDeny: [],
     network: "deny",
     networkSpecified: false,
+    networkAllow: [],
     secrets: "deny",
     secretsSpecified: false,
     secretAllow: [],
@@ -382,6 +399,7 @@ interface PactState {
   shellDeny: string[];
   network: "allow" | "deny";
   networkSpecified: boolean;
+  networkAllow: string[];
   secrets: "allow" | "deny";
   secretsSpecified: boolean;
   secretAllow: string[];
