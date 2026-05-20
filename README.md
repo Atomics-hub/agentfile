@@ -1,8 +1,41 @@
 # Agentfile
 
-Agentfile is the Agentfile Contract Language for AI coding agents.
+Agentfile is an experimental language for agentic software work.
 
-It gives humans, coding agents, CI systems, and reviewers one repo-local source of truth for what an agent may touch, what it must preserve, how it should verify work, and when it needs approval.
+The goal is to build a language that coding agents can understand, write, verify, and execute better than today's ad hoc prompts, instruction files, and general-purpose languages for delegation work.
+
+The current YAML format is the strict contract IR. The next layer is a source language that feels more like this:
+
+```agent
+mission fix-login-refresh-race {
+  goal "Share one in-flight refresh across concurrent auth calls"
+
+  touch src/auth/**, tests/auth/**
+  never src/billing/**, infra/**
+
+  can run "npm test -- auth"
+  can run "npm run lint"
+
+  cannot use network
+  cannot read secrets
+  cannot add dependency
+
+  must preserve "Public auth APIs"
+  must_not leak "Refresh tokens"
+
+  prove {
+    run "npm test -- auth"
+    expect "Concurrent refreshes make exactly one upstream request"
+  }
+
+  handoff {
+    explain "changed control flow"
+    explain "remaining race assumptions"
+  }
+}
+```
+
+That source language lowers into a machine-checkable contract:
 
 ```yaml
 agentfile: "0.1.0"
@@ -72,6 +105,8 @@ Agentfile turns scattered guidance into a durable contract:
 
 Agentfile is not an agent framework, orchestration graph, or MCP replacement. It is the contract your agents run under.
 
+The long-term bet is bigger: Agentfile should become the language of delegation, effects, evidence, and patches for coding agents.
+
 ## Install
 
 ```sh
@@ -127,6 +162,7 @@ agentfile explain examples/fix-login-race.agentfile
 
 Agentfile is early. The v0.1 goal is intentionally narrow:
 
+- A prototype `.agent` source language.
 - A stable YAML-based contract format.
 - A strict validator.
 - Prompt and JSON compilation targets.

@@ -1,8 +1,10 @@
-# Agentfile Contract Language v0.1 Spec
+# Agentfile Contract IR v0.1 Spec
 
-Agentfile v0.1 is a YAML contract for agent-executed software tasks.
+Agentfile v0.1 is the YAML/JSON contract IR for agent-executed software tasks.
 
 The format is intentionally conservative. It should be easy for humans to review, easy for agents to follow, and easy for automation to validate.
+
+The experimental Pact source language lowers into this IR.
 
 ## Top-Level Shape
 

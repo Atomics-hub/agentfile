@@ -1,0 +1,29 @@
+mission fix-login-refresh-race {
+  goal "Share one in-flight refresh across concurrent auth calls"
+  background "Several API calls can receive 401 responses at the same time and trigger duplicate refresh requests"
+
+  touch src/auth/**, tests/auth/**
+  never src/billing/**, infra/**
+
+  can run "npm test -- auth"
+  can run "npm run lint"
+
+  cannot use network
+  cannot read secrets
+  cannot add dependency
+
+  must preserve "Public auth APIs"
+  must_not leak "Refresh tokens"
+
+  prove {
+    run "npm test -- auth"
+    run "npm run lint"
+    expect "Concurrent refresh calls result in exactly one upstream token request"
+    expect "Failed refreshes clear the in-flight operation"
+  }
+
+  handoff {
+    explain "changed control flow"
+    explain "remaining race assumptions"
+  }
+}

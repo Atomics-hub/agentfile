@@ -8,6 +8,11 @@ Create a minimal valid contract. Defaults to `agentfile.yaml`.
 
 Validate a contract. `validate` is an alias.
 
+The CLI accepts either:
+
+- `.agent` source files using the experimental Pact syntax.
+- YAML/JSON contract IR files.
+
 If no file is provided, the CLI searches:
 
 1. `agentfile.yaml`

@@ -2,6 +2,7 @@
 
 ## v0.1
 
+- Define the `.agent` source language thesis and first grammar sketch.
 - Validate Agentfile YAML.
 - Compile to agent prompt.
 - Compile to normalized policy JSON.
@@ -10,6 +11,8 @@
 
 ## v0.2
 
+- Parse `.agent` source into the contract IR.
+- Add formatter and golden fixtures for `.agent`.
 - Add trace format for agent actions and verification.
 - Add `sync` targets for `AGENTS.md`, `CLAUDE.md`, Cursor rules, and Copilot instructions.
 - Add GitHub Actions integration.
@@ -19,6 +22,7 @@
 ## v0.3
 
 - Add benchmark harness comparing plain issue prompts vs Agentfile contracts.
+- Add benchmark harness comparing `.agent`, YAML IR, and plain Markdown instructions.
 - Add adapters for common coding agents.
 - Add policy lint rules for risky authority.
 

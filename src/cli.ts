@@ -4,7 +4,7 @@ import { constants } from "node:fs";
 import { Command } from "commander";
 import { compileAgentfile, type CompileTarget } from "./compiler.js";
 import { AgentfileError } from "./diagnostics.js";
-import { parseAgentfile } from "./parser.js";
+import { parseSource } from "./source.js";
 
 const program = new Command();
 
@@ -100,7 +100,7 @@ async function load(filePath: string) {
     throw new AgentfileError(error.message, filePath);
   });
 
-  return parseAgentfile(source, filePath);
+  return parseSource(source, filePath);
 }
 
 function parseTarget(value: string): CompileTarget {
