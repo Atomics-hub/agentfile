@@ -131,11 +131,14 @@ checks:
 
 ### `workflow`
 
-The acceptance and handoff requirements for the agent run.
+The execution plan, acceptance, and handoff requirements for the agent run.
 
 ```yaml
 workflow:
   id: implement
+  steps:
+    - id: inspect-auth-flow
+      do: Inspect the existing auth refresh flow.
   acceptance:
     - Required checks pass.
   review:

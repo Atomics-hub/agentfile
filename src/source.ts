@@ -2,7 +2,7 @@ import { AgentfileError } from "./diagnostics.js";
 import { parseAgentfile } from "./parser.js";
 import { agentfileSchema, type Agentfile } from "./schema.js";
 
-type Section = "mission" | "prove" | "handoff";
+type Section = "mission" | "plan" | "prove" | "handoff";
 
 export function parseSource(source: string, filePath?: string): Agentfile {
   if (filePath?.endsWith(".agent") || looksLikePact(source)) {
@@ -48,6 +48,8 @@ export function parsePactSource(source: string, filePath?: string): Agentfile {
 
     if (section === "mission") {
       parseMissionLine(line, state, sections, filePath, lineNo);
+    } else if (section === "plan") {
+      parsePlanLine(line, state, filePath, lineNo);
     } else if (section === "prove") {
       parseProveLine(line, state, filePath, lineNo);
     } else if (section === "handoff") {
@@ -99,6 +101,7 @@ export function parsePactSource(source: string, filePath?: string): Agentfile {
     checks: state.checks,
     workflow: {
       id: "implement",
+      steps: state.steps,
       acceptance: state.acceptance,
       review: state.review
     }
@@ -191,12 +194,35 @@ function parseMissionLine(
     return;
   }
 
+  if (line === "plan {") {
+    sections.push("plan");
+    return;
+  }
+
   if (line === "handoff {") {
     sections.push("handoff");
     return;
   }
 
   throw syntaxError(`unexpected mission line: ${line}`, filePath, lineNo);
+}
+
+function parsePlanLine(
+  line: string,
+  state: PactState,
+  filePath: string | undefined,
+  lineNo: number
+): void {
+  const step = quotedArg(line, "step");
+  if (step) {
+    state.steps.push({
+      id: nextStepId(state.steps, step),
+      do: step
+    });
+    return;
+  }
+
+  throw syntaxError(`unexpected plan line: ${line}`, filePath, lineNo);
 }
 
 function parseProveLine(
@@ -255,6 +281,7 @@ function emptyState(): PactState {
     approvals: ["dependency_change", "network_access", "scope_expansion"],
     policies: [],
     checks: [],
+    steps: [],
     acceptance: [],
     review: []
   };
@@ -272,6 +299,7 @@ interface PactState {
   approvals: string[];
   policies: Agentfile["policies"];
   checks: Agentfile["checks"];
+  steps: Agentfile["workflow"]["steps"];
   acceptance: string[];
   review: string[];
 }
@@ -298,8 +326,13 @@ function slug(value: string): string {
   return value
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 64);
+    .replace(/^-+|-+$/g, "");
+}
+
+function nextStepId(steps: Agentfile["workflow"]["steps"], description: string): string {
+  const base = slug(description) || "step";
+  const matching = steps.filter((step) => step.id === base || step.id.startsWith(`${base}-`)).length;
+  return matching === 0 ? base : `${base}-${matching + 1}`;
 }
 
 function stripComment(line: string): string {

@@ -71,6 +71,18 @@ must preserve "Public auth APIs"
 must_not leak "Refresh tokens"
 ```
 
+### `plan`
+
+Ordered execution intent that lowers into workflow steps in the IR.
+
+```agent
+plan {
+  step "Inspect the existing auth refresh gate"
+  step "Add a regression test for duplicate refresh requests"
+  step "Update the refresh flow to reuse one in-flight operation"
+}
+```
+
 ### `prove`
 
 Evidence requirements.

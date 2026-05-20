@@ -69,6 +69,13 @@ checks:
 
 workflow:
   id: implement-fix
+  steps:
+    - id: inspect-refresh-gate-used-by-concurrent-auth-calls
+      do: Inspect the refresh gate used by concurrent auth calls.
+    - id: add-a-regression-test-for-duplicate-refresh-requests
+      do: Add a regression test for duplicate refresh requests.
+    - id: update-the-refresh-flow-to-reuse-and-clear-one-in-flight-operation
+      do: Update the refresh flow to reuse and clear one in-flight operation.
   acceptance:
     - Concurrent refresh calls result in exactly one upstream token request.
     - Failed refreshes still clear the in-flight operation.

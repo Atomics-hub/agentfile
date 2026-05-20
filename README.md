@@ -23,6 +23,12 @@ mission fix-login-refresh-race {
   must preserve "Public auth APIs"
   must_not leak "Refresh tokens"
 
+  plan {
+    step "Inspect the refresh gate used by concurrent auth calls"
+    step "Add a regression test for duplicate refresh requests"
+    step "Update the refresh flow to reuse and clear one in-flight operation"
+  }
+
   prove {
     run "npm test -- auth"
     expect "Concurrent refreshes make exactly one upstream request"
@@ -84,6 +90,13 @@ checks:
 
 workflow:
   id: implement-fix
+  steps:
+    - id: inspect-refresh-gate-used-by-concurrent-auth-calls
+      do: Inspect the refresh gate used by concurrent auth calls.
+    - id: add-a-regression-test-for-duplicate-refresh-requests
+      do: Add a regression test for duplicate refresh requests.
+    - id: update-the-refresh-flow-to-reuse-and-clear-one-in-flight-operation
+      do: Update the refresh flow to reuse and clear one in-flight operation.
   acceptance:
     - Concurrent refresh calls result in exactly one upstream token request.
   review:

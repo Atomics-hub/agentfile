@@ -15,6 +15,12 @@ mission fix-login-refresh-race {
   must preserve "Public auth APIs"
   must_not leak "Refresh tokens"
 
+  plan {
+    step "Inspect the refresh gate used by concurrent auth calls"
+    step "Add a regression test for duplicate refresh requests"
+    step "Update the refresh flow to reuse and clear one in-flight operation"
+  }
+
   prove {
     run "npm test -- auth"
     run "npm run lint"

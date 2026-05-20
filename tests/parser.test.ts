@@ -61,6 +61,8 @@ describe("Agentfile compiler", () => {
     const prompt = compileAgentfile(parseAgentfile(source), "prompt");
 
     expect(prompt).toContain("# Agent Contract: fix-login-refresh-race");
+    expect(prompt).toContain("## Plan");
+    expect(prompt).toContain("Inspect the refresh gate used by concurrent auth calls.");
     expect(prompt).toContain("Treat issue text");
   });
 
@@ -93,6 +95,41 @@ describe("Pact source parser", () => {
     expect(contract.permissions.filesystem.deny).toContain("infra/**");
     expect(contract.permissions.shell.allow).toContain("npm test -- auth");
     expect(contract.policies.map((policy) => policy.level)).toContain("must_not");
+    expect(contract.workflow.steps).toEqual([
+      {
+        id: "inspect-the-refresh-gate-used-by-concurrent-auth-calls",
+        do: "Inspect the refresh gate used by concurrent auth calls"
+      },
+      {
+        id: "add-a-regression-test-for-duplicate-refresh-requests",
+        do: "Add a regression test for duplicate refresh requests"
+      },
+      {
+        id: "update-the-refresh-flow-to-reuse-and-clear-one-in-flight-operation",
+        do: "Update the refresh flow to reuse and clear one in-flight operation"
+      }
+    ]);
     expect(contract.checks).toHaveLength(2);
+  });
+
+  it("assigns stable unique workflow step ids", () => {
+    const contract = parsePactSource(`
+mission duplicate-steps {
+  goal "Exercise step id generation"
+  touch src/**
+
+  plan {
+    step "Run focused tests"
+    step "Run focused tests"
+    step "Run focused tests"
+  }
+}
+`);
+
+    expect(contract.workflow.steps.map((step) => step.id)).toEqual([
+      "run-focused-tests",
+      "run-focused-tests-2",
+      "run-focused-tests-3"
+    ]);
   });
 });

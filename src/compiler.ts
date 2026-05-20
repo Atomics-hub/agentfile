@@ -38,6 +38,13 @@ export function compileAgentPrompt(agentfile: Agentfile): string {
     lines.push("", "## Background", agentfile.task.background);
   }
 
+  if (agentfile.workflow.steps.length > 0) {
+    lines.push("", "## Plan");
+    for (const step of agentfile.workflow.steps) {
+      lines.push(`- ${step.do}`);
+    }
+  }
+
   lines.push("", "## Scope");
   lines.push(`Included paths: ${joinOrNone(agentfile.scope.include)}`);
   lines.push(`Excluded paths: ${joinOrNone(agentfile.scope.exclude)}`);
