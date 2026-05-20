@@ -47,6 +47,8 @@ mission fix-login-refresh-race {
 
 The source language can express grants, denials, and approval gates for authority. For example: `can use network`, `can use network host "api.github.com"`, `cannot run "npm publish"`, `can read secret "OPENAI_API_KEY"`, and `ask approval for release_publish`.
 
+It can also express direct invariant statements with `must "..."`, `must_not "..."`, `should "..."`, and `may "..."` in addition to the more opinionated sugar forms like `must preserve "..."` and `must_not leak "..."`.
+
 Each `.agent` source file currently defines exactly one `mission`. Within that mission, `plan`, `prove`, and `handoff` are singular blocks so the lowered workflow shape stays predictable for agents and tooling.
 
 That source language lowers into a machine-checkable contract:

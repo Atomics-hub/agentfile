@@ -382,6 +382,68 @@ mission handoff-requirements {
     ]);
   });
 
+  it("supports generic policy statements with stable unique ids", () => {
+    const contract = parsePactSource(`
+mission generic-policies {
+  goal "Exercise generic policy lowering"
+  touch src/**
+
+  must "Keep auth latency within the current budget."
+  must "Keep auth latency within the current budget."
+  must preserve "Public auth APIs"
+  must "Public auth APIs must be preserved."
+  must_not "Log refresh tokens."
+  should "Prefer narrow diffs."
+  may "Leave follow-up comments for operators."
+}
+`);
+
+    expect(contract.policies).toEqual([
+      {
+        id: "keep-auth-latency-within-the-current-budget",
+        level: "must",
+        appliesTo: [],
+        statement: "Keep auth latency within the current budget."
+      },
+      {
+        id: "keep-auth-latency-within-the-current-budget-2",
+        level: "must",
+        appliesTo: [],
+        statement: "Keep auth latency within the current budget."
+      },
+      {
+        id: "preserve-public-auth-apis-must-be-preserved",
+        level: "must",
+        appliesTo: [],
+        statement: "Public auth APIs must be preserved."
+      },
+      {
+        id: "public-auth-apis-must-be-preserved",
+        level: "must",
+        appliesTo: [],
+        statement: "Public auth APIs must be preserved."
+      },
+      {
+        id: "log-refresh-tokens",
+        level: "must_not",
+        appliesTo: [],
+        statement: "Log refresh tokens."
+      },
+      {
+        id: "prefer-narrow-diffs",
+        level: "should",
+        appliesTo: [],
+        statement: "Prefer narrow diffs."
+      },
+      {
+        id: "leave-follow-up-comments-for-operators",
+        level: "may",
+        appliesTo: [],
+        statement: "Leave follow-up comments for operators."
+      }
+    ]);
+  });
+
   it("reports missing required mission fields with friendly diagnostics", () => {
     expect(() => parsePactSource(`
 mission missing-goal {

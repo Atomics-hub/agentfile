@@ -293,25 +293,22 @@ function parseMissionLine(
     return;
   }
 
+  const genericPolicy = line.match(/^(must|must_not|should|may)\s+"([^"]+)"$/);
+  if (genericPolicy) {
+    const [, level, statement] = genericPolicy;
+    appendPolicy(state, level as Agentfile["policies"][number]["level"], statement);
+    return;
+  }
+
   const mustPreserve = line.match(/^must\s+preserve\s+"([^"]+)"$/);
   if (mustPreserve) {
-    state.policies.push({
-      id: slug(`preserve-${mustPreserve[1]}`),
-      level: "must",
-      appliesTo: [],
-      statement: `${mustPreserve[1]} must be preserved.`
-    });
+    appendPolicy(state, "must", `${mustPreserve[1]} must be preserved.`, "preserve");
     return;
   }
 
   const mustNotLeak = line.match(/^must_not\s+leak\s+"([^"]+)"$/);
   if (mustNotLeak) {
-    state.policies.push({
-      id: slug(`no-${mustNotLeak[1]}-leak`),
-      level: "must_not",
-      appliesTo: [],
-      statement: `${mustNotLeak[1]} must not be leaked.`
-    });
+    appendPolicy(state, "must_not", `${mustNotLeak[1]} must not be leaked.`, "no");
     return;
   }
 
@@ -573,6 +570,20 @@ function pushUnique(values: string[], value: string): void {
   }
 }
 
+function appendPolicy(
+  state: PactState,
+  level: Agentfile["policies"][number]["level"],
+  statement: string,
+  prefix?: string
+): void {
+  state.policies.push({
+    id: nextGeneratedId(state.policies, `${prefix ? `${prefix}-` : ""}${statement}`, "policy"),
+    level,
+    appliesTo: [],
+    statement
+  });
+}
+
 function slug(value: string): string {
   return value
     .toLowerCase()
@@ -583,6 +594,16 @@ function slug(value: string): string {
 function nextStepId(steps: Agentfile["workflow"]["steps"], description: string): string {
   const base = slug(description) || "step";
   const matching = steps.filter((step) => step.id === base || step.id.startsWith(`${base}-`)).length;
+  return matching === 0 ? base : `${base}-${matching + 1}`;
+}
+
+function nextGeneratedId(
+  values: Array<{ id: string }>,
+  seed: string,
+  fallback: string
+): string {
+  const base = slug(seed) || fallback;
+  const matching = values.filter((value) => value.id === base || value.id.startsWith(`${base}-`)).length;
   return matching === 0 ? base : `${base}-${matching + 1}`;
 }
 
