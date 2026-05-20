@@ -44,14 +44,17 @@ mission fix-login-refresh-race {
 }
 ```
 
-### `touch` And `never`
+### `read`, `write`, `touch`, And `never`
 
-Path authority.
+Filesystem authority.
 
 ```agent
-touch src/auth/**, tests/auth/**
+read src/auth/**, docs/**
+write src/auth/**, tests/auth/**
 never src/billing/**, infra/**
 ```
+
+`touch` remains shorthand for paths that should be both readable and writable. `write` implies read access in the lowered contract, so the IR stays executable for real code changes while the source stays explicit about writable surfaces.
 
 ### `can` And `cannot`
 

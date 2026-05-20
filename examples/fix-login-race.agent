@@ -2,7 +2,8 @@ mission fix-login-refresh-race {
   goal "Share one in-flight refresh across concurrent auth calls"
   background "Several API calls can receive 401 responses at the same time and trigger duplicate refresh requests"
 
-  touch src/auth/**, tests/auth/**
+  read src/auth/**, tests/auth/**
+  write src/auth/**, tests/auth/**
   never src/billing/**, infra/**
 
   can run "npm test -- auth"

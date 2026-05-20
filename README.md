@@ -10,7 +10,8 @@ The current YAML format is the strict contract IR. The next layer is a source la
 mission fix-login-refresh-race {
   goal "Share one in-flight refresh across concurrent auth calls"
 
-  touch src/auth/**, tests/auth/**
+  read src/auth/**, tests/auth/**
+  write src/auth/**, tests/auth/**
   never src/billing/**, infra/**
 
   can run "npm test -- auth"
@@ -47,6 +48,8 @@ mission fix-login-refresh-race {
 ```
 
 The source language can express grants, denials, approval gates, and both automated and manual proof requirements. For example: `can use network`, `can use network host "api.github.com"`, `cannot run "npm publish"`, `can read secret "OPENAI_API_KEY"`, `check "Review the release checklist"`, and `ask approval for release_publish`.
+
+Filesystem scope can now distinguish read-only and writable areas with `read ...` and `write ...`. `touch ...` remains available as shorthand for paths that should be both readable and writable, and `write` implies read access when lowered into the contract IR.
 
 It can also express direct invariant statements with `must "..."`, `must_not "..."`, `should "..."`, and `may "..."` in addition to the more opinionated sugar forms like `must preserve "..."` and `must_not leak "..."`.
 
@@ -121,7 +124,7 @@ Every AI coding tool wants instructions in a different place: `AGENTS.md`, `CLAU
 Agentfile turns scattered guidance into a durable contract:
 
 - Intent: the concrete goal and context.
-- Scope: the files and areas the agent may touch.
+- Scope: the files and areas the agent may read or write.
 - Permissions: shell, network, filesystem, secret, and approval policy.
 - Policies: rules that must survive the change.
 - Checks and workflow: commands, acceptance criteria, and review requirements.

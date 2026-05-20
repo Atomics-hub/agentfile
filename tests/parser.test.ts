@@ -389,6 +389,36 @@ mission release-prep {
     expect(contract.permissions.shell.deny).toEqual(["npm publish"]);
   });
 
+  it("supports separate read and write scope with write implying read", () => {
+    const contract = parsePactSource(`
+mission split-filesystem-scope {
+  goal "Exercise read and write lowering"
+  read docs/**, package.json
+  write src/**, tests/**
+  never dist/**
+}
+`);
+
+    expect(contract.scope.include).toEqual([
+      "docs/**",
+      "package.json",
+      "src/**",
+      "tests/**"
+    ]);
+    expect(contract.scope.exclude).toEqual(["dist/**"]);
+    expect(contract.permissions.filesystem.read).toEqual([
+      "docs/**",
+      "package.json",
+      "src/**",
+      "tests/**"
+    ]);
+    expect(contract.permissions.filesystem.write).toEqual([
+      "src/**",
+      "tests/**"
+    ]);
+    expect(contract.permissions.filesystem.deny).toEqual(["dist/**"]);
+  });
+
   it("supports required manual proof checks", () => {
     const contract = parsePactSource(`
 mission release-review {
@@ -551,7 +581,7 @@ mission missing-goal {
 mission missing-scope {
   goal "Exercise scope diagnostics"
 }
-`)).toThrow(/mission must declare at least one touch path/);
+`)).toThrow(/mission must declare at least one read, write, or touch path/);
   });
 
   it("rejects duplicate core mission declarations", () => {
@@ -714,7 +744,15 @@ mission contradictory-scope {
   touch src/**
   never src/**
 }
-`)).toThrow(/scope path cannot appear in both touch and never: src\/\*\*/);
+`)).toThrow(/scope path cannot appear in both read\/write\/touch and never: src\/\*\*/);
+
+    expect(() => parsePactSource(`
+mission contradictory-read-scope {
+  goal "Exercise split scope diagnostics"
+  read src/**
+  never src/**
+}
+`)).toThrow(/scope path cannot appear in both read\/write\/touch and never: src\/\*\*/);
 
     expect(() => parsePactSource(`
 mission duplicate-proof {

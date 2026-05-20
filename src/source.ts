@@ -87,7 +87,7 @@ export function parsePactSource(source: string, filePath?: string): Agentfile {
       background: state.background
     },
     scope: {
-      include: state.touch,
+      include: state.read,
       exclude: state.never
     },
     permissions: {
@@ -100,8 +100,8 @@ export function parsePactSource(source: string, filePath?: string): Agentfile {
         allow: state.networkAllow
       },
       filesystem: {
-        read: state.touch,
-        write: state.touch,
+        read: state.read,
+        write: state.write,
         deny: state.never
       },
       secrets: {
@@ -157,12 +157,22 @@ function parseMissionLine(
   }
 
   if (line.startsWith("touch ")) {
-    addScopePaths(state.touch, state.never, parseList(line.slice("touch ".length)), filePath, lineNo);
+    addTouchPaths(state, parseList(line.slice("touch ".length)), filePath, lineNo);
+    return;
+  }
+
+  if (line.startsWith("read ")) {
+    addScopedPaths(state.read, state.never, parseList(line.slice("read ".length)), filePath, lineNo);
+    return;
+  }
+
+  if (line.startsWith("write ")) {
+    addWritePaths(state, parseList(line.slice("write ".length)), filePath, lineNo);
     return;
   }
 
   if (line.startsWith("never ")) {
-    addScopePaths(state.never, state.touch, parseList(line.slice("never ".length)), filePath, lineNo);
+    addNeverPaths(state, parseList(line.slice("never ".length)), filePath, lineNo);
     return;
   }
 
@@ -439,7 +449,8 @@ function emptyState(): PactState {
     goal: "",
     missionStarted: false,
     missionClosed: false,
-    touch: [],
+    read: [],
+    write: [],
     never: [],
     shellAllow: [],
     shellDeny: [],
@@ -466,7 +477,8 @@ interface PactState {
   goalLine?: number;
   background?: string;
   backgroundLine?: number;
-  touch: string[];
+  read: string[];
+  write: string[];
   never: string[];
   shellAllow: string[];
   shellDeny: string[];
@@ -492,8 +504,8 @@ function validatePactState(state: PactState, filePath?: string): void {
     throw new AgentfileError("mission requires a goal declaration", filePath);
   }
 
-  if (state.touch.length === 0) {
-    throw new AgentfileError("mission must declare at least one touch path", filePath);
+  if (state.read.length === 0) {
+    throw new AgentfileError("mission must declare at least one read, write, or touch path", filePath);
   }
 }
 
@@ -516,18 +528,60 @@ function parseApprovalList(source: string, filePath: string | undefined, lineNo:
   return approvals;
 }
 
-function addScopePaths(
+function addScopedPaths(
   target: string[],
-  opposite: string[],
+  denied: string[],
   values: string[],
   filePath: string | undefined,
   lineNo: number
 ): void {
   for (const value of values) {
-    if (opposite.includes(value)) {
-      throw syntaxError(`scope path cannot appear in both touch and never: ${value}`, filePath, lineNo);
+    if (denied.includes(value)) {
+      throw syntaxError(
+        `scope path cannot appear in both read/write/touch and never: ${value}`,
+        filePath,
+        lineNo
+      );
     }
     pushUnique(target, value);
+  }
+}
+
+function addTouchPaths(
+  state: PactState,
+  values: string[],
+  filePath: string | undefined,
+  lineNo: number
+): void {
+  addScopedPaths(state.read, state.never, values, filePath, lineNo);
+  addScopedPaths(state.write, state.never, values, filePath, lineNo);
+}
+
+function addWritePaths(
+  state: PactState,
+  values: string[],
+  filePath: string | undefined,
+  lineNo: number
+): void {
+  addScopedPaths(state.read, state.never, values, filePath, lineNo);
+  addScopedPaths(state.write, state.never, values, filePath, lineNo);
+}
+
+function addNeverPaths(
+  state: PactState,
+  values: string[],
+  filePath: string | undefined,
+  lineNo: number
+): void {
+  for (const value of values) {
+    if (state.read.includes(value) || state.write.includes(value)) {
+      throw syntaxError(
+        `scope path cannot appear in both read/write/touch and never: ${value}`,
+        filePath,
+        lineNo
+      );
+    }
+    pushUnique(state.never, value);
   }
 }
 
