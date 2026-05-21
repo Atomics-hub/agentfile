@@ -1639,6 +1639,11 @@ workflow:
         message: "shell allowlist includes a publish command; prefer approval-gated release flows: npm publish"
       },
       {
+        code: "missing-shell-publish-approval-gate",
+        path: "permissions.approvals.requiredFor",
+        message: "publish command is allowed without release_publish approval gating: npm publish"
+      },
+      {
         code: "risky-shell-dependency-change-command",
         path: "permissions.shell.allow",
         message: "shell allowlist includes a dependency-changing command; prefer approval for dependency_change: pnpm add zod"
@@ -1649,9 +1654,89 @@ workflow:
         message: "shell allowlist includes a destructive command; prefer approval for destructive_write: rm -rf dist"
       },
       {
+        code: "missing-shell-destructive-approval-gate",
+        path: "permissions.approvals.requiredFor",
+        message: "destructive command is allowed without destructive_write approval gating: rm -rf dist"
+      },
+      {
         code: "risky-shell-destructive-command",
         path: "permissions.shell.allow",
         message: "shell allowlist includes a destructive command; prefer approval for destructive_write: git clean -fd"
+      },
+      {
+        code: "missing-shell-destructive-approval-gate",
+        path: "permissions.approvals.requiredFor",
+        message: "destructive command is allowed without destructive_write approval gating: git clean -fd"
+      }
+    ]);
+  });
+
+  it("reports missing approval gates for risky network and shell authority", () => {
+    const contract = parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: missing-approval-gates
+task:
+  id: missing-approval-gates
+  goal: Exercise approval-gate lint warnings.
+scope:
+  include:
+    - src/**
+permissions:
+  shell:
+    allow:
+      - npm publish
+      - pnpm add zod
+      - rm -rf dist
+  network:
+    default: deny
+    allow:
+      - api.github.com
+  approvals:
+    requiredFor:
+      - scope_expansion
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`);
+
+    expect(lintAgentfile(contract)).toEqual([
+      {
+        code: "risky-shell-publish-command",
+        path: "permissions.shell.allow",
+        message: "shell allowlist includes a publish command; prefer approval-gated release flows: npm publish"
+      },
+      {
+        code: "missing-shell-publish-approval-gate",
+        path: "permissions.approvals.requiredFor",
+        message: "publish command is allowed without release_publish approval gating: npm publish"
+      },
+      {
+        code: "risky-shell-dependency-change-command",
+        path: "permissions.shell.allow",
+        message: "shell allowlist includes a dependency-changing command; prefer approval for dependency_change: pnpm add zod"
+      },
+      {
+        code: "missing-shell-dependency-change-approval-gate",
+        path: "permissions.approvals.requiredFor",
+        message: "dependency-changing command is allowed without dependency_change approval gating: pnpm add zod"
+      },
+      {
+        code: "risky-shell-destructive-command",
+        path: "permissions.shell.allow",
+        message: "shell allowlist includes a destructive command; prefer approval for destructive_write: rm -rf dist"
+      },
+      {
+        code: "missing-shell-destructive-approval-gate",
+        path: "permissions.approvals.requiredFor",
+        message: "destructive command is allowed without destructive_write approval gating: rm -rf dist"
+      },
+      {
+        code: "missing-network-approval-gate",
+        path: "permissions.approvals.requiredFor",
+        message: "network access is allowed without network_access approval gating"
       }
     ]);
   });

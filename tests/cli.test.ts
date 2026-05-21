@@ -160,4 +160,47 @@ workflow:
     expect(stdout).toContain("permissions.filesystem.read: filesystem read scope is repository-wide");
     expect(stdout).toContain("permissions.filesystem.write: filesystem write scope is repository-wide");
   });
+
+  it("reports missing approval gates for risky authority", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-lint-approvals-"));
+    tempDirs.push(cwd);
+
+    const contractPath = join(cwd, "approval-gates.agentfile");
+    await writeFile(contractPath, `agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: approval-gates
+task:
+  id: approval-gates
+  goal: Exercise approval-gate lint output.
+scope:
+  include:
+    - src/**
+permissions:
+  shell:
+    allow:
+      - npm publish
+      - pnpm add zod
+      - rm -rf dist
+  network:
+    default: deny
+    allow:
+      - api.github.com
+  approvals:
+    requiredFor:
+      - scope_expansion
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`, "utf8");
+
+    const { stdout } = await execFileAsync("node", [tsxPath, cliPath, "lint", contractPath], { cwd });
+
+    expect(stdout).toContain(`WARN ${contractPath}`);
+    expect(stdout).toContain("permissions.approvals.requiredFor: publish command is allowed without release_publish approval gating: npm publish");
+    expect(stdout).toContain("permissions.approvals.requiredFor: dependency-changing command is allowed without dependency_change approval gating: pnpm add zod");
+    expect(stdout).toContain("permissions.approvals.requiredFor: destructive command is allowed without destructive_write approval gating: rm -rf dist");
+    expect(stdout).toContain("permissions.approvals.requiredFor: network access is allowed without network_access approval gating");
+  });
 });

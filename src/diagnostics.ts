@@ -25,6 +25,7 @@ export function formatZodError(error: ZodError): string {
 
 export function lintAgentfile(agentfile: Agentfile): LintDiagnostic[] {
   const diagnostics: LintDiagnostic[] = [];
+  const approvals = new Set(agentfile.permissions.approvals.requiredFor);
 
   for (const path of agentfile.scope.include) {
     if (isRepoWidePattern(path)) {
@@ -45,6 +46,14 @@ export function lintAgentfile(agentfile: Agentfile): LintDiagnostic[] {
         path: "permissions.shell.allow",
         message: `shell allowlist includes a publish command; prefer approval-gated release flows: ${command}`
       });
+
+      if (!approvals.has("release_publish")) {
+        diagnostics.push({
+          code: "missing-shell-publish-approval-gate",
+          path: "permissions.approvals.requiredFor",
+          message: `publish command is allowed without release_publish approval gating: ${command}`
+        });
+      }
     }
 
     if (looksLikeDependencyChangeCommand(normalized)) {
@@ -53,6 +62,14 @@ export function lintAgentfile(agentfile: Agentfile): LintDiagnostic[] {
         path: "permissions.shell.allow",
         message: `shell allowlist includes a dependency-changing command; prefer approval for dependency_change: ${command}`
       });
+
+      if (!approvals.has("dependency_change")) {
+        diagnostics.push({
+          code: "missing-shell-dependency-change-approval-gate",
+          path: "permissions.approvals.requiredFor",
+          message: `dependency-changing command is allowed without dependency_change approval gating: ${command}`
+        });
+      }
     }
 
     if (looksLikeDestructiveShellCommand(normalized)) {
@@ -61,6 +78,14 @@ export function lintAgentfile(agentfile: Agentfile): LintDiagnostic[] {
         path: "permissions.shell.allow",
         message: `shell allowlist includes a destructive command; prefer approval for destructive_write: ${command}`
       });
+
+      if (!approvals.has("destructive_write")) {
+        diagnostics.push({
+          code: "missing-shell-destructive-approval-gate",
+          path: "permissions.approvals.requiredFor",
+          message: `destructive command is allowed without destructive_write approval gating: ${command}`
+        });
+      }
     }
   }
 
@@ -69,6 +94,17 @@ export function lintAgentfile(agentfile: Agentfile): LintDiagnostic[] {
       code: "risky-network-default-allow",
       path: "permissions.network.default",
       message: "broad network access is enabled; prefer deny plus explicit host allowlist"
+    });
+  }
+
+  if (
+    (agentfile.permissions.network.default === "allow" || agentfile.permissions.network.allow.length > 0) &&
+    !approvals.has("network_access")
+  ) {
+    diagnostics.push({
+      code: "missing-network-approval-gate",
+      path: "permissions.approvals.requiredFor",
+      message: "network access is allowed without network_access approval gating"
     });
   }
 
