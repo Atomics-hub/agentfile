@@ -43,6 +43,7 @@ Targets:
 
 - `prompt`: plain-text prompt for a coding agent.
 - `json`: strict JSON contract IR for automation.
+- `yaml`: canonical YAML contract IR.
 - `agents-md`: generated `AGENTS.md` content.
 - `claude-md`: generated `CLAUDE.md` project memory.
 - `cursor-mdc`: generated Cursor project rule content for `.cursor/rules/agentfile.mdc`.

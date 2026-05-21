@@ -191,6 +191,12 @@ Compile to strict JSON contract IR for automation:
 agentfile compile examples/fix-login-race.agentfile --target json
 ```
 
+Compile to canonical YAML contract IR:
+
+```sh
+agentfile compile examples/fix-login-race.agent --target yaml
+```
+
 Generate an `AGENTS.md` instruction file:
 
 ```sh
@@ -218,7 +224,7 @@ Agentfile is early. The v0.1 goal is intentionally narrow:
 - A prototype `.agent` source language.
 - A stable YAML-based contract format.
 - A strict validator.
-- Prompt and JSON compilation targets.
+- Prompt, JSON, and YAML compilation targets.
 - Security-first defaults.
 - Initial risky-authority lint warnings for broad permissions.
 - `agentfile init` for fast adoption.

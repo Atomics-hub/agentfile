@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
+import { parseDocument } from "yaml";
 import {
   compileAgentfile,
   defaultOutputPathForTarget,
@@ -519,6 +520,18 @@ describe("Agentfile compiler", () => {
     expect(json.task.id).toBe("fix-login-refresh-race");
     expect(json.task.goal).toContain("concurrent auth refreshes");
     expect(json.permissions.network.default).toBe("deny");
+  });
+
+  it("compiles canonical YAML that round-trips through the parser", async () => {
+    const source = await readFile("examples/fix-login-race.agent", "utf8");
+    const contract = parsePactSource(source);
+    const yaml = compileAgentfile(contract, "yaml");
+    const parsedYaml = parseDocument(yaml).toJSON();
+    const reparsedContract = parseAgentfile(yaml);
+
+    expect(yaml).toContain("agentfile: 0.1.0");
+    expect(parsedYaml).toEqual(toJsonContract(contract));
+    expect(reparsedContract).toEqual(contract);
   });
 
   it("exports full JSON contracts through the compiler API", async () => {

@@ -1,14 +1,16 @@
+import { stringify } from "yaml";
 import type { Agentfile } from "./schema.js";
 
 export type CompileTarget =
   | "prompt"
   | "json"
+  | "yaml"
   | "agents-md"
   | "claude-md"
   | "cursor-mdc"
   | "copilot-md";
 
-export type SyncTarget = Exclude<CompileTarget, "prompt" | "json">;
+export type SyncTarget = Exclude<CompileTarget, "prompt" | "json" | "yaml">;
 export type JsonContract = Agentfile;
 
 export interface NormalizedPolicy {
@@ -110,6 +112,10 @@ export function compileAgentPrompt(agentfile: Agentfile): string {
 export function compileAgentfile(agentfile: Agentfile, target: CompileTarget): string {
   if (target === "json") {
     return `${JSON.stringify(toJsonContract(agentfile), null, 2)}\n`;
+  }
+
+  if (target === "yaml") {
+    return `${stringify(toJsonContract(agentfile))}`;
   }
 
   if (target === "agents-md") {
