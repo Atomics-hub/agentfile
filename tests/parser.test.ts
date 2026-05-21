@@ -1008,6 +1008,43 @@ mission duplicate-background {
 `)).toThrow(/duplicate background declaration/);
   });
 
+  it("rejects malformed quoted literals with direct diagnostics", () => {
+    expect(() => parsePactSource(`
+mission malformed-goal {
+  goal "Unclosed summary
+  touch src/**
+}
+`)).toThrow(/malformed quoted string for goal/);
+
+    expect(() => parsePactSource(`
+mission malformed-owner {
+  goal "Exercise owner diagnostics"
+  owner "auth-team" extra
+  touch src/**
+}
+`)).toThrow(/malformed quoted string for owner/);
+  });
+
+  it("rejects empty quoted values with direct diagnostics", () => {
+    expect(() => parsePactSource(`
+mission empty-goal {
+  goal ""
+  touch src/**
+}
+`)).toThrow(/goal requires a non-empty value/);
+
+    expect(() => parsePactSource(`
+mission empty-proof {
+  goal "Exercise empty proof diagnostics"
+  touch src/**
+
+  prove {
+    check ""
+  }
+}
+`)).toThrow(/check requires a non-empty value/);
+  });
+
   it("rejects multiple mission blocks and duplicate workflow sections", () => {
     expect(() => parsePactSource(`
 mission first {

@@ -138,45 +138,45 @@ function parseMissionLine(
   filePath: string | undefined,
   lineNo: number
 ): void {
-  const goal = quotedArg(line, "goal");
-  if (goal) {
+  const goal = quotedArg(line, "goal", filePath, lineNo);
+  if (goal !== undefined) {
     if (state.goalLine) {
       throw syntaxError("duplicate goal declaration", filePath, lineNo);
     }
-    state.goal = goal;
+    state.goal = requireNonEmptyText(goal, "goal", filePath, lineNo);
     state.goalLine = lineNo;
     return;
   }
 
-  const summary = quotedArg(line, "summary");
-  if (summary) {
+  const summary = quotedArg(line, "summary", filePath, lineNo);
+  if (summary !== undefined) {
     if (state.summaryLine) {
       throw syntaxError("duplicate summary declaration", filePath, lineNo);
     }
-    state.summary = summary;
+    state.summary = requireNonEmptyText(summary, "summary", filePath, lineNo);
     state.summaryLine = lineNo;
     return;
   }
 
-  const background = quotedArg(line, "background");
-  if (background) {
+  const background = quotedArg(line, "background", filePath, lineNo);
+  if (background !== undefined) {
     if (state.backgroundLine) {
       throw syntaxError("duplicate background declaration", filePath, lineNo);
     }
-    state.background = background;
+    state.background = requireNonEmptyText(background, "background", filePath, lineNo);
     state.backgroundLine = lineNo;
     return;
   }
 
-  const owner = trailingArg(line, "owner");
-  if (owner) {
-    pushUnique(state.owners, owner);
+  const owner = trailingArg(line, "owner", filePath, lineNo);
+  if (owner !== undefined) {
+    pushUnique(state.owners, requireNonEmptyText(owner, "owner", filePath, lineNo));
     return;
   }
 
-  const label = trailingArg(line, "label");
-  if (label) {
-    pushUnique(state.labels, label);
+  const label = trailingArg(line, "label", filePath, lineNo);
+  if (label !== undefined) {
+    pushUnique(state.labels, requireNonEmptyText(label, "label", filePath, lineNo));
     return;
   }
 
@@ -200,9 +200,9 @@ function parseMissionLine(
     return;
   }
 
-  const canRun = quotedArg(line, "can run");
-  if (canRun) {
-    const command = canRun;
+  const canRun = quotedArg(line, "can run", filePath, lineNo);
+  if (canRun !== undefined) {
+    const command = requireNonEmptyText(canRun, "can run", filePath, lineNo);
     if (state.shellDeny.includes(command)) {
       throw syntaxError(`conflicting shell policy for command: ${command}`, filePath, lineNo);
     }
@@ -210,9 +210,9 @@ function parseMissionLine(
     return;
   }
 
-  const cannotRun = quotedArg(line, "cannot run");
-  if (cannotRun) {
-    const command = cannotRun;
+  const cannotRun = quotedArg(line, "cannot run", filePath, lineNo);
+  if (cannotRun !== undefined) {
+    const command = requireNonEmptyText(cannotRun, "cannot run", filePath, lineNo);
     if (state.shellAllow.includes(command)) {
       throw syntaxError(`conflicting shell policy for command: ${command}`, filePath, lineNo);
     }
@@ -255,12 +255,15 @@ function parseMissionLine(
     return;
   }
 
-  const canUseNetworkHost = quotedArg(line, "can use network host");
-  if (canUseNetworkHost) {
+  const canUseNetworkHost = quotedArg(line, "can use network host", filePath, lineNo);
+  if (canUseNetworkHost !== undefined) {
     if (state.networkSpecified) {
       throw syntaxError(`conflicting network policy: already ${state.network}`, filePath, lineNo);
     }
-    pushUnique(state.networkAllow, canUseNetworkHost);
+    pushUnique(
+      state.networkAllow,
+      requireNonEmptyText(canUseNetworkHost, "can use network host", filePath, lineNo)
+    );
     return;
   }
 
@@ -278,8 +281,8 @@ function parseMissionLine(
     return;
   }
 
-  const canReadSecret = quotedArg(line, "can read secret");
-  if (canReadSecret) {
+  const canReadSecret = quotedArg(line, "can read secret", filePath, lineNo);
+  if (canReadSecret !== undefined) {
     ensureCapabilityConsistency(
       state.secretsSpecified,
       state.secrets,
@@ -290,7 +293,7 @@ function parseMissionLine(
     );
     state.secrets = "allow";
     state.secretsSpecified = true;
-    pushUnique(state.secretAllow, canReadSecret);
+    pushUnique(state.secretAllow, requireNonEmptyText(canReadSecret, "can read secret", filePath, lineNo));
     return;
   }
 
@@ -327,22 +330,30 @@ function parseMissionLine(
     return;
   }
 
-  const genericPolicy = quotedKeywordArg(line, ["must", "must_not", "should", "may"]);
+  const genericPolicy = quotedKeywordArg(
+    line,
+    ["must", "must_not", "should", "may"],
+    filePath,
+    lineNo
+  );
   if (genericPolicy) {
-    const { keyword: level, value: statement } = genericPolicy;
+    const { keyword: level, value } = genericPolicy;
+    const statement = requireNonEmptyText(value, level, filePath, lineNo);
     appendPolicy(state, level as Agentfile["policies"][number]["level"], statement);
     return;
   }
 
-  const mustPreserve = quotedArg(line, "must preserve");
-  if (mustPreserve) {
-    appendPolicy(state, "must", `${mustPreserve} must be preserved.`, "preserve");
+  const mustPreserve = quotedArg(line, "must preserve", filePath, lineNo);
+  if (mustPreserve !== undefined) {
+    const statement = requireNonEmptyText(mustPreserve, "must preserve", filePath, lineNo);
+    appendPolicy(state, "must", `${statement} must be preserved.`, "preserve");
     return;
   }
 
-  const mustNotLeak = quotedArg(line, "must_not leak");
-  if (mustNotLeak) {
-    appendPolicy(state, "must_not", `${mustNotLeak} must not be leaked.`, "no");
+  const mustNotLeak = quotedArg(line, "must_not leak", filePath, lineNo);
+  if (mustNotLeak !== undefined) {
+    const statement = requireNonEmptyText(mustNotLeak, "must_not leak", filePath, lineNo);
+    appendPolicy(state, "must_not", `${statement} must not be leaked.`, "no");
     return;
   }
 
@@ -376,11 +387,12 @@ function parsePlanLine(
   filePath: string | undefined,
   lineNo: number
 ): void {
-  const step = quotedArg(line, "step");
-  if (step) {
+  const step = quotedArg(line, "step", filePath, lineNo);
+  if (step !== undefined) {
+    const description = requireNonEmptyText(step, "step", filePath, lineNo);
     state.steps.push({
-      id: nextStepId(state.steps, step),
-      do: step
+      id: nextStepId(state.steps, description),
+      do: description
     });
     return;
   }
@@ -394,9 +406,9 @@ function parseProveLine(
   filePath: string | undefined,
   lineNo: number
 ): void {
-  const runOptional = quotedArg(line, "run optional");
-  if (runOptional) {
-    const command = runOptional;
+  const runOptional = quotedArg(line, "run optional", filePath, lineNo);
+  if (runOptional !== undefined) {
+    const command = requireNonEmptyText(runOptional, "run optional", filePath, lineNo);
     if (state.shellDeny.includes(command)) {
       throw syntaxError(`proof command is denied by shell policy: ${command}`, filePath, lineNo);
     }
@@ -414,9 +426,9 @@ function parseProveLine(
     return;
   }
 
-  const runRequired = quotedArg(line, "run");
-  if (runRequired) {
-    const command = runRequired;
+  const runRequired = quotedArg(line, "run", filePath, lineNo);
+  if (runRequired !== undefined) {
+    const command = requireNonEmptyText(runRequired, "run", filePath, lineNo);
     if (state.shellDeny.includes(command)) {
       throw syntaxError(`proof command is denied by shell policy: ${command}`, filePath, lineNo);
     }
@@ -434,9 +446,9 @@ function parseProveLine(
     return;
   }
 
-  const checkOptional = quotedArg(line, "check optional");
-  if (checkOptional) {
-    const description = checkOptional;
+  const checkOptional = quotedArg(line, "check optional", filePath, lineNo);
+  if (checkOptional !== undefined) {
+    const description = requireNonEmptyText(checkOptional, "check optional", filePath, lineNo);
     if (state.checks.some((proofCheck) => proofCheck.description === description)) {
       throw syntaxError(`duplicate proof check: ${description}`, filePath, lineNo);
     }
@@ -448,9 +460,9 @@ function parseProveLine(
     return;
   }
 
-  const checkRequired = quotedArg(line, "check");
-  if (checkRequired) {
-    const description = checkRequired;
+  const checkRequired = quotedArg(line, "check", filePath, lineNo);
+  if (checkRequired !== undefined) {
+    const description = requireNonEmptyText(checkRequired, "check", filePath, lineNo);
     if (state.checks.some((proofCheck) => proofCheck.description === description)) {
       throw syntaxError(`duplicate proof check: ${description}`, filePath, lineNo);
     }
@@ -462,9 +474,9 @@ function parseProveLine(
     return;
   }
 
-  const expect = quotedArg(line, "expect");
-  if (expect) {
-    state.acceptance.push(expect);
+  const expect = quotedArg(line, "expect", filePath, lineNo);
+  if (expect !== undefined) {
+    state.acceptance.push(requireNonEmptyText(expect, "expect", filePath, lineNo));
     return;
   }
 
@@ -477,9 +489,9 @@ function parseHandoffLine(
   filePath: string | undefined,
   lineNo: number
 ): void {
-  const explain = quotedArg(line, "explain");
-  if (explain) {
-    state.review.push(reviewSentence("Explain", explain));
+  const explain = quotedArg(line, "explain", filePath, lineNo);
+  if (explain !== undefined) {
+    state.review.push(reviewSentence("Explain", requireNonEmptyText(explain, "explain", filePath, lineNo)));
     return;
   }
 
@@ -493,9 +505,9 @@ function parseHandoffLine(
     throw syntaxError(`unsupported handoff list target: ${list[1]}`, filePath, lineNo);
   }
 
-  const note = trailingArg(line, "note");
-  if (note) {
-    state.review.push(reviewSentence("Note", note));
+  const note = trailingArg(line, "note", filePath, lineNo);
+  if (note !== undefined) {
+    state.review.push(reviewSentence("Note", requireNonEmptyText(note, "note", filePath, lineNo)));
     return;
   }
 
@@ -650,21 +662,28 @@ function addNeverPaths(
   }
 }
 
-function quotedArg(line: string, keyword: string): string | undefined {
+function quotedArg(
+  line: string,
+  keyword: string,
+  filePath: string | undefined,
+  lineNo: number
+): string | undefined {
   const prefix = `${keyword} `;
   if (!line.startsWith(prefix)) {
     return undefined;
   }
 
-  return parseQuotedLiteral(line.slice(prefix.length));
+  return parseLiteralArg(line.slice(prefix.length), keyword, filePath, lineNo, true);
 }
 
 function quotedKeywordArg<T extends string>(
   line: string,
-  keywords: readonly T[]
+  keywords: readonly T[],
+  filePath: string | undefined,
+  lineNo: number
 ): { keyword: T; value: string } | undefined {
   for (const keyword of keywords) {
-    const value = quotedArg(line, keyword);
+    const value = quotedArg(line, keyword, filePath, lineNo);
     if (value !== undefined) {
       return { keyword, value };
     }
@@ -673,13 +692,18 @@ function quotedKeywordArg<T extends string>(
   return undefined;
 }
 
-function trailingArg(line: string, keyword: string): string | undefined {
+function trailingArg(
+  line: string,
+  keyword: string,
+  filePath: string | undefined,
+  lineNo: number
+): string | undefined {
   const match = line.match(new RegExp(`^${keyword}\\s+(.+)$`));
   if (!match) {
     return undefined;
   }
 
-  return parseQuotedLiteral(match[1]) ?? match[1].trim();
+  return parseLiteralArg(match[1], keyword, filePath, lineNo, false);
 }
 
 function ensureApproval(state: PactState, approval: string): void {
@@ -716,6 +740,44 @@ function pushUnique(values: string[], value: string): void {
   if (!values.includes(value)) {
     values.push(value);
   }
+}
+
+function parseLiteralArg(
+  source: string,
+  keyword: string,
+  filePath: string | undefined,
+  lineNo: number,
+  quotedOnly: boolean
+): string {
+  const value = source.trim();
+  const parsedQuoted = parseQuotedLiteral(value);
+
+  if (parsedQuoted !== undefined) {
+    return parsedQuoted;
+  }
+
+  if (value.startsWith("\"")) {
+    throw syntaxError(`malformed quoted string for ${keyword}`, filePath, lineNo);
+  }
+
+  if (quotedOnly) {
+    throw syntaxError(`${keyword} requires a quoted string`, filePath, lineNo);
+  }
+
+  return value;
+}
+
+function requireNonEmptyText(
+  value: string,
+  keyword: string,
+  filePath: string | undefined,
+  lineNo: number
+): string {
+  if (value.trim().length === 0) {
+    throw syntaxError(`${keyword} requires a non-empty value`, filePath, lineNo);
+  }
+
+  return value;
 }
 
 function appendPolicy(
