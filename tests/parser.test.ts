@@ -758,6 +758,29 @@ mission release-prep {
     expect(contract.permissions.shell.deny).toEqual(["npm publish"]);
   });
 
+  it("lowers cannot add dependency into a policy guard", () => {
+    const contract = parsePactSource(`
+mission guarded-dependencies {
+  goal "Protect the dependency surface"
+  touch package.json, src/**
+
+  cannot add dependency
+}
+`);
+
+    expect(contract.policies).toContainEqual({
+      id: "no-dependency-change",
+      level: "must_not",
+      appliesTo: [],
+      statement: "New runtime dependencies may not be added."
+    });
+    expect(contract.permissions.approvals.requiredFor).toEqual([
+      "dependency_change",
+      "network_access",
+      "scope_expansion"
+    ]);
+  });
+
   it("rejects mixed broad and named secret grants", () => {
     expect(() => parsePactSource(`
 mission mixed-secret-grants {
@@ -1580,6 +1603,55 @@ workflow:
         code: "risky-secret-allow-pattern",
         path: "permissions.secrets.allow",
         message: "secret allowlist entry should name a concrete secret instead of a wildcard: *"
+      }
+    ]);
+  });
+
+  it("reports risky shell commands that publish, mutate dependencies, or destroy local state", () => {
+    const contract = parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: risky-shell-authority
+task:
+  id: risky-shell-authority
+  goal: Exercise shell lint warnings.
+scope:
+  include:
+    - src/**
+permissions:
+  shell:
+    allow:
+      - npm publish
+      - pnpm add zod
+      - rm -rf dist
+      - git clean -fd
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`);
+
+    expect(lintAgentfile(contract)).toEqual([
+      {
+        code: "risky-shell-publish-command",
+        path: "permissions.shell.allow",
+        message: "shell allowlist includes a publish command; prefer approval-gated release flows: npm publish"
+      },
+      {
+        code: "risky-shell-dependency-change-command",
+        path: "permissions.shell.allow",
+        message: "shell allowlist includes a dependency-changing command; prefer approval for dependency_change: pnpm add zod"
+      },
+      {
+        code: "risky-shell-destructive-command",
+        path: "permissions.shell.allow",
+        message: "shell allowlist includes a destructive command; prefer approval for destructive_write: rm -rf dist"
+      },
+      {
+        code: "risky-shell-destructive-command",
+        path: "permissions.shell.allow",
+        message: "shell allowlist includes a destructive command; prefer approval for destructive_write: git clean -fd"
       }
     ]);
   });

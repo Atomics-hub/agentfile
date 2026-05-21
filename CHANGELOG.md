@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Lint warnings now flag risky allowed shell commands that publish artifacts, mutate dependencies, or destroy local state.
 - `agentfile init` can now scaffold Pact `.agent` source directly via `--format agent` or a `.agent` output path, making the source language easier to adopt without hand-writing the first mission.
 - `parseSource` now only auto-detects Pact when the first non-comment line is a `mission` declaration, avoiding false positives when YAML contracts embed Pact examples in string content.
 - `compile --target policy-json` now exports the normalized policy projection already used internally, so automation can consume a smaller policy-oriented JSON surface.

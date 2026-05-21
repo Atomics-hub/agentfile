@@ -36,6 +36,34 @@ export function lintAgentfile(agentfile: Agentfile): LintDiagnostic[] {
     }
   }
 
+  for (const command of agentfile.permissions.shell.allow) {
+    const normalized = normalizeShellCommand(command);
+
+    if (looksLikePublishCommand(normalized)) {
+      diagnostics.push({
+        code: "risky-shell-publish-command",
+        path: "permissions.shell.allow",
+        message: `shell allowlist includes a publish command; prefer approval-gated release flows: ${command}`
+      });
+    }
+
+    if (looksLikeDependencyChangeCommand(normalized)) {
+      diagnostics.push({
+        code: "risky-shell-dependency-change-command",
+        path: "permissions.shell.allow",
+        message: `shell allowlist includes a dependency-changing command; prefer approval for dependency_change: ${command}`
+      });
+    }
+
+    if (looksLikeDestructiveShellCommand(normalized)) {
+      diagnostics.push({
+        code: "risky-shell-destructive-command",
+        path: "permissions.shell.allow",
+        message: `shell allowlist includes a destructive command; prefer approval for destructive_write: ${command}`
+      });
+    }
+  }
+
   if (agentfile.permissions.network.default === "allow") {
     diagnostics.push({
       code: "risky-network-default-allow",
@@ -104,4 +132,24 @@ function looksLikeBroadNetworkHost(host: string): boolean {
 
 function isRepoWidePattern(path: string): boolean {
   return path === "*" || path === "**" || path === "./**" || path === "/**";
+}
+
+function normalizeShellCommand(command: string): string {
+  return command.trim().replace(/\s+/g, " ");
+}
+
+function looksLikePublishCommand(command: string): boolean {
+  return /^(?:npm|pnpm|yarn|bun)\s+publish(?:\s|$)/.test(command);
+}
+
+function looksLikeDependencyChangeCommand(command: string): boolean {
+  return /^(?:(?:npm|pnpm)\s+(?:install|i|add)|yarn\s+add|bun\s+add|pip3?\s+install|uv\s+add|poetry\s+add|cargo\s+add|go\s+get)(?:\s|$)/.test(command);
+}
+
+function looksLikeDestructiveShellCommand(command: string): boolean {
+  return (
+    /^rm\s+-rf(?:\s|$)/.test(command) ||
+    /^git\s+reset\s+--hard(?:\s|$)/.test(command) ||
+    /^git\s+clean(?:\s|$)/.test(command) && /(?:^|\s)-f/.test(command)
+  );
 }
