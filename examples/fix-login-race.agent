@@ -1,6 +1,10 @@
 mission fix-login-refresh-race {
   goal "Share one in-flight refresh across concurrent auth calls"
+  summary "Prevent duplicate token refresh requests during concurrent auth calls"
   background "Several API calls can receive 401 responses at the same time and trigger duplicate refresh requests"
+  owner "auth-team"
+  label auth
+  label concurrency
 
   read src/auth/**, tests/auth/**
   write src/auth/**, tests/auth/**

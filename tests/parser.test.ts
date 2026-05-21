@@ -315,6 +315,9 @@ describe("Pact source parser", () => {
     const contract = parsePactSource(source, "examples/fix-login-race.agent");
 
     expect(contract.task.id).toBe("fix-login-refresh-race");
+    expect(contract.info.summary).toBe("Prevent duplicate token refresh requests during concurrent auth calls");
+    expect(contract.info.owners).toEqual(["auth-team"]);
+    expect(contract.info.labels).toEqual(["auth", "concurrency"]);
     expect(contract.scope.include).toEqual(["src/auth/**", "tests/auth/**"]);
     expect(contract.permissions.network.default).toBe("deny");
     expect(contract.permissions.filesystem.write).toEqual(["src/auth/**", "tests/auth/**"]);
@@ -387,6 +390,26 @@ mission release-prep {
     expect(contract.permissions.secrets.allow).toEqual(["NPM_TOKEN"]);
     expect(contract.permissions.shell.allow).toContain("npm test");
     expect(contract.permissions.shell.deny).toEqual(["npm publish"]);
+  });
+
+  it("supports explicit source metadata with deduplicated owners and labels", () => {
+    const contract = parsePactSource(`
+mission metadata {
+  goal "Exercise source metadata lowering"
+  summary "Short source-level summary"
+  owner "auth-team"
+  owner auth-team
+  owner "security-review"
+  label auth
+  label auth
+  label "release-prep"
+  touch src/**
+}
+`);
+
+    expect(contract.info.summary).toBe("Short source-level summary");
+    expect(contract.info.owners).toEqual(["auth-team", "security-review"]);
+    expect(contract.info.labels).toEqual(["auth", "release-prep"]);
   });
 
   it("supports separate read and write scope with write implying read", () => {
@@ -624,6 +647,15 @@ mission duplicate-goal {
   touch src/**
 }
 `)).toThrow(/duplicate goal declaration/);
+
+    expect(() => parsePactSource(`
+mission duplicate-summary {
+  goal "Exercise summary diagnostics"
+  summary "First"
+  summary "Second"
+  touch src/**
+}
+`)).toThrow(/duplicate summary declaration/);
 
     expect(() => parsePactSource(`
 mission duplicate-background {

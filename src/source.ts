@@ -79,7 +79,9 @@ export function parsePactSource(source: string, filePath?: string): Agentfile {
     info: {
       title: state.id,
       version: "0.1.0",
-      summary: state.goal
+      summary: state.summary ?? state.goal,
+      owners: state.owners,
+      labels: state.labels
     },
     task: {
       id: state.id,
@@ -146,6 +148,16 @@ function parseMissionLine(
     return;
   }
 
+  const summary = quotedArg(line, "summary");
+  if (summary) {
+    if (state.summaryLine) {
+      throw syntaxError("duplicate summary declaration", filePath, lineNo);
+    }
+    state.summary = summary;
+    state.summaryLine = lineNo;
+    return;
+  }
+
   const background = quotedArg(line, "background");
   if (background) {
     if (state.backgroundLine) {
@@ -153,6 +165,18 @@ function parseMissionLine(
     }
     state.background = background;
     state.backgroundLine = lineNo;
+    return;
+  }
+
+  const owner = trailingArg(line, "owner");
+  if (owner) {
+    pushUnique(state.owners, owner);
+    return;
+  }
+
+  const label = trailingArg(line, "label");
+  if (label) {
+    pushUnique(state.labels, label);
     return;
   }
 
@@ -452,6 +476,8 @@ function emptyState(): PactState {
     goal: "",
     missionStarted: false,
     missionClosed: false,
+    owners: [],
+    labels: [],
     read: [],
     write: [],
     never: [],
@@ -478,8 +504,12 @@ interface PactState {
   missionStarted: boolean;
   missionClosed: boolean;
   goalLine?: number;
+  summary?: string;
+  summaryLine?: number;
   background?: string;
   backgroundLine?: number;
+  owners: string[];
+  labels: string[];
   read: string[];
   write: string[];
   never: string[];

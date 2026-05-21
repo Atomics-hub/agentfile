@@ -44,6 +44,17 @@ mission fix-login-refresh-race {
 }
 ```
 
+Mission metadata can stay close to the task body:
+
+```agent
+summary "Prevent duplicate token refresh requests during concurrent auth calls"
+owner "auth-team"
+label auth
+label concurrency
+```
+
+These lines lower into `info.summary`, `info.owners`, and `info.labels` in the contract IR.
+
 ### `read`, `write`, `touch`, And `never`
 
 Filesystem authority.

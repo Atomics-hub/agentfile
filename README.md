@@ -9,6 +9,10 @@ The current YAML format is the strict contract IR. The next layer is a source la
 ```agent
 mission fix-login-refresh-race {
   goal "Share one in-flight refresh across concurrent auth calls"
+  summary "Prevent duplicate token refresh requests during concurrent auth calls"
+  owner "auth-team"
+  label auth
+  label concurrency
 
   read src/auth/**, tests/auth/**
   write src/auth/**, tests/auth/**
@@ -49,7 +53,7 @@ mission fix-login-refresh-race {
 }
 ```
 
-The source language can express grants, denials, approval gates, and both automated and manual proof requirements. For example: `can use network`, `can use network host "api.github.com"`, `cannot run "npm publish"`, `can read secret "OPENAI_API_KEY"`, `check "Review the release checklist"`, `run optional "npm run perf"`, `check optional "Review benchmark drift"`, and `ask approval for release_publish`.
+The source language can express grants, denials, approval gates, metadata, and both automated and manual proof requirements. For example: `summary "..."`, `owner "auth-team"`, `label auth`, `can use network`, `can use network host "api.github.com"`, `cannot run "npm publish"`, `can read secret "OPENAI_API_KEY"`, `check "Review the release checklist"`, `run optional "npm run perf"`, `check optional "Review benchmark drift"`, and `ask approval for release_publish`.
 
 Filesystem scope can now distinguish read-only and writable areas with `read ...` and `write ...`. `touch ...` remains available as shorthand for paths that should be both readable and writable, and `write` implies read access when lowered into the contract IR.
 
