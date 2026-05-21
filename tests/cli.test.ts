@@ -94,6 +94,7 @@ task:
 scope:
   include:
     - src/**
+    - "**"
 permissions:
   network:
     default: allow
@@ -114,8 +115,10 @@ workflow:
     const { stdout } = await execFileAsync("node", [tsxPath, cliPath, "lint", contractPath], { cwd });
 
     expect(stdout).toContain(`WARN ${contractPath}`);
+    expect(stdout).toContain("scope.include: mission scope includes the entire repository");
     expect(stdout).toContain("permissions.network.default: broad network access is enabled");
     expect(stdout).toContain("permissions.secrets.access: secret access allows every secret");
+    expect(stdout).toContain("permissions.filesystem.read: filesystem read scope is repository-wide");
     expect(stdout).toContain("permissions.filesystem.write: filesystem write scope is repository-wide");
   });
 });

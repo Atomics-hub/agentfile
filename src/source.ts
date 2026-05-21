@@ -285,9 +285,17 @@ function parseMissionLine(
     if (state.networkSpecified) {
       throw syntaxError(`conflicting network policy: already ${state.network}`, filePath, lineNo);
     }
+    const host = requireNonEmptyText(canUseNetworkHost, "can use network host", filePath, lineNo);
+    if (looksLikeBroadNetworkHost(host)) {
+      throw syntaxError(
+        `network host must be a bare host without wildcard, scheme, or path: ${host}`,
+        filePath,
+        lineNo
+      );
+    }
     pushUnique(
       state.networkAllow,
-      requireNonEmptyText(canUseNetworkHost, "can use network host", filePath, lineNo)
+      host
     );
     return;
   }
@@ -333,7 +341,15 @@ function parseMissionLine(
     );
     state.secrets = "allow";
     state.secretsSpecified = true;
-    pushUnique(state.secretAllow, requireNonEmptyText(canReadSecret, "can read secret", filePath, lineNo));
+    const secret = requireNonEmptyText(canReadSecret, "can read secret", filePath, lineNo);
+    if (isWildcardSecret(secret)) {
+      throw syntaxError(
+        `secret name must be concrete and may not include wildcard: ${secret}`,
+        filePath,
+        lineNo
+      );
+    }
+    pushUnique(state.secretAllow, secret);
     return;
   }
 
@@ -1129,6 +1145,14 @@ function uniqueValues(values: string[]): string[] {
   }
 
   return unique;
+}
+
+function looksLikeBroadNetworkHost(host: string): boolean {
+  return host.includes("*") || host.includes("://") || host.includes("/");
+}
+
+function isWildcardSecret(secret: string): boolean {
+  return secret.includes("*");
 }
 
 function looksLikePact(source: string): boolean {

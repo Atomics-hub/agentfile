@@ -179,6 +179,8 @@ Lint a contract for risky broad authority:
 agentfile lint examples/fix-login-race.agentfile
 ```
 
+The linter warns on repo-wide mission scope, overly broad filesystem access, and risky network or secret authority without rejecting the contract.
+
 Compile to a prompt for a coding agent:
 
 ```sh

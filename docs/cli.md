@@ -29,9 +29,11 @@ Report non-blocking warnings for risky authority and broad permissions.
 
 The initial lint pass flags:
 
+- Repository-wide mission scope include patterns such as `**`.
 - Broad network access with `permissions.network.default: allow`.
 - Network allowlist entries that include wildcards, schemes, or paths instead of bare hosts.
 - Broad secret access with `permissions.secrets.access: allow` and no explicit allowlist.
+- Repository-wide filesystem read patterns such as `**`.
 - Secret allowlist wildcards instead of concrete secret names.
 - Repository-wide filesystem write patterns such as `**`.
 

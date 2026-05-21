@@ -85,6 +85,8 @@ cannot add dependency
 ask approval for release_publish
 ```
 
+Allowlisted network grants should use bare hosts only, and named secret grants should use concrete secret identifiers rather than wildcards.
+
 ### `must` And `must_not`
 
 Invariants and safety rules.

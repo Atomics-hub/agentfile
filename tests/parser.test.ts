@@ -75,6 +75,7 @@ task:
 scope:
   include:
     - src/**
+    - "**"
 permissions:
   network:
     default: allow
@@ -881,6 +882,35 @@ mission targeted-network {
     ]);
   });
 
+  it("rejects malformed Pact allowlist grants early", () => {
+    expect(() => parsePactSource(`
+mission malformed-network-host {
+  goal "Reject broad network host syntax"
+  touch src/**
+
+  can use network host "https://api.github.com/repos"
+}
+`)).toThrow(/network host must be a bare host without wildcard, scheme, or path/);
+
+    expect(() => parsePactSource(`
+mission wildcard-network-host {
+  goal "Reject wildcard network host syntax"
+  touch src/**
+
+  can use network host "*.githubusercontent.com"
+}
+`)).toThrow(/network host must be a bare host without wildcard, scheme, or path/);
+
+    expect(() => parsePactSource(`
+mission wildcard-secret {
+  goal "Reject wildcard secret grants"
+  touch src/**
+
+  can read secret "*"
+}
+`)).toThrow(/secret name must be concrete and may not include wildcard/);
+  });
+
   it("supports explicit approval gates", () => {
     const contract = parsePactSource(`
 mission guarded-release {
@@ -1416,6 +1446,7 @@ task:
 scope:
   include:
     - src/**
+    - "**"
 permissions:
   network:
     default: allow
@@ -1435,6 +1466,11 @@ workflow:
 
     expect(lintAgentfile(contract)).toEqual([
       {
+        code: "risky-scope-include-broad",
+        path: "scope.include",
+        message: "mission scope includes the entire repository; prefer narrower include paths: **"
+      },
+      {
         code: "risky-network-default-allow",
         path: "permissions.network.default",
         message: "broad network access is enabled; prefer deny plus explicit host allowlist"
@@ -1443,6 +1479,11 @@ workflow:
         code: "risky-secret-access-broad",
         path: "permissions.secrets.access",
         message: "secret access allows every secret; prefer a named secret allowlist"
+      },
+      {
+        code: "risky-filesystem-read-broad",
+        path: "permissions.filesystem.read",
+        message: "filesystem read scope is repository-wide; prefer narrower read paths: **"
       },
       {
         code: "risky-filesystem-write-broad",

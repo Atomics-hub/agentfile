@@ -26,6 +26,16 @@ export function formatZodError(error: ZodError): string {
 export function lintAgentfile(agentfile: Agentfile): LintDiagnostic[] {
   const diagnostics: LintDiagnostic[] = [];
 
+  for (const path of agentfile.scope.include) {
+    if (isRepoWidePattern(path)) {
+      diagnostics.push({
+        code: "risky-scope-include-broad",
+        path: "scope.include",
+        message: `mission scope includes the entire repository; prefer narrower include paths: ${path}`
+      });
+    }
+  }
+
   if (agentfile.permissions.network.default === "allow") {
     diagnostics.push({
       code: "risky-network-default-allow",
@@ -61,6 +71,16 @@ export function lintAgentfile(agentfile: Agentfile): LintDiagnostic[] {
         code: "risky-secret-allow-pattern",
         path: "permissions.secrets.allow",
         message: `secret allowlist entry should name a concrete secret instead of a wildcard: ${secret}`
+      });
+    }
+  }
+
+  for (const path of agentfile.permissions.filesystem.read) {
+    if (isRepoWidePattern(path)) {
+      diagnostics.push({
+        code: "risky-filesystem-read-broad",
+        path: "permissions.filesystem.read",
+        message: `filesystem read scope is repository-wide; prefer narrower read paths: ${path}`
       });
     }
   }
