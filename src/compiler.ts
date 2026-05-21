@@ -201,7 +201,7 @@ export function defaultOutputPathForTarget(target: SyncTarget): string {
 }
 
 export function isSyncTarget(target: CompileTarget): target is SyncTarget {
-  return target !== "prompt" && target !== "json";
+  return target === "agents-md" || target === "claude-md" || target === "cursor-mdc" || target === "copilot-md";
 }
 
 function compileInstructionMarkdown(

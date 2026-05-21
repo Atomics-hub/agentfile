@@ -31,6 +31,19 @@ describe("agentfile sync", () => {
     expect(content).toContain("alwaysApply: true");
     expect(content).toContain("# fix-login-refresh-race");
   });
+
+  it("rejects non file-backed compile targets", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-sync-invalid-"));
+    tempDirs.push(cwd);
+
+    await expect(
+      execFileAsync("node", [tsxPath, cliPath, "sync", examplePath, "--target", "yaml"], { cwd })
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining(
+        'sync target "yaml" is not file-backed. Expected "agents-md", "claude-md", "cursor-mdc", or "copilot-md".'
+      )
+    });
+  });
 });
 
 describe("agentfile file discovery", () => {
