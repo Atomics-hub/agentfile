@@ -76,6 +76,15 @@ export const checkSchema = z.object({
   }
 });
 
+export const policySchema = z.object({
+  id: z.string().min(1).regex(/^[a-z0-9][a-z0-9._-]*$/),
+  level: z.enum(["must", "must_not", "should", "may"]),
+  appliesTo: z.array(z.string().min(1)).default([]),
+  statement: z.string().min(1)
+}).superRefine((policy, ctx) => {
+  addDuplicateValueIssues(policy.appliesTo, "policy target", ["appliesTo"], ctx);
+});
+
 export const infoSchema = z.object({
   title: z.string().min(1).regex(/^[a-z0-9][a-z0-9._-]*$/),
   version: z.string().min(1).optional(),
@@ -169,12 +178,7 @@ export const agentfileSchema = z.object({
     exclude: z.array(z.string().min(1)).default([])
   }),
   permissions: permissionsSchema.default({}),
-  policies: z.array(z.object({
-    id: z.string().min(1).regex(/^[a-z0-9][a-z0-9._-]*$/),
-    level: z.enum(["must", "must_not", "should", "may"]),
-    appliesTo: z.array(z.string().min(1)).default([]),
-    statement: z.string().min(1)
-  })).default([]),
+  policies: z.array(policySchema).default([]),
   checks: z.array(checkSchema).default([]),
   workflow: z.object({
     id: z.string().min(1).regex(/^[a-z0-9][a-z0-9._-]*$/),

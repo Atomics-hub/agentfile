@@ -94,6 +94,7 @@ Pact source accepts direct policy statements with `must`, `must_not`, `should`, 
 ```agent
 must preserve "Public auth APIs"
 must_not leak "Refresh tokens"
+must "Keep auth latency within budget." for src/auth/**, tests/auth/**
 ```
 
 ### `plan`

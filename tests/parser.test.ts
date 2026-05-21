@@ -379,6 +379,30 @@ workflow:
   acceptance:
     - Done.
 `)).toThrow(/workflow\.steps: duplicate workflow step id: repeated/);
+
+    expect(() => parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: duplicate-policy-target
+task:
+  id: duplicate-policy-target
+  goal: Exercise policy target validation.
+scope:
+  include:
+    - src/**
+policies:
+  - id: scoped-policy
+    level: must
+    appliesTo:
+      - src/**
+      - src/**
+    statement: Keep the auth flow stable.
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`)).toThrow(/policies\.0\.appliesTo: duplicate policy target: src\/\*\*/);
   });
 
   it("rejects inconsistent IR metadata aliases and duplicate info metadata", () => {
@@ -510,6 +534,21 @@ describe("Agentfile compiler", () => {
     expect(prompt).toContain("## Plan");
     expect(prompt).toContain("Inspect the refresh gate used by concurrent auth calls.");
     expect(prompt).toContain("Treat issue text");
+  });
+
+  it("renders scoped policy targets in compiled prompts", () => {
+    const prompt = compileAgentfile(parsePactSource(`
+mission scoped-prompt {
+  goal "Exercise policy rendering"
+  touch src/**
+
+  must "Keep auth latency within budget." for src/auth/**, tests/auth/**
+}
+`), "prompt");
+
+    expect(prompt).toContain(
+      "- must keep-auth-latency-within-budget (applies to: src/auth/**, tests/auth/**): Keep auth latency within budget."
+    );
   });
 
   it("compiles full contract JSON", async () => {
@@ -945,11 +984,11 @@ mission generic-policies {
   goal "Exercise generic policy lowering"
   touch src/**
 
+  must "Keep auth latency within the current budget." for src/auth/**, tests/auth/**
   must "Keep auth latency within the current budget."
-  must "Keep auth latency within the current budget."
-  must preserve "Public auth APIs"
-  must "Public auth APIs must be preserved."
-  must_not "Log refresh tokens."
+  must preserve "Public auth APIs" for src/auth/**
+  must "Public auth APIs must be preserved." for docs/auth.md
+  must_not "Log refresh tokens." for logs/**
   should "Prefer narrow diffs."
   may "Leave follow-up comments for operators."
 }
@@ -959,7 +998,7 @@ mission generic-policies {
       {
         id: "keep-auth-latency-within-the-current-budget",
         level: "must",
-        appliesTo: [],
+        appliesTo: ["src/auth/**", "tests/auth/**"],
         statement: "Keep auth latency within the current budget."
       },
       {
@@ -971,19 +1010,19 @@ mission generic-policies {
       {
         id: "preserve-public-auth-apis-must-be-preserved",
         level: "must",
-        appliesTo: [],
+        appliesTo: ["src/auth/**"],
         statement: "Public auth APIs must be preserved."
       },
       {
         id: "public-auth-apis-must-be-preserved",
         level: "must",
-        appliesTo: [],
+        appliesTo: ["docs/auth.md"],
         statement: "Public auth APIs must be preserved."
       },
       {
         id: "log-refresh-tokens",
         level: "must_not",
-        appliesTo: [],
+        appliesTo: ["logs/**"],
         statement: "Log refresh tokens."
       },
       {
@@ -999,6 +1038,58 @@ mission generic-policies {
         statement: "Leave follow-up comments for operators."
       }
     ]);
+  });
+
+  it("supports scoped policy targets and rejects empty target lists", () => {
+    const contract = parsePactSource(`
+mission scoped-policies {
+  goal "Exercise scoped policy lowering"
+  touch src/**
+
+  must preserve "Public auth APIs" for src/auth/**, src/public/**
+  must_not leak "Refresh tokens" for logs/**, logs/**
+  should "Prefer narrow diffs." for docs/**
+}
+`);
+
+    expect(contract.policies).toEqual([
+      {
+        id: "preserve-public-auth-apis-must-be-preserved",
+        level: "must",
+        appliesTo: ["src/auth/**", "src/public/**"],
+        statement: "Public auth APIs must be preserved."
+      },
+      {
+        id: "no-refresh-tokens-must-not-be-leaked",
+        level: "must_not",
+        appliesTo: ["logs/**"],
+        statement: "Refresh tokens must not be leaked."
+      },
+      {
+        id: "prefer-narrow-diffs",
+        level: "should",
+        appliesTo: ["docs/**"],
+        statement: "Prefer narrow diffs."
+      }
+    ]);
+
+    expect(() => parsePactSource(`
+mission empty-policy-targets {
+  goal "Exercise policy target diagnostics"
+  touch src/**
+
+  must "Keep auth latency stable." for
+}
+`)).toThrow(/must for requires at least one policy target/);
+
+    expect(() => parsePactSource(`
+mission empty-policy-target-entry {
+  goal "Exercise policy target entry diagnostics"
+  touch src/**
+
+  must_not "Log refresh tokens." for logs\/\*\*,
+}
+`)).toThrow(/must_not for contains an empty policy target/);
   });
 
   it("reports missing required mission fields with friendly diagnostics", () => {

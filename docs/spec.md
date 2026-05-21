@@ -129,10 +129,15 @@ Rules that must remain true.
 policies:
   - id: no-token-logging
     level: must_not
+    appliesTo:
+      - src/auth/**
+      - tests/auth/**
     statement: Refresh tokens must never be logged.
 ```
 
 `level` may be `must`, `must_not`, `should`, or `may`.
+
+`appliesTo` is optional and scopes a policy to the relevant paths, surfaces, or subsystems. Like other authority lists, it should be treated as a normalized set. Duplicate exact entries are invalid.
 
 ### `checks`
 

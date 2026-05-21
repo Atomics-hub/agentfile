@@ -63,7 +63,7 @@ Filesystem scope can now distinguish read-only and writable areas with `read ...
 
 Comma-delimited source lists are strict: `read`, `write`, `touch`, `never`, and `ask approval for` require concrete entries and reject blank items or trailing commas.
 
-It can also express direct invariant statements with `must "..."`, `must_not "..."`, `should "..."`, and `may "..."` in addition to the more opinionated sugar forms like `must preserve "..."` and `must_not leak "..."`.
+It can also express direct invariant statements with `must "..."`, `must_not "..."`, `should "..."`, and `may "..."` in addition to the more opinionated sugar forms like `must preserve "..."` and `must_not leak "..."`. Policy statements may optionally scope themselves with `for ...`, for example `must "Keep auth latency within budget." for src/auth/**, tests/auth/**`.
 
 Each `.agent` source file currently defines exactly one `mission`. Within that mission, `plan`, `prove`, and `handoff` are singular blocks so the lowered workflow shape stays predictable for agents and tooling.
 

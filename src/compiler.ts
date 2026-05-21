@@ -75,7 +75,10 @@ export function compileAgentPrompt(agentfile: Agentfile): string {
   if (agentfile.policies.length > 0) {
     lines.push("", "## Policies");
     for (const policy of agentfile.policies) {
-      lines.push(`- ${policy.level} ${policy.id}: ${policy.statement}`);
+      const appliesTo = policy.appliesTo.length > 0
+        ? ` (applies to: ${policy.appliesTo.join(", ")})`
+        : "";
+      lines.push(`- ${policy.level} ${policy.id}${appliesTo}: ${policy.statement}`);
     }
   }
 

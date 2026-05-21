@@ -370,21 +370,33 @@ function parseMissionLine(
     return;
   }
 
-  const mustPreserve = quotedArg(line, "must preserve", filePath, lineNo);
+  const mustPreserve = policyDirective(line, "must preserve", filePath, lineNo);
   if (mustPreserve !== undefined) {
-    const statement = requireNonEmptyText(mustPreserve, "must preserve", filePath, lineNo);
-    appendPolicy(state, "must", `${statement} must be preserved.`, "preserve");
+    const statement = requireNonEmptyText(mustPreserve.value, "must preserve", filePath, lineNo);
+    appendPolicy(
+      state,
+      "must",
+      `${statement} must be preserved.`,
+      "preserve",
+      mustPreserve.appliesTo
+    );
     return;
   }
 
-  const mustNotLeak = quotedArg(line, "must_not leak", filePath, lineNo);
+  const mustNotLeak = policyDirective(line, "must_not leak", filePath, lineNo);
   if (mustNotLeak !== undefined) {
-    const statement = requireNonEmptyText(mustNotLeak, "must_not leak", filePath, lineNo);
-    appendPolicy(state, "must_not", `${statement} must not be leaked.`, "no");
+    const statement = requireNonEmptyText(mustNotLeak.value, "must_not leak", filePath, lineNo);
+    appendPolicy(
+      state,
+      "must_not",
+      `${statement} must not be leaked.`,
+      "no",
+      mustNotLeak.appliesTo
+    );
     return;
   }
 
-  const genericPolicy = quotedKeywordArg(
+  const genericPolicy = policyKeywordDirective(
     line,
     ["must", "must_not", "should", "may"],
     filePath,
@@ -393,7 +405,13 @@ function parseMissionLine(
   if (genericPolicy) {
     const { keyword: level, value } = genericPolicy;
     const statement = requireNonEmptyText(value, level, filePath, lineNo);
-    appendPolicy(state, level as Agentfile["policies"][number]["level"], statement);
+    appendPolicy(
+      state,
+      level as Agentfile["policies"][number]["level"],
+      statement,
+      undefined,
+      genericPolicy.appliesTo
+    );
     return;
   }
 
@@ -796,6 +814,40 @@ function quotedKeywordArg<T extends string>(
   return undefined;
 }
 
+function policyDirective(
+  line: string,
+  keyword: string,
+  filePath: string | undefined,
+  lineNo: number
+): { value: string; appliesTo: string[] } | undefined {
+  const prefix = `${keyword} `;
+  if (!line.startsWith(prefix)) {
+    return undefined;
+  }
+
+  return parsePolicyLiteralArg(line.slice(prefix.length), keyword, filePath, lineNo);
+}
+
+function policyKeywordDirective<T extends string>(
+  line: string,
+  keywords: readonly T[],
+  filePath: string | undefined,
+  lineNo: number
+): { keyword: T; value: string; appliesTo: string[] } | undefined {
+  for (const keyword of keywords) {
+    const parsed = policyDirective(line, keyword, filePath, lineNo);
+    if (parsed !== undefined) {
+      return {
+        keyword,
+        value: parsed.value,
+        appliesTo: parsed.appliesTo
+      };
+    }
+  }
+
+  return undefined;
+}
+
 function trailingArg(
   line: string,
   keyword: string,
@@ -871,6 +923,50 @@ function parseLiteralArg(
   return value;
 }
 
+function parsePolicyLiteralArg(
+  source: string,
+  keyword: string,
+  filePath: string | undefined,
+  lineNo: number
+): { value: string; appliesTo: string[] } {
+  const value = source.trim();
+  const parsedQuoted = parseQuotedLiteralPrefix(value);
+
+  if (!parsedQuoted) {
+    if (value.startsWith("\"")) {
+      throw syntaxError(`malformed quoted string for ${keyword}`, filePath, lineNo);
+    }
+
+    throw syntaxError(`${keyword} requires a quoted string`, filePath, lineNo);
+  }
+
+  const rest = parsedQuoted.rest.trim();
+  if (rest.length === 0) {
+    return {
+      value: parsedQuoted.value,
+      appliesTo: []
+    };
+  }
+
+  if (rest === "for") {
+    return {
+      value: parsedQuoted.value,
+      appliesTo: parseDelimitedList("", `${keyword} for`, "policy target", filePath, lineNo)
+    };
+  }
+
+  if (!rest.startsWith("for ")) {
+    throw syntaxError(`unexpected content after ${keyword} string: ${rest}`, filePath, lineNo);
+  }
+
+  return {
+    value: parsedQuoted.value,
+    appliesTo: uniqueValues(
+      parseDelimitedList(rest.slice(4), `${keyword} for`, "policy target", filePath, lineNo)
+    )
+  };
+}
+
 function requireNonEmptyText(
   value: string,
   keyword: string,
@@ -888,12 +984,13 @@ function appendPolicy(
   state: PactState,
   level: Agentfile["policies"][number]["level"],
   statement: string,
-  prefix?: string
+  prefix?: string,
+  appliesTo: string[] = []
 ): void {
   state.policies.push({
     id: nextGeneratedId(state.policies, `${prefix ? `${prefix}-` : ""}${statement}`, "policy"),
     level,
-    appliesTo: [],
+    appliesTo,
     statement
   });
 }
@@ -927,6 +1024,17 @@ function reviewSentence(verb: string, detail: string): string {
 
 function parseQuotedLiteral(source: string): string | undefined {
   const value = source.trim();
+  const parsed = parseQuotedLiteralPrefix(value);
+
+  if (!parsed || parsed.rest.trim().length > 0) {
+    return undefined;
+  }
+
+  return parsed.value;
+}
+
+function parseQuotedLiteralPrefix(source: string): { value: string; rest: string } | undefined {
+  const value = source.trim();
   if (!value.startsWith("\"")) {
     return undefined;
   }
@@ -949,7 +1057,10 @@ function parseQuotedLiteral(source: string): string | undefined {
     }
 
     if (char === "\"") {
-      return index === value.length - 1 ? result : undefined;
+      return {
+        value: result,
+        rest: value.slice(index + 1)
+      };
     }
 
     result += char;
@@ -1008,6 +1119,16 @@ function decodeEscape(char: string): string {
   }
 
   return `\\${char}`;
+}
+
+function uniqueValues(values: string[]): string[] {
+  const unique: string[] = [];
+
+  for (const value of values) {
+    pushUnique(unique, value);
+  }
+
+  return unique;
 }
 
 function looksLikePact(source: string): boolean {
