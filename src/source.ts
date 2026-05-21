@@ -1156,7 +1156,16 @@ function isWildcardSecret(secret: string): boolean {
 }
 
 function looksLikePact(source: string): boolean {
-  return /^\s*mission\s+[a-z0-9][a-z0-9._-]*\s*\{/m.test(source);
+  for (const rawLine of source.split(/\r?\n/)) {
+    const line = stripComment(rawLine).trim();
+    if (line.length === 0) {
+      continue;
+    }
+
+    return /^mission\s+[a-z0-9][a-z0-9._-]*\s*\{$/.test(line);
+  }
+
+  return false;
 }
 
 function syntaxError(message: string, filePath: string | undefined, lineNo: number): AgentfileError {

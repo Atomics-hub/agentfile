@@ -7,6 +7,7 @@ import {
   lintAgentfile,
   parseAgentfile,
   parsePactSource,
+  parseSource,
   toNormalizedPolicy,
   toJsonContract
 } from "../src/index.js";
@@ -42,6 +43,49 @@ workflow:
     expect(agentfile.permissions.network.default).toBe("deny");
     expect(agentfile.permissions.secrets.access).toBe("deny");
     expect(agentfile.permissions.approvals.requiredFor).toContain("scope_expansion");
+  });
+
+  it("does not misclassify YAML contracts that mention mission syntax in string content", () => {
+    const agentfile = parseSource(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: yaml-with-mission-text
+  summary: |
+    Example Pact snippet:
+    mission fake-task {
+      goal "This is documentation, not source"
+    }
+task:
+  id: yaml-with-mission-text
+  goal: Keep YAML autodetection strict.
+scope:
+  include:
+    - docs/**
+workflow:
+  id: implement
+  acceptance:
+    - The contract still parses as YAML.
+`, "agentfile.yaml");
+
+    expect(agentfile.task.id).toBe("yaml-with-mission-text");
+    expect(agentfile.info.summary).toContain("mission fake-task {");
+    expect(agentfile.scope.include).toEqual(["docs/**"]);
+  });
+
+  it("auto-detects Pact after leading comments and blank lines", () => {
+    const agentfile = parseSource(`
+# leading comment
+
+mission comment-prefixed {
+  goal "Parse Pact after comments"
+  touch src/**
+}
+`);
+
+    expect(agentfile.task.id).toBe("comment-prefixed");
+    expect(agentfile.scope.include).toEqual(["src/**"]);
+    expect(agentfile.permissions.filesystem.write).toEqual(["src/**"]);
   });
 
   it("rejects unsupported versions", () => {
