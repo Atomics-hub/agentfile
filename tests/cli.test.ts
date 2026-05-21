@@ -18,6 +18,45 @@ afterEach(async () => {
   await Promise.all(tempDirs.splice(0).map((dir) => rm(dir, { recursive: true, force: true })));
 });
 
+describe("agentfile init", () => {
+  it("creates a Pact source starter when requested explicitly", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-init-agent-"));
+    tempDirs.push(cwd);
+
+    const outputPath = join(cwd, "starter.agent");
+    await execFileAsync("node", [tsxPath, cliPath, "init", outputPath, "--format", "agent"], { cwd });
+
+    const content = await readFile(outputPath, "utf8");
+    expect(content).toContain("mission my-agent-task {");
+    expect(content).toContain('goal "State the concrete outcome the agent should produce"');
+
+    const { stdout } = await execFileAsync("node", [tsxPath, cliPath, "compile", outputPath, "--target", "json"], { cwd });
+    const contract = JSON.parse(stdout);
+
+    expect(contract.task.id).toBe("my-agent-task");
+    expect(contract.permissions.network.default).toBe("deny");
+    expect(contract.checks).toEqual([
+      {
+        id: "npm-test",
+        command: "npm test",
+        required: true
+      }
+    ]);
+  }, 15000);
+
+  it("infers a Pact source starter from the .agent extension", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-init-agent-ext-"));
+    tempDirs.push(cwd);
+
+    const outputPath = join(cwd, "agentfile.agent");
+    await execFileAsync("node", [tsxPath, cliPath, "init", outputPath], { cwd });
+
+    const content = await readFile(outputPath, "utf8");
+    expect(content).toContain("mission my-agent-task {");
+    expect(content).not.toContain('agentfile: "0.1.0"');
+  }, 10000);
+});
+
 describe("agentfile sync", () => {
   it("creates the default Cursor rule path", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "agentfile-sync-"));

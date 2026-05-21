@@ -4,6 +4,13 @@
 
 Create a minimal valid contract. Defaults to `agentfile.yaml`.
 
+Pass `--format agent` or use a `.agent` output path to scaffold Pact source instead of YAML IR:
+
+```sh
+agentfile init agentfile.agent
+agentfile init starter.txt --format agent
+```
+
 ## `agentfile check [file]`
 
 Validate a contract. `validate` is an alias.

@@ -21,10 +21,12 @@ program
 
 program
   .command("init")
-  .description("Create a minimal agentfile.yaml.")
+  .description("Create a minimal Agentfile starter in YAML or Pact source form.")
   .argument("[file]", "Agentfile path", "agentfile.yaml")
-  .action(async (file: string) => {
-    await writeFile(file, minimalAgentfile(), { flag: "wx" }).catch((error: NodeJS.ErrnoException) => {
+  .option("-f, --format <format>", "yaml or agent")
+  .action(async (file: string, options: { format?: string }) => {
+    const format = parseInitFormat(file, options.format);
+    await writeFile(file, minimalAgentfile(format), { flag: "wx" }).catch((error: NodeJS.ErrnoException) => {
       throw new AgentfileError(error.message, file);
     });
     console.log(`Created ${file}`);
@@ -165,6 +167,20 @@ function parseTarget(value: string): CompileTarget {
   );
 }
 
+type InitFormat = "yaml" | "agent";
+
+function parseInitFormat(filePath: string, value?: string): InitFormat {
+  if (value === undefined) {
+    return filePath.endsWith(".agent") ? "agent" : "yaml";
+  }
+
+  if (value === "yaml" || value === "agent") {
+    return value;
+  }
+
+  throw new AgentfileError(`unknown init format "${value}". Expected "yaml" or "agent".`);
+}
+
 async function resolveFile(filePath?: string): Promise<string> {
   if (filePath) {
     return filePath;
@@ -195,7 +211,32 @@ async function exists(filePath: string): Promise<boolean> {
     .catch(() => false);
 }
 
-function minimalAgentfile(): string {
+function minimalAgentfile(format: InitFormat): string {
+  if (format === "agent") {
+    return `mission my-agent-task {
+  goal "State the concrete outcome the agent should produce"
+  summary "Describe the work this agent may perform"
+
+  read src/**, tests/**
+  write src/**, tests/**
+  never node_modules/**, dist/**
+
+  can run "npm test"
+  cannot use network
+  cannot read secrets
+  ask approval for dependency_change, network_access, scope_expansion
+
+  should "Make the smallest coherent change that satisfies the task."
+
+  prove {
+    run "npm test"
+    expect "Required checks pass"
+    expect "Changes are summarized for review"
+  }
+}
+`;
+  }
+
   return `agentfile: "0.1.0"
 kind: TaskContract
 

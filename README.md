@@ -167,6 +167,12 @@ Create a starter contract:
 agentfile init
 ```
 
+Create a Pact source starter instead:
+
+```sh
+agentfile init agentfile.agent
+```
+
 Validate a contract:
 
 ```sh
@@ -236,6 +242,7 @@ Agentfile is early. The v0.1 goal is intentionally narrow:
 - Security-first defaults.
 - Initial risky-authority lint warnings for broad permissions.
 - `agentfile init` for fast adoption.
+- `agentfile init` can scaffold either YAML IR or Pact `.agent` source.
 - Compiler targets for `AGENTS.md`, `CLAUDE.md`, Cursor rules, and GitHub Copilot instructions.
 - A benchmark harness proving that agents complete tasks more reliably with contracts than with plain issue text.
 
