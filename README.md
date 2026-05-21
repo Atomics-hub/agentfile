@@ -167,6 +167,12 @@ Validate a contract:
 agentfile check examples/fix-login-race.agentfile
 ```
 
+Lint a contract for risky broad authority:
+
+```sh
+agentfile lint examples/fix-login-race.agentfile
+```
+
 Compile to a prompt for a coding agent:
 
 ```sh
@@ -208,6 +214,7 @@ Agentfile is early. The v0.1 goal is intentionally narrow:
 - A strict validator.
 - Prompt and JSON compilation targets.
 - Security-first defaults.
+- Initial risky-authority lint warnings for broad permissions.
 - `agentfile init` for fast adoption.
 - Compiler targets for `AGENTS.md`, `CLAUDE.md`, Cursor rules, and GitHub Copilot instructions.
 - A benchmark harness proving that agents complete tasks more reliably with contracts than with plain issue text.

@@ -49,3 +49,45 @@ describe("agentfile file discovery", () => {
     expect(contract.permissions.network.default).toBe("deny");
   });
 });
+
+describe("agentfile lint", () => {
+  it("reports risky authority warnings without failing", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-lint-"));
+    tempDirs.push(cwd);
+
+    const contractPath = join(cwd, "risky.agentfile");
+    await writeFile(contractPath, `agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: risky-authority
+task:
+  id: risky-authority
+  goal: Exercise lint output.
+scope:
+  include:
+    - src/**
+permissions:
+  network:
+    default: allow
+  filesystem:
+    read:
+      - src/**
+      - "**"
+    write:
+      - "**"
+  secrets:
+    access: allow
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`, "utf8");
+
+    const { stdout } = await execFileAsync("node", [tsxPath, cliPath, "lint", contractPath], { cwd });
+
+    expect(stdout).toContain(`WARN ${contractPath}`);
+    expect(stdout).toContain("permissions.network.default: broad network access is enabled");
+    expect(stdout).toContain("permissions.secrets.access: secret access allows every secret");
+    expect(stdout).toContain("permissions.filesystem.write: filesystem write scope is repository-wide");
+  });
+});

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   compileAgentfile,
   defaultOutputPathForTarget,
+  lintAgentfile,
   parseAgentfile,
   parsePactSource,
   toJsonContract
@@ -1114,5 +1115,109 @@ mission duplicate-proof-check {
   }
 }
 `)).toThrow(/duplicate proof check: Review the staging diff/);
+  });
+});
+
+describe("Agentfile lints", () => {
+  it("reports risky broad authority without rejecting the contract", () => {
+    const contract = parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: risky-authority
+task:
+  id: risky-authority
+  goal: Exercise lint warnings.
+scope:
+  include:
+    - src/**
+permissions:
+  network:
+    default: allow
+  filesystem:
+    read:
+      - src/**
+      - "**"
+    write:
+      - "**"
+  secrets:
+    access: allow
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`);
+
+    expect(lintAgentfile(contract)).toEqual([
+      {
+        code: "risky-network-default-allow",
+        path: "permissions.network.default",
+        message: "broad network access is enabled; prefer deny plus explicit host allowlist"
+      },
+      {
+        code: "risky-secret-access-broad",
+        path: "permissions.secrets.access",
+        message: "secret access allows every secret; prefer a named secret allowlist"
+      },
+      {
+        code: "risky-filesystem-write-broad",
+        path: "permissions.filesystem.write",
+        message: "filesystem write scope is repository-wide; prefer narrower write paths: **"
+      }
+    ]);
+  });
+
+  it("reports risky wildcard-style allowlist entries", () => {
+    const contract = parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: risky-allowlists
+task:
+  id: risky-allowlists
+  goal: Exercise lint warnings for wildcard-like allowlists.
+scope:
+  include:
+    - src/**
+permissions:
+  network:
+    default: deny
+    allow:
+      - https://api.github.com/repos
+      - "*.githubusercontent.com"
+  secrets:
+    access: allow
+    allow:
+      - "*"
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`);
+
+    expect(lintAgentfile(contract)).toEqual([
+      {
+        code: "risky-network-host-pattern",
+        path: "permissions.network.allow",
+        message: "network allowlist entry should be a bare host without wildcard, scheme, or path: https://api.github.com/repos"
+      },
+      {
+        code: "risky-network-host-pattern",
+        path: "permissions.network.allow",
+        message: "network allowlist entry should be a bare host without wildcard, scheme, or path: *.githubusercontent.com"
+      },
+      {
+        code: "risky-secret-allow-pattern",
+        path: "permissions.secrets.allow",
+        message: "secret allowlist entry should name a concrete secret instead of a wildcard: *"
+      }
+    ]);
+  });
+
+  it("allows narrowly scoped contracts to lint cleanly", async () => {
+    const source = await readFile("examples/fix-login-race.agent", "utf8");
+    const contract = parsePactSource(source, "examples/fix-login-race.agent");
+
+    expect(lintAgentfile(contract)).toEqual([]);
   });
 });

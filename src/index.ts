@@ -11,7 +11,8 @@ export {
   toNormalizedPolicy
 } from "./compiler.js";
 export type { CompileTarget, JsonContract, NormalizedPolicy, SyncTarget } from "./compiler.js";
-export { AgentfileError } from "./diagnostics.js";
+export { AgentfileError, lintAgentfile } from "./diagnostics.js";
+export type { LintDiagnostic } from "./diagnostics.js";
 export { parseAgentfile } from "./parser.js";
 export { parsePactSource, parseSource } from "./source.js";
 export { agentfileSchema } from "./schema.js";

@@ -9,7 +9,7 @@ import {
   isSyncTarget,
   type CompileTarget
 } from "./compiler.js";
-import { AgentfileError } from "./diagnostics.js";
+import { AgentfileError, lintAgentfile } from "./diagnostics.js";
 import { parseSource } from "./source.js";
 
 const program = new Command();
@@ -39,6 +39,26 @@ program
     const resolved = await resolveFile(file);
     await load(resolved);
     console.log(`OK ${resolved}`);
+  });
+
+program
+  .command("lint")
+  .description("Report non-blocking warnings for risky authority and broad permissions.")
+  .argument("[file]", "Agentfile path")
+  .action(async (file: string) => {
+    const resolved = await resolveFile(file);
+    const agentfile = await load(resolved);
+    const diagnostics = lintAgentfile(agentfile);
+
+    if (diagnostics.length === 0) {
+      console.log(`OK ${resolved} (no lint warnings)`);
+      return;
+    }
+
+    console.log(`WARN ${resolved}`);
+    for (const diagnostic of diagnostics) {
+      console.log(`- ${diagnostic.path}: ${diagnostic.message}`);
+    }
   });
 
 program

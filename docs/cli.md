@@ -23,6 +23,18 @@ If no file is provided, the CLI searches:
 6. `.agent/agentfile.json`
 7. `Agentfile`
 
+## `agentfile lint [file]`
+
+Report non-blocking warnings for risky authority and broad permissions.
+
+The initial lint pass flags:
+
+- Broad network access with `permissions.network.default: allow`.
+- Network allowlist entries that include wildcards, schemes, or paths instead of bare hosts.
+- Broad secret access with `permissions.secrets.access: allow` and no explicit allowlist.
+- Secret allowlist wildcards instead of concrete secret names.
+- Repository-wide filesystem write patterns such as `**`.
+
 ## `agentfile compile [file] --target <target>`
 
 Compile a contract.
