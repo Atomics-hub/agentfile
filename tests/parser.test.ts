@@ -175,6 +175,115 @@ workflow:
 `)).toThrow(/permissions\.filesystem\.write: filesystem write path must also appear in read: tests\/\*\*/);
   });
 
+  it("rejects duplicate IR scope and permission entries", () => {
+    expect(() => parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: duplicate-scope-entries
+task:
+  id: duplicate-scope-entries
+  goal: Exercise duplicate scope validation.
+scope:
+  include:
+    - src/**
+    - src/**
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`)).toThrow(/scope\.include: duplicate scope include path: src\/\*\*/);
+
+    expect(() => parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: duplicate-shell-entries
+task:
+  id: duplicate-shell-entries
+  goal: Exercise duplicate shell validation.
+scope:
+  include:
+    - src/**
+permissions:
+  shell:
+    allow:
+      - npm test
+      - npm test
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`)).toThrow(/permissions\.shell\.allow: duplicate shell allow command: npm test/);
+
+    expect(() => parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: duplicate-filesystem-entries
+task:
+  id: duplicate-filesystem-entries
+  goal: Exercise duplicate filesystem validation.
+scope:
+  include:
+    - src/**
+permissions:
+  filesystem:
+    read:
+      - src/**
+      - src/**
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`)).toThrow(/permissions\.filesystem\.read: duplicate filesystem read path: src\/\*\*/);
+  });
+
+  it("rejects malformed and duplicate IR approval requirements", () => {
+    expect(() => parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: malformed-approval-id
+task:
+  id: malformed-approval-id
+  goal: Exercise approval validation.
+scope:
+  include:
+    - src/**
+permissions:
+  approvals:
+    requiredFor:
+      - release publish
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`)).toThrow(/permissions\.approvals\.requiredFor: invalid approval identifier: release publish/);
+
+    expect(() => parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: duplicate-approval-id
+task:
+  id: duplicate-approval-id
+  goal: Exercise duplicate approval validation.
+scope:
+  include:
+    - src/**
+permissions:
+  approvals:
+    requiredFor:
+      - dependency_change
+      - dependency_change
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`)).toThrow(/permissions\.approvals\.requiredFor: duplicate approval requirement: dependency_change/);
+  });
+
   it("rejects duplicate IR identifiers and exact scope conflicts", () => {
     expect(() => parseAgentfile(`
 agentfile: "0.1.0"

@@ -10,6 +10,7 @@ The project follows semantic versioning once the first public release is tagged.
 - Pact source now accepts direct `must`, `must_not`, `should`, and `may` policy statements and generates stable unique ids when lowered policies repeat.
 - Pact source now rejects multiple `mission` blocks and duplicate `plan`, `prove`, or `handoff` sections in the same file.
 - IR validation now rejects duplicate policy/check/workflow-step ids and exact include/exclude scope conflicts.
+- IR validation now rejects duplicate exact scope and authority entries, and approval ids must match Pact's identifier syntax.
 - IR validation now rejects exact filesystem allow/deny contradictions and exact write paths that are missing from filesystem read scope.
 - Pact source diagnostics now reject exact `touch`/`never` path contradictions and duplicate proof commands.
 - Experimental `.agent` source parser for Pact-style mission syntax.

@@ -78,6 +78,8 @@ scope:
 
 Exact path entries may not appear in both `scope.include` and `scope.exclude`.
 
+`scope.include` and `scope.exclude` should be treated as normalized sets. Duplicate exact entries are invalid.
+
 ### `permissions`
 
 The authority granted to the agent.
@@ -112,6 +114,8 @@ permissions:
 Exact path entries may not appear in both `permissions.filesystem.read` or `permissions.filesystem.write` and `permissions.filesystem.deny`.
 
 Exact `permissions.filesystem.write` entries must also appear in `permissions.filesystem.read`.
+
+Authority lists should be normalized. Duplicate exact entries in shell allow/deny lists, network host allowlists, filesystem read/write/deny lists, secret allowlists, and approval requirements are invalid.
 
 ### `policies`
 
@@ -187,3 +191,5 @@ Pact source may add project-specific approval gates with lines such as:
 ```agent
 ask approval for release_publish, destructive_write
 ```
+
+Approval identifiers use the same conservative shape as other ids: lowercase alphanumerics plus `.`, `_`, or `-`, starting with an alphanumeric character.

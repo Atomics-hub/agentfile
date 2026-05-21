@@ -34,6 +34,23 @@ export const approvalsSchema = z.object({
     "network_access",
     "scope_expansion"
   ])
+}).superRefine((approvals, ctx) => {
+  for (const approval of approvals.requiredFor) {
+    if (!/^[a-z0-9][a-z0-9._-]*$/.test(approval)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["requiredFor"],
+        message: `invalid approval identifier: ${approval}`
+      });
+    }
+  }
+
+  addDuplicateValueIssues(
+    approvals.requiredFor,
+    "approval requirement",
+    ["requiredFor"],
+    ctx
+  );
 });
 
 export const checkSchema = z.object({
@@ -66,6 +83,14 @@ export const permissionsSchema = z.object({
   secrets: accessSchema.default({ access: "deny", allow: [] }),
   approvals: approvalsSchema.default({})
 }).superRefine((permissions, ctx) => {
+  addDuplicateValueIssues(permissions.shell.allow, "shell allow command", ["shell", "allow"], ctx);
+  addDuplicateValueIssues(permissions.shell.deny, "shell deny command", ["shell", "deny"], ctx);
+  addDuplicateValueIssues(permissions.network.allow, "network allow host", ["network", "allow"], ctx);
+  addDuplicateValueIssues(permissions.filesystem.read, "filesystem read path", ["filesystem", "read"], ctx);
+  addDuplicateValueIssues(permissions.filesystem.write, "filesystem write path", ["filesystem", "write"], ctx);
+  addDuplicateValueIssues(permissions.filesystem.deny, "filesystem deny path", ["filesystem", "deny"], ctx);
+  addDuplicateValueIssues(permissions.secrets.allow, "secret allow entry", ["secrets", "allow"], ctx);
+
   const shellOverlap = permissions.shell.allow.filter((command) => permissions.shell.deny.includes(command));
   for (const command of shellOverlap) {
     ctx.addIssue({
@@ -156,6 +181,9 @@ export const agentfileSchema = z.object({
     review: z.array(z.string().min(1)).default([])
   })
 }).superRefine((agentfile, ctx) => {
+  addDuplicateValueIssues(agentfile.scope.include, "scope include path", ["scope", "include"], ctx);
+  addDuplicateValueIssues(agentfile.scope.exclude, "scope exclude path", ["scope", "exclude"], ctx);
+
   const overlappingScope = agentfile.scope.include.filter((path) => agentfile.scope.exclude.includes(path));
   for (const path of overlappingScope) {
     ctx.addIssue({
@@ -171,6 +199,28 @@ export const agentfileSchema = z.object({
 });
 
 export type Agentfile = z.infer<typeof agentfileSchema>;
+
+function addDuplicateValueIssues(
+  values: string[],
+  label: string,
+  path: [string, ...string[]],
+  ctx: z.RefinementCtx
+): void {
+  const seen = new Set<string>();
+
+  for (const value of values) {
+    if (seen.has(value)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path,
+        message: `duplicate ${label}: ${value}`
+      });
+      continue;
+    }
+
+    seen.add(value);
+  }
+}
 
 function addDuplicateIdIssues(
   values: Array<{ id: string }>,
