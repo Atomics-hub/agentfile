@@ -1025,6 +1025,48 @@ mission malformed-owner {
 `)).toThrow(/malformed quoted string for owner/);
   });
 
+  it("rejects empty Pact list items with direct diagnostics", () => {
+    expect(() => parsePactSource(`
+mission empty-touch-list {
+  goal "Exercise touch list diagnostics"
+  touch
+}
+`)).toThrow(/touch requires at least one path/);
+
+    expect(() => parsePactSource(`
+mission empty-read-entry {
+  goal "Exercise read list diagnostics"
+  read src\/\*\*, , tests\/\*\*
+}
+`)).toThrow(/read contains an empty path/);
+
+    expect(() => parsePactSource(`
+mission empty-never-entry {
+  goal "Exercise never list diagnostics"
+  touch src\/\*\*
+  never dist\/\*\*,
+}
+`)).toThrow(/never contains an empty path/);
+
+    expect(() => parsePactSource(`
+mission empty-approval-list {
+  goal "Exercise approval list diagnostics"
+  touch src\/\*\*
+
+  ask approval for
+}
+`)).toThrow(/ask approval for requires at least one approval identifier/);
+
+    expect(() => parsePactSource(`
+mission empty-approval-entry {
+  goal "Exercise approval entry diagnostics"
+  touch src\/\*\*
+
+  ask approval for release_publish,
+}
+`)).toThrow(/ask approval for contains an empty approval identifier/);
+  });
+
   it("rejects empty quoted values with direct diagnostics", () => {
     expect(() => parsePactSource(`
 mission empty-goal {

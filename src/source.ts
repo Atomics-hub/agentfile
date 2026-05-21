@@ -180,23 +180,48 @@ function parseMissionLine(
     return;
   }
 
-  if (line.startsWith("touch ")) {
-    addTouchPaths(state, parseList(line.slice("touch ".length)), filePath, lineNo);
+  const touchPaths = listDirective(line, "touch", "path", filePath, lineNo);
+  if (touchPaths !== undefined) {
+    addTouchPaths(
+      state,
+      touchPaths,
+      filePath,
+      lineNo
+    );
     return;
   }
 
-  if (line.startsWith("read ")) {
-    addScopedPaths(state.read, state.never, parseList(line.slice("read ".length)), filePath, lineNo);
+  const readPaths = listDirective(line, "read", "path", filePath, lineNo);
+  if (readPaths !== undefined) {
+    addScopedPaths(
+      state.read,
+      state.never,
+      readPaths,
+      filePath,
+      lineNo
+    );
     return;
   }
 
-  if (line.startsWith("write ")) {
-    addWritePaths(state, parseList(line.slice("write ".length)), filePath, lineNo);
+  const writePaths = listDirective(line, "write", "path", filePath, lineNo);
+  if (writePaths !== undefined) {
+    addWritePaths(
+      state,
+      writePaths,
+      filePath,
+      lineNo
+    );
     return;
   }
 
-  if (line.startsWith("never ")) {
-    addNeverPaths(state, parseList(line.slice("never ".length)), filePath, lineNo);
+  const neverPaths = listDirective(line, "never", "path", filePath, lineNo);
+  if (neverPaths !== undefined) {
+    addNeverPaths(
+      state,
+      neverPaths,
+      filePath,
+      lineNo
+    );
     return;
   }
 
@@ -322,24 +347,11 @@ function parseMissionLine(
     return;
   }
 
-  const askApproval = line.match(/^ask\s+approval\s+for\s+(.+)$/);
-  if (askApproval) {
-    for (const approval of parseApprovalList(askApproval[1], filePath, lineNo)) {
+  const approvals = approvalDirective(line, filePath, lineNo);
+  if (approvals !== undefined) {
+    for (const approval of approvals) {
       ensureApproval(state, approval);
     }
-    return;
-  }
-
-  const genericPolicy = quotedKeywordArg(
-    line,
-    ["must", "must_not", "should", "may"],
-    filePath,
-    lineNo
-  );
-  if (genericPolicy) {
-    const { keyword: level, value } = genericPolicy;
-    const statement = requireNonEmptyText(value, level, filePath, lineNo);
-    appendPolicy(state, level as Agentfile["policies"][number]["level"], statement);
     return;
   }
 
@@ -354,6 +366,19 @@ function parseMissionLine(
   if (mustNotLeak !== undefined) {
     const statement = requireNonEmptyText(mustNotLeak, "must_not leak", filePath, lineNo);
     appendPolicy(state, "must_not", `${statement} must not be leaked.`, "no");
+    return;
+  }
+
+  const genericPolicy = quotedKeywordArg(
+    line,
+    ["must", "must_not", "should", "may"],
+    filePath,
+    lineNo
+  );
+  if (genericPolicy) {
+    const { keyword: level, value } = genericPolicy;
+    const statement = requireNonEmptyText(value, level, filePath, lineNo);
+    appendPolicy(state, level as Agentfile["policies"][number]["level"], statement);
     return;
   }
 
@@ -586,15 +611,14 @@ function validatePactState(state: PactState, filePath?: string): void {
   }
 }
 
-function parseList(source: string): string[] {
-  return source
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
-}
-
 function parseApprovalList(source: string, filePath: string | undefined, lineNo: number): string[] {
-  const approvals = parseList(source);
+  const approvals = parseDelimitedList(
+    source,
+    "ask approval for",
+    "approval identifier",
+    filePath,
+    lineNo
+  );
 
   for (const approval of approvals) {
     if (!/^[a-z0-9][a-z0-9._-]*$/.test(approval)) {
@@ -603,6 +627,69 @@ function parseApprovalList(source: string, filePath: string | undefined, lineNo:
   }
 
   return approvals;
+}
+
+function listDirective(
+  line: string,
+  keyword: string,
+  itemLabel: string,
+  filePath: string | undefined,
+  lineNo: number
+): string[] | undefined {
+  if (line === keyword) {
+    return parseDelimitedList("", keyword, itemLabel, filePath, lineNo);
+  }
+
+  const prefix = `${keyword} `;
+  if (!line.startsWith(prefix)) {
+    return undefined;
+  }
+
+  return parseDelimitedList(line.slice(prefix.length), keyword, itemLabel, filePath, lineNo);
+}
+
+function approvalDirective(
+  line: string,
+  filePath: string | undefined,
+  lineNo: number
+): string[] | undefined {
+  const keyword = "ask approval for";
+  if (line === keyword) {
+    return parseApprovalList("", filePath, lineNo);
+  }
+
+  const prefix = `${keyword} `;
+  if (!line.startsWith(prefix)) {
+    return undefined;
+  }
+
+  return parseApprovalList(line.slice(prefix.length), filePath, lineNo);
+}
+
+function parseDelimitedList(
+  source: string,
+  keyword: string,
+  itemLabel: string,
+  filePath: string | undefined,
+  lineNo: number
+): string[] {
+  const items = source.split(",");
+  const values: string[] = [];
+
+  for (const item of items) {
+    const value = item.trim();
+    if (value.length === 0) {
+      if (values.length === 0 && items.every((candidate) => candidate.trim().length === 0)) {
+        throw syntaxError(`${keyword} requires at least one ${itemLabel}`, filePath, lineNo);
+      }
+
+      throw syntaxError(`${keyword} contains an empty ${itemLabel}`, filePath, lineNo);
+    }
+
+    values.push(value);
+  }
+
+  return values;
 }
 
 function addScopedPaths(

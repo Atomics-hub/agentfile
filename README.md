@@ -59,6 +59,8 @@ Quoted source strings support escaped quotes and backslashes, so commands like `
 
 Filesystem scope can now distinguish read-only and writable areas with `read ...` and `write ...`. `touch ...` remains available as shorthand for paths that should be both readable and writable, and `write` implies read access when lowered into the contract IR.
 
+Comma-delimited source lists are strict: `read`, `write`, `touch`, `never`, and `ask approval for` require concrete entries and reject blank items or trailing commas.
+
 It can also express direct invariant statements with `must "..."`, `must_not "..."`, `should "..."`, and `may "..."` in addition to the more opinionated sugar forms like `must preserve "..."` and `must_not leak "..."`.
 
 Each `.agent` source file currently defines exactly one `mission`. Within that mission, `plan`, `prove`, and `handoff` are singular blocks so the lowered workflow shape stays predictable for agents and tooling.
