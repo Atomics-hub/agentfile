@@ -145,6 +145,12 @@ permissions:
       - "**"
   secrets:
     access: allow
+  approvals:
+    requiredFor:
+      - dependency_change
+      - network_access
+      - scope_expansion
+      - secret_access
 workflow:
   id: implement
   acceptance:
@@ -186,6 +192,10 @@ permissions:
     default: deny
     allow:
       - api.github.com
+  secrets:
+    access: allow
+    allow:
+      - OPENAI_API_KEY
   approvals:
     requiredFor:
       - scope_expansion
@@ -202,5 +212,6 @@ workflow:
     expect(stdout).toContain("permissions.approvals.requiredFor: dependency-changing command is allowed without dependency_change approval gating: pnpm add zod");
     expect(stdout).toContain("permissions.approvals.requiredFor: destructive command is allowed without destructive_write approval gating: rm -rf dist");
     expect(stdout).toContain("permissions.approvals.requiredFor: network access is allowed without network_access approval gating");
+    expect(stdout).toContain("permissions.approvals.requiredFor: secret access is allowed without secret_access approval gating");
   });
 });

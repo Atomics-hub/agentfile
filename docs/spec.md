@@ -190,6 +190,7 @@ If a permission field is omitted, integrations should use the safer interpretati
 - Network allowlist entries are only valid when `permissions.network.default` is `deny`.
 - Secrets: deny.
 - Secret allowlist entries are only valid when `permissions.secrets.access` is `allow`.
+- Contracts that grant secret access should also require `secret_access` in `permissions.approvals.requiredFor`; the CLI linter warns when that gate is missing.
 - Shell: deny except explicit allowlist.
 - Shell entries may not appear in both allow and deny lists.
 - Scope expansion: approval required.

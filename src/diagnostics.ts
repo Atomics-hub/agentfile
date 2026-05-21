@@ -129,6 +129,17 @@ export function lintAgentfile(agentfile: Agentfile): LintDiagnostic[] {
     });
   }
 
+  if (
+    agentfile.permissions.secrets.access === "allow" &&
+    !approvals.has("secret_access")
+  ) {
+    diagnostics.push({
+      code: "missing-secret-approval-gate",
+      path: "permissions.approvals.requiredFor",
+      message: "secret access is allowed without secret_access approval gating"
+    });
+  }
+
   for (const secret of agentfile.permissions.secrets.allow) {
     if (secret.includes("*")) {
       diagnostics.push({

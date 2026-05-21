@@ -41,6 +41,7 @@ The initial lint pass flags:
 - Allowed network access without `network_access` in `permissions.approvals.requiredFor`.
 - Network allowlist entries that include wildcards, schemes, or paths instead of bare hosts.
 - Broad secret access with `permissions.secrets.access: allow` and no explicit allowlist.
+- Allowed secret access without `secret_access` in `permissions.approvals.requiredFor`.
 - Repository-wide filesystem read patterns such as `**`.
 - Secret allowlist wildcards instead of concrete secret names.
 - Repository-wide filesystem write patterns such as `**`.

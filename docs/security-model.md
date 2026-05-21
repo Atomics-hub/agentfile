@@ -32,6 +32,8 @@ If a field is omitted, integrations should assume:
 - Scope expansion requires approval.
 - Dependency changes require approval.
 
+When a contract does grant secret access, it should also require a `secret_access` approval gate before the runtime proceeds.
+
 ## Permission Categories
 
 - `shell`: command allowlist and denylist.

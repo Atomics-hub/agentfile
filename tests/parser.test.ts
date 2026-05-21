@@ -1525,6 +1525,12 @@ permissions:
       - "**"
   secrets:
     access: allow
+  approvals:
+    requiredFor:
+      - dependency_change
+      - network_access
+      - scope_expansion
+      - secret_access
 workflow:
   id: implement
   acceptance:
@@ -1582,6 +1588,12 @@ permissions:
     access: allow
     allow:
       - "*"
+  approvals:
+    requiredFor:
+      - dependency_change
+      - network_access
+      - scope_expansion
+      - secret_access
 workflow:
   id: implement
   acceptance:
@@ -1671,7 +1683,7 @@ workflow:
     ]);
   });
 
-  it("reports missing approval gates for risky network and shell authority", () => {
+  it("reports missing approval gates for risky network, secret, and shell authority", () => {
     const contract = parseAgentfile(`
 agentfile: "0.1.0"
 kind: TaskContract
@@ -1693,6 +1705,10 @@ permissions:
     default: deny
     allow:
       - api.github.com
+  secrets:
+    access: allow
+    allow:
+      - OPENAI_API_KEY
   approvals:
     requiredFor:
       - scope_expansion
@@ -1737,6 +1753,11 @@ workflow:
         code: "missing-network-approval-gate",
         path: "permissions.approvals.requiredFor",
         message: "network access is allowed without network_access approval gating"
+      },
+      {
+        code: "missing-secret-approval-gate",
+        path: "permissions.approvals.requiredFor",
+        message: "secret access is allowed without secret_access approval gating"
       }
     ]);
   });
