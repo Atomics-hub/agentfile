@@ -191,6 +191,12 @@ Compile to strict JSON contract IR for automation:
 agentfile compile examples/fix-login-race.agentfile --target json
 ```
 
+Compile to normalized policy JSON for policy engines and audit tooling:
+
+```sh
+agentfile compile examples/fix-login-race.agentfile --target policy-json
+```
+
 Compile to canonical YAML contract IR:
 
 ```sh

@@ -7,6 +7,7 @@ import {
   lintAgentfile,
   parseAgentfile,
   parsePactSource,
+  toNormalizedPolicy,
   toJsonContract
 } from "../src/index.js";
 
@@ -559,6 +560,18 @@ mission scoped-prompt {
     expect(json.task.id).toBe("fix-login-refresh-race");
     expect(json.task.goal).toContain("concurrent auth refreshes");
     expect(json.permissions.network.default).toBe("deny");
+  });
+
+  it("compiles normalized policy JSON", async () => {
+    const source = await readFile("examples/fix-login-race.agentfile", "utf8");
+    const agentfile = parseAgentfile(source);
+    const policy = JSON.parse(compileAgentfile(agentfile, "policy-json"));
+
+    expect(policy).toEqual(toNormalizedPolicy(agentfile));
+    expect(policy.agentfile).toBe("0.1.0");
+    expect(policy.task).toBe("fix-login-refresh-race");
+    expect(policy.workflow.id).toBe("implement-fix");
+    expect(policy.info).toBeUndefined();
   });
 
   it("compiles canonical YAML that round-trips through the parser", async () => {

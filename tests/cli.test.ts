@@ -61,6 +61,21 @@ describe("agentfile file discovery", () => {
     expect(contract.info.summary).toContain("duplicate token refresh requests");
     expect(contract.permissions.network.default).toBe("deny");
   });
+
+  it("compiles normalized policy JSON through the CLI", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-policy-json-"));
+    tempDirs.push(cwd);
+
+    const { stdout } = await execFileAsync("node", [tsxPath, cliPath, "compile", examplePath, "--target", "policy-json"], {
+      cwd
+    });
+    const policy = JSON.parse(stdout);
+
+    expect(policy.agentfile).toBe("0.1.0");
+    expect(policy.task).toBe("fix-login-refresh-race");
+    expect(policy.permissions.network.default).toBe("deny");
+    expect(policy.workflow.id).toBe("implement");
+  });
 });
 
 describe("agentfile lint", () => {

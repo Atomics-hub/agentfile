@@ -43,6 +43,7 @@ Targets:
 
 - `prompt`: plain-text prompt for a coding agent.
 - `json`: strict JSON contract IR for automation.
+- `policy-json`: normalized policy JSON projection for policy engines and audit tooling.
 - `yaml`: canonical YAML contract IR.
 - `agents-md`: generated `AGENTS.md` content.
 - `claude-md`: generated `CLAUDE.md` project memory.

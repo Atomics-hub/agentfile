@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- `compile --target policy-json` now exports the normalized policy projection already used internally, so automation can consume a smaller policy-oriented JSON surface.
 - Pact source quoted strings now support escaped quotes and backslashes, including inline comments after escaped strings.
 - `compile` and `sync` now support `CLAUDE.md`, Cursor project rules, and GitHub Copilot instruction targets in addition to `AGENTS.md`.
 - Pact source now accepts direct `must`, `must_not`, `should`, and `may` policy statements and generates stable unique ids when lowered policies repeat.

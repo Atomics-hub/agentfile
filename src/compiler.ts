@@ -4,6 +4,7 @@ import type { Agentfile } from "./schema.js";
 export type CompileTarget =
   | "prompt"
   | "json"
+  | "policy-json"
   | "yaml"
   | "agents-md"
   | "claude-md"
@@ -115,6 +116,10 @@ export function compileAgentPrompt(agentfile: Agentfile): string {
 export function compileAgentfile(agentfile: Agentfile, target: CompileTarget): string {
   if (target === "json") {
     return `${JSON.stringify(toJsonContract(agentfile), null, 2)}\n`;
+  }
+
+  if (target === "policy-json") {
+    return `${JSON.stringify(toNormalizedPolicy(agentfile), null, 2)}\n`;
   }
 
   if (target === "yaml") {
