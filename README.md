@@ -173,7 +173,7 @@ Compile to a prompt for a coding agent:
 agentfile compile examples/fix-login-race.agentfile --target prompt
 ```
 
-Compile to normalized JSON for automation:
+Compile to strict JSON contract IR for automation:
 
 ```sh
 agentfile compile examples/fix-login-race.agentfile --target json

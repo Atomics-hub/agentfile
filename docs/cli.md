@@ -30,7 +30,7 @@ Compile a contract.
 Targets:
 
 - `prompt`: plain-text prompt for a coding agent.
-- `json`: normalized policy JSON for automation.
+- `json`: strict JSON contract IR for automation.
 - `agents-md`: generated `AGENTS.md` content.
 - `claude-md`: generated `CLAUDE.md` project memory.
 - `cursor-mdc`: generated Cursor project rule content for `.cursor/rules/agentfile.mdc`.

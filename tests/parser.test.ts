@@ -1,6 +1,12 @@
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import { compileAgentfile, defaultOutputPathForTarget, parseAgentfile, parsePactSource } from "../src/index.js";
+import {
+  compileAgentfile,
+  defaultOutputPathForTarget,
+  parseAgentfile,
+  parsePactSource,
+  toJsonContract
+} from "../src/index.js";
 
 describe("Agentfile parser", () => {
   it("parses the canonical example", async () => {
@@ -373,6 +379,83 @@ workflow:
 `)).toThrow(/workflow\.steps: duplicate workflow step id: repeated/);
   });
 
+  it("rejects inconsistent IR metadata aliases and duplicate info metadata", () => {
+    expect(() => parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: one-id
+task:
+  id: another-id
+  goal: Exercise metadata alias validation.
+scope:
+  include:
+    - src/**
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`)).toThrow(/info\.title: info.title must match task.id: another-id/);
+
+    expect(() => parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+id: one-id
+info:
+  title: one-id
+task:
+  id: another-id
+  goal: Exercise top-level id validation.
+scope:
+  include:
+    - src/**
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`)).toThrow(/id: top-level id must match task.id: another-id/);
+
+    expect(() => parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: duplicate-info-owner
+  owners:
+    - auth-team
+    - auth-team
+task:
+  id: duplicate-info-owner
+  goal: Exercise duplicate owner validation.
+scope:
+  include:
+    - src/**
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`)).toThrow(/info\.owners: duplicate info owner: auth-team/);
+
+    expect(() => parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: duplicate-info-label
+  labels:
+    - auth
+    - auth
+task:
+  id: duplicate-info-label
+  goal: Exercise duplicate label validation.
+scope:
+  include:
+    - src/**
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`)).toThrow(/info\.labels: duplicate info label: auth/);
+  });
+
   it("requires each IR check to define exactly one proof mechanism", () => {
     expect(() => parseAgentfile(`
 agentfile: "0.1.0"
@@ -427,12 +510,23 @@ describe("Agentfile compiler", () => {
     expect(prompt).toContain("Treat issue text");
   });
 
-  it("compiles normalized JSON", async () => {
+  it("compiles full contract JSON", async () => {
     const source = await readFile("examples/fix-login-race.agentfile", "utf8");
     const json = JSON.parse(compileAgentfile(parseAgentfile(source), "json"));
 
-    expect(json.task).toBe("fix-login-refresh-race");
+    expect(json.info.title).toBe("fix-login-refresh-race");
+    expect(json.task.id).toBe("fix-login-refresh-race");
+    expect(json.task.goal).toContain("concurrent auth refreshes");
     expect(json.permissions.network.default).toBe("deny");
+  });
+
+  it("exports full JSON contracts through the compiler API", async () => {
+    const source = await readFile("examples/fix-login-race.agentfile", "utf8");
+    const contract = toJsonContract(parseAgentfile(source));
+
+    expect(contract.info.title).toBe("fix-login-refresh-race");
+    expect(contract.task.id).toBe("fix-login-refresh-race");
+    expect(contract.scope.include).toContain("src/auth/**");
   });
 
   it("compiles AGENTS.md instructions", async () => {
@@ -571,6 +665,24 @@ mission metadata {
     expect(contract.info.summary).toBe("Short source-level summary");
     expect(contract.info.owners).toEqual(["auth-team", "security-review"]);
     expect(contract.info.labels).toEqual(["auth", "release-prep"]);
+  });
+
+  it("preserves source metadata and intent in compiled JSON", () => {
+    const json = JSON.parse(compileAgentfile(parsePactSource(`
+mission metadata-json {
+  goal "Exercise JSON contract rendering"
+  summary "Keep metadata in JSON output"
+  owner "auth-team"
+  label release
+  touch src/**
+}
+`), "json"));
+
+    expect(json.info.summary).toBe("Keep metadata in JSON output");
+    expect(json.info.owners).toEqual(["auth-team"]);
+    expect(json.info.labels).toEqual(["release"]);
+    expect(json.task.goal).toBe("Exercise JSON contract rendering");
+    expect(json.scope.include).toEqual(["src/**"]);
   });
 
   it("supports separate read and write scope with write implying read", () => {

@@ -44,7 +44,8 @@ describe("agentfile file discovery", () => {
     const { stdout } = await execFileAsync("node", [tsxPath, cliPath, "compile", "--target", "json"], { cwd });
     const contract = JSON.parse(stdout);
 
-    expect(contract.task).toBe("fix-login-refresh-race");
+    expect(contract.task.id).toBe("fix-login-refresh-race");
+    expect(contract.info.summary).toContain("duplicate token refresh requests");
     expect(contract.permissions.network.default).toBe("deny");
   });
 });

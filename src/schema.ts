@@ -76,6 +76,18 @@ export const checkSchema = z.object({
   }
 });
 
+export const infoSchema = z.object({
+  title: z.string().min(1).regex(/^[a-z0-9][a-z0-9._-]*$/),
+  version: z.string().min(1).optional(),
+  license: z.string().min(1).optional(),
+  summary: z.string().min(1).optional(),
+  owners: z.array(z.string().min(1)).default([]),
+  labels: z.array(z.string().min(1)).default([])
+}).superRefine((info, ctx) => {
+  addDuplicateValueIssues(info.owners, "info owner", ["owners"], ctx);
+  addDuplicateValueIssues(info.labels, "info label", ["labels"], ctx);
+});
+
 export const permissionsSchema = z.object({
   shell: shellPolicySchema.default({ allow: [], deny: [] }),
   network: networkPolicySchema.default({ default: "deny", allow: [] }),
@@ -146,14 +158,7 @@ export const agentfileSchema = z.object({
   agentfile: z.literal("0.1.0"),
   kind: z.literal("TaskContract"),
   id: z.string().min(1).optional(),
-  info: z.object({
-    title: z.string().min(1).regex(/^[a-z0-9][a-z0-9._-]*$/),
-    version: z.string().min(1).optional(),
-    license: z.string().min(1).optional(),
-    summary: z.string().min(1).optional(),
-    owners: z.array(z.string().min(1)).default([]),
-    labels: z.array(z.string().min(1)).default([])
-  }),
+  info: infoSchema,
   task: z.object({
     id: z.string().min(1).regex(/^[a-z0-9][a-z0-9._-]*$/),
     goal: z.string().min(1),
@@ -183,6 +188,22 @@ export const agentfileSchema = z.object({
 }).superRefine((agentfile, ctx) => {
   addDuplicateValueIssues(agentfile.scope.include, "scope include path", ["scope", "include"], ctx);
   addDuplicateValueIssues(agentfile.scope.exclude, "scope exclude path", ["scope", "exclude"], ctx);
+
+  if (agentfile.info.title !== agentfile.task.id) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["info", "title"],
+      message: `info.title must match task.id: ${agentfile.task.id}`
+    });
+  }
+
+  if (agentfile.id && agentfile.id !== agentfile.task.id) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["id"],
+      message: `top-level id must match task.id: ${agentfile.task.id}`
+    });
+  }
 
   const overlappingScope = agentfile.scope.include.filter((path) => agentfile.scope.exclude.includes(path));
   for (const path of overlappingScope) {

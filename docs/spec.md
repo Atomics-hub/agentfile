@@ -52,6 +52,10 @@ info:
     - concurrency
 ```
 
+`info.title` is the human-facing alias for `task.id` in the contract IR, so the two fields must match exactly.
+
+`info.owners` and `info.labels` should be treated as normalized sets. Duplicate exact entries are invalid.
+
 ### `task`
 
 The work to perform.
@@ -170,6 +174,8 @@ Contracts must not reuse ids within the same semantic list:
 - `policies[*].id` values must be unique.
 - `checks[*].id` values must be unique.
 - `workflow.steps[*].id` values must be unique.
+
+If the optional top-level `id` field is present for compatibility with downstream tooling, it must match `task.id`.
 
 ## Policy Defaults
 

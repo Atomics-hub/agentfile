@@ -9,6 +9,7 @@ export type CompileTarget =
   | "copilot-md";
 
 export type SyncTarget = Exclude<CompileTarget, "prompt" | "json">;
+export type JsonContract = Agentfile;
 
 export interface NormalizedPolicy {
   agentfile: "0.1.0";
@@ -108,7 +109,7 @@ export function compileAgentPrompt(agentfile: Agentfile): string {
 
 export function compileAgentfile(agentfile: Agentfile, target: CompileTarget): string {
   if (target === "json") {
-    return `${JSON.stringify(toNormalizedPolicy(agentfile), null, 2)}\n`;
+    return `${JSON.stringify(toJsonContract(agentfile), null, 2)}\n`;
   }
 
   if (target === "agents-md") {
@@ -128,6 +129,10 @@ export function compileAgentfile(agentfile: Agentfile, target: CompileTarget): s
   }
 
   return compileAgentPrompt(agentfile);
+}
+
+export function toJsonContract(agentfile: Agentfile): JsonContract {
+  return structuredClone(agentfile);
 }
 
 export function compileAgentsMarkdown(agentfile: Agentfile): string {
