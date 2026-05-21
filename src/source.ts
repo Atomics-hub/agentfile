@@ -200,9 +200,9 @@ function parseMissionLine(
     return;
   }
 
-  const canRun = line.match(/^can\s+run\s+"([^"]+)"$/);
+  const canRun = quotedArg(line, "can run");
   if (canRun) {
-    const command = canRun[1];
+    const command = canRun;
     if (state.shellDeny.includes(command)) {
       throw syntaxError(`conflicting shell policy for command: ${command}`, filePath, lineNo);
     }
@@ -210,9 +210,9 @@ function parseMissionLine(
     return;
   }
 
-  const cannotRun = line.match(/^cannot\s+run\s+"([^"]+)"$/);
+  const cannotRun = quotedArg(line, "cannot run");
   if (cannotRun) {
-    const command = cannotRun[1];
+    const command = cannotRun;
     if (state.shellAllow.includes(command)) {
       throw syntaxError(`conflicting shell policy for command: ${command}`, filePath, lineNo);
     }
@@ -255,12 +255,12 @@ function parseMissionLine(
     return;
   }
 
-  const canUseNetworkHost = line.match(/^can\s+use\s+network\s+host\s+"([^"]+)"$/);
+  const canUseNetworkHost = quotedArg(line, "can use network host");
   if (canUseNetworkHost) {
     if (state.networkSpecified) {
       throw syntaxError(`conflicting network policy: already ${state.network}`, filePath, lineNo);
     }
-    pushUnique(state.networkAllow, canUseNetworkHost[1]);
+    pushUnique(state.networkAllow, canUseNetworkHost);
     return;
   }
 
@@ -278,7 +278,7 @@ function parseMissionLine(
     return;
   }
 
-  const canReadSecret = line.match(/^can\s+read\s+secret\s+"([^"]+)"$/);
+  const canReadSecret = quotedArg(line, "can read secret");
   if (canReadSecret) {
     ensureCapabilityConsistency(
       state.secretsSpecified,
@@ -290,7 +290,7 @@ function parseMissionLine(
     );
     state.secrets = "allow";
     state.secretsSpecified = true;
-    pushUnique(state.secretAllow, canReadSecret[1]);
+    pushUnique(state.secretAllow, canReadSecret);
     return;
   }
 
@@ -327,22 +327,22 @@ function parseMissionLine(
     return;
   }
 
-  const genericPolicy = line.match(/^(must|must_not|should|may)\s+"([^"]+)"$/);
+  const genericPolicy = quotedKeywordArg(line, ["must", "must_not", "should", "may"]);
   if (genericPolicy) {
-    const [, level, statement] = genericPolicy;
+    const { keyword: level, value: statement } = genericPolicy;
     appendPolicy(state, level as Agentfile["policies"][number]["level"], statement);
     return;
   }
 
-  const mustPreserve = line.match(/^must\s+preserve\s+"([^"]+)"$/);
+  const mustPreserve = quotedArg(line, "must preserve");
   if (mustPreserve) {
-    appendPolicy(state, "must", `${mustPreserve[1]} must be preserved.`, "preserve");
+    appendPolicy(state, "must", `${mustPreserve} must be preserved.`, "preserve");
     return;
   }
 
-  const mustNotLeak = line.match(/^must_not\s+leak\s+"([^"]+)"$/);
+  const mustNotLeak = quotedArg(line, "must_not leak");
   if (mustNotLeak) {
-    appendPolicy(state, "must_not", `${mustNotLeak[1]} must not be leaked.`, "no");
+    appendPolicy(state, "must_not", `${mustNotLeak} must not be leaked.`, "no");
     return;
   }
 
@@ -394,10 +394,9 @@ function parseProveLine(
   filePath: string | undefined,
   lineNo: number
 ): void {
-  const run = line.match(/^run(?:\s+(optional))?\s+"([^"]+)"$/);
-  if (run) {
-    const required = run[1] !== "optional";
-    const command = run[2];
+  const runOptional = quotedArg(line, "run optional");
+  if (runOptional) {
+    const command = runOptional;
     if (state.shellDeny.includes(command)) {
       throw syntaxError(`proof command is denied by shell policy: ${command}`, filePath, lineNo);
     }
@@ -410,22 +409,55 @@ function parseProveLine(
     state.checks.push({
       id: slug(command),
       command,
-      required
+      required: false
     });
     return;
   }
 
-  const check = line.match(/^check(?:\s+(optional))?\s+"([^"]+)"$/);
-  if (check) {
-    const required = check[1] !== "optional";
-    const description = check[2];
+  const runRequired = quotedArg(line, "run");
+  if (runRequired) {
+    const command = runRequired;
+    if (state.shellDeny.includes(command)) {
+      throw syntaxError(`proof command is denied by shell policy: ${command}`, filePath, lineNo);
+    }
+    if (state.checks.some((check) => check.command === command)) {
+      throw syntaxError(`duplicate proof command: ${command}`, filePath, lineNo);
+    }
+    if (!state.shellAllow.includes(command)) {
+      pushUnique(state.shellAllow, command);
+    }
+    state.checks.push({
+      id: slug(command),
+      command,
+      required: true
+    });
+    return;
+  }
+
+  const checkOptional = quotedArg(line, "check optional");
+  if (checkOptional) {
+    const description = checkOptional;
     if (state.checks.some((proofCheck) => proofCheck.description === description)) {
       throw syntaxError(`duplicate proof check: ${description}`, filePath, lineNo);
     }
     state.checks.push({
       id: nextGeneratedId(state.checks, description, "check"),
       description,
-      required
+      required: false
+    });
+    return;
+  }
+
+  const checkRequired = quotedArg(line, "check");
+  if (checkRequired) {
+    const description = checkRequired;
+    if (state.checks.some((proofCheck) => proofCheck.description === description)) {
+      throw syntaxError(`duplicate proof check: ${description}`, filePath, lineNo);
+    }
+    state.checks.push({
+      id: nextGeneratedId(state.checks, description, "check"),
+      description,
+      required: true
     });
     return;
   }
@@ -619,8 +651,26 @@ function addNeverPaths(
 }
 
 function quotedArg(line: string, keyword: string): string | undefined {
-  const match = line.match(new RegExp(`^${keyword}\\s+"([^"]+)"$`));
-  return match?.[1];
+  const prefix = `${keyword} `;
+  if (!line.startsWith(prefix)) {
+    return undefined;
+  }
+
+  return parseQuotedLiteral(line.slice(prefix.length));
+}
+
+function quotedKeywordArg<T extends string>(
+  line: string,
+  keywords: readonly T[]
+): { keyword: T; value: string } | undefined {
+  for (const keyword of keywords) {
+    const value = quotedArg(line, keyword);
+    if (value !== undefined) {
+      return { keyword, value };
+    }
+  }
+
+  return undefined;
 }
 
 function trailingArg(line: string, keyword: string): string | undefined {
@@ -629,9 +679,7 @@ function trailingArg(line: string, keyword: string): string | undefined {
     return undefined;
   }
 
-  const value = match[1].trim();
-  const quoted = value.match(/^"([^"]+)"$/);
-  return quoted?.[1] ?? value;
+  return parseQuotedLiteral(match[1]) ?? match[1].trim();
 }
 
 function ensureApproval(state: PactState, approval: string): void {
@@ -711,18 +759,89 @@ function reviewSentence(verb: string, detail: string): string {
   return `${verb} ${detail.replace(/[.!?]+$/u, "")}.`;
 }
 
+function parseQuotedLiteral(source: string): string | undefined {
+  const value = source.trim();
+  if (!value.startsWith("\"")) {
+    return undefined;
+  }
+
+  let result = "";
+  let escaped = false;
+
+  for (let index = 1; index < value.length; index += 1) {
+    const char = value[index];
+
+    if (escaped) {
+      result += decodeEscape(char);
+      escaped = false;
+      continue;
+    }
+
+    if (char === "\\") {
+      escaped = true;
+      continue;
+    }
+
+    if (char === "\"") {
+      return index === value.length - 1 ? result : undefined;
+    }
+
+    result += char;
+  }
+
+  return undefined;
+}
+
 function stripComment(line: string): string {
   let inString = false;
+  let escaped = false;
   for (let index = 0; index < line.length; index += 1) {
     const char = line[index];
+
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+
+    if (char === "\\" && inString) {
+      escaped = true;
+      continue;
+    }
+
     if (char === "\"") {
       inString = !inString;
+      continue;
     }
+
     if (char === "#" && !inString) {
       return line.slice(0, index);
     }
   }
   return line;
+}
+
+function decodeEscape(char: string): string {
+  if (char === "\"") {
+    return "\"";
+  }
+
+  if (char === "\\") {
+    return "\\";
+  }
+
+  if (char === "n") {
+    return "\n";
+  }
+
+  if (char === "r") {
+    return "\r";
+  }
+
+  if (char === "t") {
+    return "\t";
+  }
+
+  return `\\${char}`;
 }
 
 function looksLikePact(source: string): boolean {

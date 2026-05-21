@@ -55,6 +55,8 @@ label concurrency
 
 These lines lower into `info.summary`, `info.owners`, and `info.labels` in the contract IR.
 
+Quoted source strings accept escaped quotes and backslashes, which keeps realistic shell commands and file-path examples representable without breaking the small grammar.
+
 ### `read`, `write`, `touch`, And `never`
 
 Filesystem authority.

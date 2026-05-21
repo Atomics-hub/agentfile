@@ -837,6 +837,73 @@ mission handoff-requirements {
     ]);
   });
 
+  it("supports escaped quoted strings in source declarations and proof commands", () => {
+    const contract = parsePactSource(`
+mission escaped-strings {
+  goal "Preserve \\\"quoted\\\" intent in commands" # trailing comment stays outside the string
+  summary "Handle Windows-style paths like C:\\\\temp"
+  touch src/**
+
+  can run "node --test --grep \\\"auth flow\\\""
+  can use network host "api.github.com"
+  can read secret "PATH_WITH_\\\\SLASH"
+  must "Keep \\\"auth flow\\\" behavior stable."
+
+  plan {
+    step "Inspect the \\\"auth flow\\\" fixtures"
+  }
+
+  prove {
+    run "node --test --grep \\\"auth flow\\\""
+    check "Review the \\\"auth flow\\\" output"
+    expect "Logs only mention C:\\\\temp fixtures"
+  }
+
+  handoff {
+    explain "why the \\\"auth flow\\\" command changed"
+    note "follow-up on C:\\\\temp fixtures"
+  }
+}
+`);
+
+    expect(contract.task.goal).toBe("Preserve \"quoted\" intent in commands");
+    expect(contract.info.summary).toBe("Handle Windows-style paths like C:\\temp");
+    expect(contract.permissions.shell.allow).toContain("node --test --grep \"auth flow\"");
+    expect(contract.permissions.network.allow).toEqual(["api.github.com"]);
+    expect(contract.permissions.secrets.allow).toEqual(["PATH_WITH_\\SLASH"]);
+    expect(contract.policies).toContainEqual({
+      id: "keep-auth-flow-behavior-stable",
+      level: "must",
+      appliesTo: [],
+      statement: "Keep \"auth flow\" behavior stable."
+    });
+    expect(contract.workflow.steps).toEqual([
+      {
+        id: "inspect-the-auth-flow-fixtures",
+        do: "Inspect the \"auth flow\" fixtures"
+      }
+    ]);
+    expect(contract.checks).toEqual([
+      {
+        id: "node-test-grep-auth-flow",
+        command: "node --test --grep \"auth flow\"",
+        required: true
+      },
+      {
+        id: "review-the-auth-flow-output",
+        description: "Review the \"auth flow\" output",
+        required: true
+      }
+    ]);
+    expect(contract.workflow.acceptance).toEqual([
+      "Logs only mention C:\\temp fixtures"
+    ]);
+    expect(contract.workflow.review).toEqual([
+      "Explain why the \"auth flow\" command changed.",
+      "Note follow-up on C:\\temp fixtures."
+    ]);
+  });
+
   it("supports generic policy statements with stable unique ids", () => {
     const contract = parsePactSource(`
 mission generic-policies {
