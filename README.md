@@ -55,6 +55,8 @@ mission fix-login-refresh-race {
 
 The source language can express grants, denials, approval gates, metadata, and both automated and manual proof requirements. For example: `summary "..."`, `owner "auth-team"`, `label auth`, `can use network`, `can use network host "api.github.com"`, `cannot run "npm publish"`, `can read secret "OPENAI_API_KEY"`, `check "Review the release checklist"`, `run optional "npm run perf"`, `check optional "Review benchmark drift"`, and `ask approval for release_publish`.
 
+Broad secret access via `can read secrets` is intentionally mutually exclusive with named `can read secret "NAME"` entries so Pact always lowers to one unambiguous IR secret policy.
+
 Quoted source strings support escaped quotes and backslashes, so commands like `run "node --test --grep \\\"auth flow\\\""` and notes like `note "follow-up on C:\\\\temp fixtures"` lower correctly.
 
 Filesystem scope can now distinguish read-only and writable areas with `read ...` and `write ...`. `touch ...` remains available as shorthand for paths that should be both readable and writable, and `write` implies read access when lowered into the contract IR.

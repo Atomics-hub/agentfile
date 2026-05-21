@@ -293,6 +293,13 @@ function parseMissionLine(
   }
 
   if (line === "can read secrets") {
+    if (state.secretAllow.length > 0) {
+      throw syntaxError(
+        "conflicting secrets policy: already restricted to named secrets",
+        filePath,
+        lineNo
+      );
+    }
     ensureCapabilityConsistency(
       state.secretsSpecified,
       state.secrets,
@@ -303,11 +310,19 @@ function parseMissionLine(
     );
     state.secrets = "allow";
     state.secretsSpecified = true;
+    state.secretsAllAllowed = true;
     return;
   }
 
   const canReadSecret = quotedArg(line, "can read secret", filePath, lineNo);
   if (canReadSecret !== undefined) {
+    if (state.secretsAllAllowed) {
+      throw syntaxError(
+        "conflicting secrets policy: already allows every secret",
+        filePath,
+        lineNo
+      );
+    }
     ensureCapabilityConsistency(
       state.secretsSpecified,
       state.secrets,
@@ -557,6 +572,7 @@ function emptyState(): PactState {
     networkAllow: [],
     secrets: "deny",
     secretsSpecified: false,
+    secretsAllAllowed: false,
     secretAllow: [],
     approvals: ["dependency_change", "network_access", "scope_expansion"],
     policies: [],
@@ -589,6 +605,7 @@ interface PactState {
   networkAllow: string[];
   secrets: "allow" | "deny";
   secretsSpecified: boolean;
+  secretsAllAllowed: boolean;
   secretAllow: string[];
   approvals: string[];
   policies: Agentfile["policies"];

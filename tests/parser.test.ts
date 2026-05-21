@@ -648,6 +648,28 @@ mission release-prep {
     expect(contract.permissions.shell.deny).toEqual(["npm publish"]);
   });
 
+  it("rejects mixed broad and named secret grants", () => {
+    expect(() => parsePactSource(`
+mission mixed-secret-grants {
+  goal "Exercise secret grant diagnostics"
+  touch src/**
+
+  can read secrets
+  can read secret "NPM_TOKEN"
+}
+`)).toThrow(/conflicting secrets policy: already allows every secret/);
+
+    expect(() => parsePactSource(`
+mission mixed-secret-grants-reversed {
+  goal "Exercise secret grant diagnostics"
+  touch src/**
+
+  can read secret "NPM_TOKEN"
+  can read secrets
+}
+`)).toThrow(/conflicting secrets policy: already restricted to named secrets/);
+  });
+
   it("supports explicit source metadata with deduplicated owners and labels", () => {
     const contract = parsePactSource(`
 mission metadata {
