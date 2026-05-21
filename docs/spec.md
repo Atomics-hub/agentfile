@@ -109,6 +109,10 @@ permissions:
       - scope_expansion
 ```
 
+Exact path entries may not appear in both `permissions.filesystem.read` or `permissions.filesystem.write` and `permissions.filesystem.deny`.
+
+Exact `permissions.filesystem.write` entries must also appear in `permissions.filesystem.read`.
+
 ### `policies`
 
 Rules that must remain true.

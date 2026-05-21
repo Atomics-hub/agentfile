@@ -123,6 +123,58 @@ workflow:
 `)).toThrow(/permissions\.shell\.deny: shell command cannot be both allowed and denied: npm test/);
   });
 
+  it("rejects contradictory IR filesystem states", () => {
+    expect(() => parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: invalid-filesystem-deny
+task:
+  id: invalid-filesystem-deny
+  goal: Exercise filesystem validation.
+scope:
+  include:
+    - src/**
+permissions:
+  filesystem:
+    read:
+      - src/**
+    write:
+      - tests/**
+    deny:
+      - src/**
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`)).toThrow(
+      /permissions\.filesystem\.deny: filesystem path cannot be both readable\/writable and denied: src\/\*\*/
+    );
+
+    expect(() => parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: invalid-filesystem-write
+task:
+  id: invalid-filesystem-write
+  goal: Exercise filesystem validation.
+scope:
+  include:
+    - src/**
+permissions:
+  filesystem:
+    read:
+      - src/**
+    write:
+      - tests/**
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`)).toThrow(/permissions\.filesystem\.write: filesystem write path must also appear in read: tests\/\*\*/);
+  });
+
   it("rejects duplicate IR identifiers and exact scope conflicts", () => {
     expect(() => parseAgentfile(`
 agentfile: "0.1.0"

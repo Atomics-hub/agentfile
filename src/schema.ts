@@ -90,6 +90,31 @@ export const permissionsSchema = z.object({
       message: "secret allowlist requires permissions.secrets.access to be allow"
     });
   }
+
+  const filesystemOverlap = [
+    ...permissions.filesystem.read,
+    ...permissions.filesystem.write
+  ].filter((path, index, values) => {
+    return permissions.filesystem.deny.includes(path) && values.indexOf(path) === index;
+  });
+  for (const path of filesystemOverlap) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["filesystem", "deny"],
+      message: `filesystem path cannot be both readable/writable and denied: ${path}`
+    });
+  }
+
+  const writeWithoutRead = permissions.filesystem.write.filter(
+    (path) => !permissions.filesystem.read.includes(path)
+  );
+  for (const path of writeWithoutRead) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["filesystem", "write"],
+      message: `filesystem write path must also appear in read: ${path}`
+    });
+  }
 });
 
 export const agentfileSchema = z.object({
