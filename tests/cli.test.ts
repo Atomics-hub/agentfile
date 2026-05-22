@@ -8,12 +8,13 @@ import { afterEach, describe, expect, it } from "vitest";
 
 const execFileAsync = promisify(execFile);
 
-const cliPath = fileURLToPath(new URL("../src/cli.ts", import.meta.url));
+const cliPath = fileURLToPath(new URL("../dist/cli.js", import.meta.url));
 const examplePath = fileURLToPath(new URL("../examples/fix-login-race.agent", import.meta.url));
 const exampleContractPath = fileURLToPath(new URL("../examples/fix-login-race.agentfile", import.meta.url));
-const tsxPath = fileURLToPath(new URL("../node_modules/tsx/dist/cli.mjs", import.meta.url));
 
 const tempDirs: string[] = [];
+
+const runCli = (args: string[], cwd: string) => execFileAsync("node", [cliPath, ...args], { cwd });
 
 afterEach(async () => {
   await Promise.all(tempDirs.splice(0).map((dir) => rm(dir, { recursive: true, force: true })));
@@ -25,13 +26,13 @@ describe("agentfile init", () => {
     tempDirs.push(cwd);
 
     const outputPath = join(cwd, "starter.agent");
-    await execFileAsync("node", [tsxPath, cliPath, "init", outputPath, "--format", "agent"], { cwd });
+    await runCli(["init", outputPath, "--format", "agent"], cwd);
 
     const content = await readFile(outputPath, "utf8");
     expect(content).toContain("mission my-agent-task {");
     expect(content).toContain('goal "State the concrete outcome the agent should produce"');
 
-    const { stdout } = await execFileAsync("node", [tsxPath, cliPath, "compile", outputPath, "--target", "json"], { cwd });
+    const { stdout } = await runCli(["compile", outputPath, "--target", "json"], cwd);
     const contract = JSON.parse(stdout);
 
     expect(contract.task.id).toBe("my-agent-task");
@@ -50,7 +51,7 @@ describe("agentfile init", () => {
     tempDirs.push(cwd);
 
     const outputPath = join(cwd, "agentfile.agent");
-    await execFileAsync("node", [tsxPath, cliPath, "init", outputPath], { cwd });
+    await runCli(["init", outputPath], cwd);
 
     const content = await readFile(outputPath, "utf8");
     expect(content).toContain("mission my-agent-task {");
@@ -63,7 +64,7 @@ describe("agentfile sync", () => {
     const cwd = await mkdtemp(join(tmpdir(), "agentfile-sync-"));
     tempDirs.push(cwd);
 
-    await execFileAsync("node", [tsxPath, cliPath, "sync", examplePath, "--target", "cursor-mdc"], { cwd });
+    await runCli(["sync", examplePath, "--target", "cursor-mdc"], cwd);
 
     const outputPath = join(cwd, ".cursor/rules/agentfile.mdc");
     const content = await readFile(outputPath, "utf8");
@@ -77,7 +78,7 @@ describe("agentfile sync", () => {
     tempDirs.push(cwd);
 
     await expect(
-      execFileAsync("node", [tsxPath, cliPath, "sync", examplePath, "--target", "yaml"], { cwd })
+      runCli(["sync", examplePath, "--target", "yaml"], cwd)
     ).rejects.toMatchObject({
       stderr: expect.stringContaining(
         'sync target "yaml" is not file-backed. Expected "agents-md", "claude-md", "cursor-mdc", "copilot-md".'
@@ -91,7 +92,7 @@ describe("agentfile targets", () => {
     const cwd = await mkdtemp(join(tmpdir(), "agentfile-targets-"));
     tempDirs.push(cwd);
 
-    const { stdout } = await execFileAsync("node", [tsxPath, cliPath, "targets"], { cwd });
+    const { stdout } = await runCli(["targets"], cwd);
 
     expect(stdout).toContain("json");
     expect(stdout).toContain("strict JSON contract IR");
@@ -108,7 +109,7 @@ describe("agentfile file discovery", () => {
     const source = await readFile(examplePath, "utf8");
     await writeFile(join(cwd, "agentfile.agent"), source, "utf8");
 
-    const { stdout } = await execFileAsync("node", [tsxPath, cliPath, "compile", "--target", "json"], { cwd });
+    const { stdout } = await runCli(["compile", "--target", "json"], cwd);
     const contract = JSON.parse(stdout);
 
     expect(contract.task.id).toBe("fix-login-refresh-race");
@@ -120,9 +121,7 @@ describe("agentfile file discovery", () => {
     const cwd = await mkdtemp(join(tmpdir(), "agentfile-policy-json-"));
     tempDirs.push(cwd);
 
-    const { stdout } = await execFileAsync("node", [tsxPath, cliPath, "compile", examplePath, "--target", "policy-json"], {
-      cwd
-    });
+    const { stdout } = await runCli(["compile", examplePath, "--target", "policy-json"], cwd);
     const policy = JSON.parse(stdout);
 
     expect(policy.agentfile).toBe("0.1.0");
@@ -135,9 +134,7 @@ describe("agentfile file discovery", () => {
     const cwd = await mkdtemp(join(tmpdir(), "agentfile-agent-target-"));
     tempDirs.push(cwd);
 
-    const { stdout } = await execFileAsync("node", [tsxPath, cliPath, "compile", exampleContractPath, "--target", "agent"], {
-      cwd
-    });
+    const { stdout } = await runCli(["compile", exampleContractPath, "--target", "agent"], cwd);
 
     expect(stdout).toContain("mission fix-login-refresh-race {");
     expect(stdout).toContain('summary "Prevent duplicate token refresh requests during concurrent auth calls."');
@@ -189,7 +186,7 @@ workflow:
     - Done.
 `, "utf8");
 
-    const { stdout } = await execFileAsync("node", [tsxPath, cliPath, "lint", contractPath], { cwd });
+    const { stdout } = await runCli(["lint", contractPath], cwd);
 
     expect(stdout).toContain(`WARN ${contractPath}`);
     expect(stdout).toContain("scope.include: mission scope includes the entire repository");
@@ -237,7 +234,7 @@ workflow:
     - Done.
 `, "utf8");
 
-    const { stdout } = await execFileAsync("node", [tsxPath, cliPath, "lint", contractPath], { cwd });
+    const { stdout } = await runCli(["lint", contractPath], cwd);
 
     expect(stdout).toContain(`WARN ${contractPath}`);
     expect(stdout).toContain("permissions.approvals.requiredFor: publish command is allowed without release_publish approval gating: npm publish");

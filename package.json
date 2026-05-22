@@ -40,9 +40,9 @@
     "build": "tsc -p tsconfig.json",
     "dev": "tsx src/cli.ts",
     "lint": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run",
+    "test": "npm run build && vitest run",
     "audit": "npm audit --audit-level=moderate",
-    "check": "npm run lint && npm test && npm run build && npm run audit"
+    "check": "npm run lint && npm test && npm run audit"
   },
   "dependencies": {
     "commander": "^12.1.0",
