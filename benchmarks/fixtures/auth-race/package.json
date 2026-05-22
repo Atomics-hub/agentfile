@@ -1,0 +1,11 @@
+{
+  "name": "agentfile-auth-race-fixture",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node scripts/test.mjs",
+    "lint": "node scripts/lint.mjs"
+  }
+}
+

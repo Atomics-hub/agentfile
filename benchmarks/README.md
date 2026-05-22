@@ -15,6 +15,8 @@ npm run benchmark:plan
 
 The current command validates that benchmark inputs exist, validates any JSON receipts in `benchmarks/receipts/`, and prints the planned task, conditions, checks, metrics, and receipt count. It does not run agents and it does not claim results.
 
+The first stored receipt is an Agentfile-condition run for `fix-login-refresh-race`. It is useful as a receipt-format proof and smoke test, but it is not enough to support the benchmark claim without a matching plain-issue baseline and repeated runs.
+
 ## First Claim To Test
 
 > On repo-local software delegation tasks, Agentfile contracts improve scope adherence and verification rate compared with plain issue prompts.

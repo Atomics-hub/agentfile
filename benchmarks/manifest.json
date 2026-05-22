@@ -17,6 +17,7 @@
     {
       "id": "fix-login-refresh-race",
       "family": "bug_fix_with_regression_test",
+      "fixture": "benchmarks/fixtures/auth-race",
       "checks": [
         "npm test -- auth",
         "npm run lint"
@@ -36,4 +37,3 @@
     }
   ]
 }
-

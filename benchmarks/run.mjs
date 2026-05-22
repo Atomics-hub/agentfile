@@ -12,6 +12,15 @@ const conditionIds = new Set(
 
 const missingInputs = [];
 for (const task of manifest.tasks ?? []) {
+  if (task.fixture) {
+    const fixturePath = resolve(root, task.fixture);
+    try {
+      await access(fixturePath);
+    } catch {
+      missingInputs.push(task.fixture);
+    }
+  }
+
   for (const condition of task.conditions ?? []) {
     const inputPath = resolve(root, condition.input);
     try {
@@ -53,6 +62,7 @@ if (missingInputs.length > 0 || receiptErrors.length > 0) {
     tasks: manifest.tasks.map((task) => ({
       id: task.id,
       family: task.family,
+      fixture: task.fixture,
       checks: task.checks,
       conditions: task.conditions.map((condition) => ({
         id: condition.id,

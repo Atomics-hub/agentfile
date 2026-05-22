@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added an executable auth-race benchmark fixture and one validated Agentfile-condition benchmark receipt.
 - Added a benchmark receipt schema, template, and validation path so future evidence can be stored consistently.
 - Tightened pre-public package metadata, guarded npm publishing, and added a conservative benchmark skeleton with a plain-issue baseline.
 - Split prompt, Pact source, and agent-instruction renderers into focused modules while keeping compiler target orchestration centralized.
