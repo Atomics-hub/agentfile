@@ -13,7 +13,7 @@ Preview the benchmark plan:
 npm run benchmark:plan
 ```
 
-The current command validates that benchmark inputs exist and prints the planned task, conditions, checks, and metrics. It does not run agents and it does not claim results.
+The current command validates that benchmark inputs exist, validates any JSON receipts in `benchmarks/receipts/`, and prints the planned task, conditions, checks, metrics, and receipt count. It does not run agents and it does not claim results.
 
 ## First Claim To Test
 
@@ -33,3 +33,4 @@ Each real benchmark run should store:
 - Verification command execution score.
 - Final handoff quality notes.
 
+Use [templates/receipt.template.json](templates/receipt.template.json) for new runs. Receipt JSON files belong under `benchmarks/receipts/`, alongside transcript, diff, check log, and notes artifacts.

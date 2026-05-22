@@ -50,7 +50,7 @@ Preview the benchmark plan:
 npm run benchmark:plan
 ```
 
-The current skeleton does not run agents or claim results. It only records the first task, conditions, checks, and metrics so future benchmark runs can produce comparable receipts.
+The current skeleton does not run agents or claim results. It records the first task, conditions, checks, metrics, and receipt shape so future benchmark runs can produce comparable receipts.
 
 The full benchmark harness should:
 
@@ -61,6 +61,8 @@ The full benchmark harness should:
 - Run deterministic tests and static checks.
 - Score policy adherence.
 - Store receipts for review.
+
+Each receipt should follow `benchmarks/receipt.schema.json` and live under `benchmarks/receipts/` with links to its transcript, diff, check log, and review notes.
 
 ## First Public Claim To Earn
 

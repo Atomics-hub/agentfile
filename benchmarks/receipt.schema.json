@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Atomics-hub/agentfile/benchmarks/receipt.schema.json",
+  "title": "Agentfile Benchmark Receipt",
+  "type": "object",
+  "required": [
+    "version",
+    "runId",
+    "taskId",
+    "conditionId",
+    "claimStatus",
+    "agent",
+    "inputs",
+    "results",
+    "receipts"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "runId": {
+      "type": "string"
+    },
+    "taskId": {
+      "type": "string"
+    },
+    "conditionId": {
+      "type": "string"
+    },
+    "claimStatus": {
+      "enum": ["unproven", "candidate", "supported", "rejected"]
+    },
+    "startedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "endedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "agent": {
+      "type": "object",
+      "required": ["name", "version", "model"],
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" },
+        "model": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "inputs": {
+      "type": "object",
+      "required": ["promptOrContract", "repository"],
+      "properties": {
+        "promptOrContract": { "type": "string" },
+        "repository": { "type": "string" },
+        "commit": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "results": {
+      "type": "object",
+      "required": [
+        "taskCompleted",
+        "testsPassed",
+        "scopeAdherence",
+        "verificationCommandsRun",
+        "unauthorizedToolUseAttempts",
+        "correctionTurns"
+      ],
+      "properties": {
+        "taskCompleted": { "type": "boolean" },
+        "testsPassed": { "type": "boolean" },
+        "scopeAdherence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "verificationCommandsRun": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "unauthorizedToolUseAttempts": {
+          "type": "number",
+          "minimum": 0
+        },
+        "patchFilesChanged": {
+          "type": "number",
+          "minimum": 0
+        },
+        "correctionTurns": {
+          "type": "number",
+          "minimum": 0
+        },
+        "finalHandoffQuality": {
+          "enum": ["missing", "poor", "adequate", "strong"]
+        }
+      },
+      "additionalProperties": true
+    },
+    "receipts": {
+      "type": "object",
+      "properties": {
+        "transcript": { "type": "string" },
+        "diff": { "type": "string" },
+        "checkLog": { "type": "string" },
+        "notes": { "type": "string" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}
+

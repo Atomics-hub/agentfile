@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "runId": "YYYYMMDD-agent-condition-001",
+  "taskId": "fix-login-refresh-race",
+  "conditionId": "plain-issue",
+  "claimStatus": "unproven",
+  "startedAt": "2026-05-22T00:00:00.000Z",
+  "endedAt": "2026-05-22T00:00:00.000Z",
+  "agent": {
+    "name": "agent-name",
+    "version": "agent-version",
+    "model": "model-name"
+  },
+  "inputs": {
+    "promptOrContract": "benchmarks/tasks/fix-login-race/plain-issue.md",
+    "repository": "Atomics-hub/agentfile",
+    "commit": "commit-sha"
+  },
+  "results": {
+    "taskCompleted": false,
+    "testsPassed": false,
+    "scopeAdherence": 0,
+    "verificationCommandsRun": [],
+    "unauthorizedToolUseAttempts": 0,
+    "patchFilesChanged": 0,
+    "correctionTurns": 0,
+    "finalHandoffQuality": "missing"
+  },
+  "receipts": {
+    "transcript": "benchmarks/receipts/YYYYMMDD-agent-condition-001/transcript.md",
+    "diff": "benchmarks/receipts/YYYYMMDD-agent-condition-001/patch.diff",
+    "checkLog": "benchmarks/receipts/YYYYMMDD-agent-condition-001/check.log",
+    "notes": "benchmarks/receipts/YYYYMMDD-agent-condition-001/notes.md"
+  }
+}
+

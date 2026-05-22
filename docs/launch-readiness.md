@@ -53,7 +53,7 @@ The repository is ready to go public when:
 
 ## Current Highest-Leverage Work
 
-1. Run the benchmark skeleton through at least one real agent/model and store receipts.
+1. Run the benchmark skeleton through at least one real agent/model and store validated receipts.
 2. Keep broad benchmark claims out of public docs until data exists.
 3. Add JSON Schema export or document why it is post-launch.
 4. Decide whether npm package publishing belongs in the first public launch or a later release.
