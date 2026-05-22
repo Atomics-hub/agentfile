@@ -69,6 +69,8 @@ never src/billing/**, infra/**
 
 `touch` remains shorthand for paths that should be both readable and writable. `write` implies read access in the lowered contract, so the IR stays executable for real code changes while the source stays explicit about writable surfaces.
 
+The canonical Pact renderer should use `touch` when contract read and write scopes match exactly, and fall back to separate `read` plus `write` directives when the source needs to distinguish read-only authority from writable authority.
+
 ### `can` And `cannot`
 
 Capabilities and denied effects.

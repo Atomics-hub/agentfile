@@ -2,9 +2,20 @@ import type { Agentfile } from "../schema.js";
 
 export function compileAgentSource(agentfile: Agentfile): string {
   const lines = [`mission ${agentfile.task.id} {`];
-  const readOnlyPaths = agentfile.permissions.filesystem.read.filter(
-    (path) => !agentfile.permissions.filesystem.write.includes(path)
-  );
+  const writesMatchReads =
+    agentfile.permissions.filesystem.write.length > 0 &&
+    agentfile.permissions.filesystem.write.length === agentfile.permissions.filesystem.read.length &&
+    agentfile.permissions.filesystem.write.every(
+      (path, index) => path === agentfile.permissions.filesystem.read[index]
+    );
+  const touchPaths = writesMatchReads
+    ? agentfile.permissions.filesystem.write
+    : [];
+  const readOnlyPaths = writesMatchReads
+    ? []
+    : agentfile.permissions.filesystem.read.filter(
+        (path) => !agentfile.permissions.filesystem.write.includes(path)
+      );
   const sharedNeverPaths = agentfile.scope.exclude.filter(
     (path) => agentfile.permissions.filesystem.deny.includes(path)
   );
@@ -52,7 +63,9 @@ export function compileAgentSource(agentfile: Agentfile): string {
     lines.push(`  read ${readOnlyPaths.join(", ")}`);
   }
 
-  if (agentfile.permissions.filesystem.write.length > 0) {
+  if (touchPaths.length > 0) {
+    lines.push(`  touch ${touchPaths.join(", ")}`);
+  } else if (agentfile.permissions.filesystem.write.length > 0) {
     lines.push(`  write ${agentfile.permissions.filesystem.write.join(", ")}`);
   }
 
@@ -70,6 +83,7 @@ export function compileAgentSource(agentfile: Agentfile): string {
 
   if (
     readOnlyPaths.length > 0 ||
+    touchPaths.length > 0 ||
     agentfile.permissions.filesystem.write.length > 0 ||
     sharedNeverPaths.length > 0 ||
     excludeOnlyPaths.length > 0 ||
@@ -265,4 +279,3 @@ function renderLeakPolicy(policy: Agentfile["policies"][number]): string | undef
 
   return match[1];
 }
-

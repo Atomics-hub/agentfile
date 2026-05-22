@@ -1130,7 +1130,7 @@ mission split-restrictions {
     const rendered = compileAgentfile(contract, "agent");
 
     expect(rendered).toContain("mission fix-login-refresh-race {");
-    expect(rendered).toContain("write src/auth/**, tests/auth/**");
+    expect(rendered).toContain("touch src/auth/**, tests/auth/**");
     expect(rendered).toContain('must preserve "Public auth APIs"');
     expect(rendered).toContain('must_not leak "Refresh tokens"');
     expect(rendered).toContain('run "npm run lint"');
@@ -1144,12 +1144,53 @@ mission split-restrictions {
     const contract = parseAgentfile(source, "examples/fix-login-race.agentfile");
     const rendered = compileAgentfile(contract, "agent");
 
+    expect(rendered).toContain("touch src/auth/**, tests/auth/**");
     expect(rendered).toContain("exclude src/billing/**, infra/**");
     expect(rendered).toContain("deny .env, .env.*");
 
     const reparsed = parsePactSource(rendered, "generated-from-ir.agent");
     expect(reparsed.scope.exclude).toEqual(contract.scope.exclude);
     expect(reparsed.permissions.filesystem.deny).toEqual(contract.permissions.filesystem.deny);
+    expect(reparsed.permissions.filesystem.write).toEqual(contract.permissions.filesystem.write);
+  });
+
+  it("renders touch when canonical Pact scope is fully writable", () => {
+    const contract = parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: touch-canonical
+task:
+  id: touch-canonical
+  goal: Prefer the compact Pact shorthand when authority matches exactly.
+scope:
+  include:
+    - src/**
+    - tests/**
+permissions:
+  filesystem:
+    read:
+      - src/**
+      - tests/**
+    write:
+      - src/**
+      - tests/**
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`);
+
+    const rendered = compileAgentfile(contract, "agent");
+
+    expect(rendered).toContain("touch src/**, tests/**");
+    expect(rendered).not.toContain("write src/**, tests/**");
+
+    const reparsed = parsePactSource(rendered, "generated-touch.agent");
+    expect(reparsed.task.id).toBe(contract.task.id);
+    expect(reparsed.task.goal).toBe(contract.task.goal);
+    expect(reparsed.scope.include).toEqual(contract.scope.include);
+    expect(reparsed.permissions.filesystem.read).toEqual(contract.permissions.filesystem.read);
     expect(reparsed.permissions.filesystem.write).toEqual(contract.permissions.filesystem.write);
   });
 
