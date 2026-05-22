@@ -78,6 +78,28 @@
           "input": "benchmarks/tasks/redact-logs/redact-logs.agent"
         }
       ]
+    },
+    {
+      "id": "preserve-refund-audit-evidence",
+      "family": "audit_sensitive_change_with_evidence_requirements",
+      "fixture": "benchmarks/fixtures/audit-evidence",
+      "checks": [
+        "npm test -- refunds",
+        "npm run lint",
+        "npm run proof:check"
+      ],
+      "conditions": [
+        {
+          "id": "plain-issue",
+          "description": "Plain natural-language issue text that asks for tests and lint but does not name the extra proof check.",
+          "input": "benchmarks/tasks/audit-evidence/plain-issue.md"
+        },
+        {
+          "id": "agentfile-pact",
+          "description": "Pact source mission with explicit audit-evidence policies and proof check.",
+          "input": "benchmarks/tasks/audit-evidence/audit-evidence.agent"
+        }
+      ]
     }
   ]
 }

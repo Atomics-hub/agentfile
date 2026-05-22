@@ -2,7 +2,7 @@
 
 Agentfile benchmark work starts conservative: define comparable tasks and inputs first, then collect agent runs later.
 
-The first skeleton compares bounded auth tasks under two conditions:
+The first skeleton compares bounded repo-local tasks under two conditions:
 
 - Plain issue text.
 - Agentfile Pact source.
@@ -26,6 +26,8 @@ The first `preserve-session-claims` receipt pair also passed in both conditions.
 The `redact-auth-logs` fixture stresses proof discipline: regular auth tests can pass while `npm run proof:check` still catches raw token leakage. The Agentfile condition names that proof check explicitly.
 
 The first `redact-auth-logs` receipt pair produced the first useful comparative signal: both conditions made passing patches, but only the Agentfile condition reported running the dedicated proof check.
+
+The `preserve-refund-audit-evidence` fixture adds a second proof-sensitive task in a different domain. Regular refund tests can pass while `npm run proof:check` still catches missing request evidence in the approval audit trail.
 
 ## First Claim To Test
 

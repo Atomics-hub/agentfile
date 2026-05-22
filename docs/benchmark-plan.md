@@ -42,7 +42,7 @@ Each task should run under at least four prompt/input conditions:
 
 ## Harness
 
-The benchmark skeleton in `benchmarks/` starts with matched plain-issue and Agentfile conditions for bounded auth tasks. The first task is a small race fix. The second task adds an explicit scope boundary with billing files that must remain unchanged.
+The benchmark skeleton in `benchmarks/` starts with matched plain-issue and Agentfile conditions for bounded repo-local tasks. The first task is a small auth race fix. The second task adds an explicit scope boundary with billing files that must remain unchanged.
 
 Preview the benchmark plan:
 
@@ -73,6 +73,8 @@ The first `preserve-session-claims` receipt pair passed in both conditions. Both
 The `redact-auth-logs` task is designed to test proof discipline: regular auth tests can pass while a dedicated proof check catches leaked token values. The plain issue asks for tests and lint; the Agentfile condition explicitly requires `npm run proof:check`.
 
 The first `redact-auth-logs` receipt pair produced a candidate signal for Agentfile's proof-checking value: both patches passed independent verification, but only the Agentfile-condition worker reported executing the dedicated proof check.
+
+The `preserve-refund-audit-evidence` task adds a second proof-sensitive fixture. Regular refund tests can pass while a dedicated proof check catches approval audit events that fail to preserve actor, request, reason, and timestamp evidence.
 
 ## First Public Claim To Earn
 

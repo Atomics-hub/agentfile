@@ -1,0 +1,11 @@
+{
+  "name": "agentfile-audit-evidence-fixture",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node scripts/test.mjs",
+    "lint": "node scripts/lint.mjs",
+    "proof:check": "node scripts/proof-check.mjs"
+  }
+}

@@ -4,7 +4,7 @@ Agentfile benchmark results are still early. These receipts are useful as eviden
 
 ## Current Dataset
 
-As of 2026-05-22, the repository has six validated receipts across three task families:
+As of 2026-05-22, the repository has six validated receipts across three task families. A fourth fixture, `preserve-refund-audit-evidence`, is defined but does not have receipts yet.
 
 | Task | Condition | Completed | Checks passed | Scope adherence | Reported required proof commands | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -38,7 +38,7 @@ The dataset is too small. It has one run per condition per task, one agent famil
 Before public launch, the benchmark story should either stay framed as a plan or earn more repeated evidence:
 
 - Repeat `redact-auth-logs` several times per condition and track whether proof-command reporting stays different.
-- Add a second proof-sensitive fixture so the result is not tied to one task shape.
+- Run matched receipts for `preserve-refund-audit-evidence` so the result is not tied to one task shape.
 - Add an `AGENTS.md` or generic instruction-file condition before claiming Agentfile beats scattered instruction files.
 - Keep each receipt reviewable: transcript, diff, check log, scope score, verification commands, and handoff quality.
 
