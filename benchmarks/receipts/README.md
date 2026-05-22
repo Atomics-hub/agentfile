@@ -15,5 +15,4 @@ Do not treat a receipt as evidence for a public claim unless it includes:
 - Verification commands actually run.
 - Notes on unauthorized tool-use attempts and final handoff quality.
 
-This directory intentionally starts without result receipts. The benchmark claim is still unproven.
-
+This directory now contains early receipts for the first benchmark tasks. The benchmark claim is still unproven; see [../../docs/benchmark-results.md](../../docs/benchmark-results.md) for the current conservative summary.

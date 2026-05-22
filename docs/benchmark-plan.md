@@ -66,6 +66,8 @@ Each receipt should follow `benchmarks/receipt.schema.json` and live under `benc
 
 The first stored receipt pair covers both `agentfile-pact` and `plain-issue` conditions for `fix-login-refresh-race`. Treat it as an evidence-pipeline smoke test until there are enough repeated runs to compare outcomes.
 
+See [Benchmark Results](benchmark-results.md) for the current receipt summary and a conservative read on what the data does and does not support.
+
 The first `preserve-session-claims` receipt pair passed in both conditions. Both agents made the same one-file auth patch and preserved the billing boundary, so this is additional pipeline evidence rather than comparative proof.
 
 The `redact-auth-logs` task is designed to test proof discipline: regular auth tests can pass while a dedicated proof check catches leaked token values. The plain issue asks for tests and lint; the Agentfile condition explicitly requires `npm run proof:check`.
