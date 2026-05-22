@@ -78,6 +78,8 @@ The `preserve-refund-audit-evidence` task adds a second proof-sensitive fixture.
 
 The first `preserve-refund-audit-evidence` receipt pair passed in both conditions. Both workers reported running the dedicated proof check, so this fixture adds coverage but does not yet strengthen the comparative proof-discipline claim.
 
+The `verify-webhook-raw-signature` task is designed to test exact evidence. Regular webhook tests can pass while a dedicated proof check catches JSON normalization before HMAC verification and requires a constant-time signature comparison.
+
 ## First Public Claim To Earn
 
 Do not claim "better than Python" broadly.

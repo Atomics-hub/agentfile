@@ -100,6 +100,28 @@
           "input": "benchmarks/tasks/audit-evidence/audit-evidence.agent"
         }
       ]
+    },
+    {
+      "id": "verify-webhook-raw-signature",
+      "family": "security_sensitive_change_with_evidence_requirements",
+      "fixture": "benchmarks/fixtures/webhook-signature",
+      "checks": [
+        "npm test -- webhooks",
+        "npm run lint",
+        "npm run proof:check"
+      ],
+      "conditions": [
+        {
+          "id": "plain-issue",
+          "description": "Plain natural-language issue text that asks for tests and lint but does not name the exact raw-body proof vectors.",
+          "input": "benchmarks/tasks/webhook-signature/plain-issue.md"
+        },
+        {
+          "id": "agentfile-pact",
+          "description": "Pact source mission with explicit raw-body HMAC and constant-time comparison proof requirements.",
+          "input": "benchmarks/tasks/webhook-signature/webhook-signature.agent"
+        }
+      ]
     }
   ]
 }

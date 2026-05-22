@@ -31,6 +31,8 @@ The `preserve-refund-audit-evidence` fixture adds a second proof-sensitive task 
 
 The first `preserve-refund-audit-evidence` receipt pair passed in both conditions. Both workers reported running `npm run proof:check`, so the pair is useful coverage but not a positive differential signal.
 
+The `verify-webhook-raw-signature` fixture is a harder proof-sensitive security task. Regular webhook tests pass against compact JSON, while `npm run proof:check` catches implementations that parse and reserialize JSON instead of verifying HMAC signatures against exact raw request body bytes.
+
 ## First Claim To Test
 
 > On repo-local software delegation tasks, Agentfile contracts improve scope adherence and verification rate compared with plain issue prompts.

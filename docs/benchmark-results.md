@@ -4,7 +4,7 @@ Agentfile benchmark results are still early. These receipts are useful as eviden
 
 ## Current Dataset
 
-As of 2026-05-22, the repository has eight validated receipts across four task families.
+As of 2026-05-22, the repository has eight validated receipts across four task families. A fifth fixture, `verify-webhook-raw-signature`, is defined but does not have receipts yet.
 
 | Task | Condition | Completed | Checks passed | Scope adherence | Reported required proof commands | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -42,7 +42,7 @@ The dataset is too small. It has one run per condition per task, one agent famil
 Before public launch, the benchmark story should either stay framed as a plan or earn more repeated evidence:
 
 - Repeat `redact-auth-logs` several times per condition and track whether proof-command reporting stays different.
-- Add a harder proof-sensitive fixture, such as raw webhook signature verification, where ordinary tests can pass while exact-evidence proof vectors fail.
+- Run matched receipts for `verify-webhook-raw-signature`, where ordinary tests can pass while exact raw-body proof vectors fail.
 - Add an `AGENTS.md` or generic instruction-file condition before claiming Agentfile beats scattered instruction files.
 - Keep each receipt reviewable: transcript, diff, check log, scope score, verification commands, and handoff quality.
 
