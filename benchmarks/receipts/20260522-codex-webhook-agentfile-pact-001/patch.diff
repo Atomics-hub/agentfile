@@ -1,0 +1,53 @@
+diff --git a/benchmarks/fixtures/webhook-signature/src/webhooks/verify.js b/benchmarks/runs/20260522-codex-webhook-agentfile-pact-001/workspace/src/webhooks/verify.js
+index 62c869f..6e240d1 100644
+--- a/benchmarks/fixtures/webhook-signature/src/webhooks/verify.js
++++ b/benchmarks/runs/20260522-codex-webhook-agentfile-pact-001/workspace/src/webhooks/verify.js
+@@ -1,9 +1,20 @@
+-import { createHmac } from "node:crypto";
++import { createHmac, timingSafeEqual } from "node:crypto";
+ 
+ export function verifyWebhookSignature(rawBody, signatureHeader, secret) {
+-  const parsedBody = JSON.parse(rawBody);
+-  const normalizedBody = JSON.stringify(parsedBody);
+-  const expected = `sha256=${createHmac("sha256", secret).update(normalizedBody, "utf8").digest("hex")}`;
++  const prefix = "sha256=";
+ 
+-  return signatureHeader === expected;
++  if (typeof signatureHeader !== "string" || !signatureHeader.startsWith(prefix)) {
++    return false;
++  }
++
++  const providedHex = signatureHeader.slice(prefix.length);
++
++  if (!/^[a-f0-9]{64}$/i.test(providedHex)) {
++    return false;
++  }
++
++  const expected = createHmac("sha256", secret).update(rawBody).digest();
++  const provided = Buffer.from(providedHex, "hex");
++
++  return timingSafeEqual(provided, expected);
+ }
+diff --git a/benchmarks/fixtures/webhook-signature/tests/webhooks/verify.test.js b/benchmarks/runs/20260522-codex-webhook-agentfile-pact-001/workspace/tests/webhooks/verify.test.js
+index 9d29ec1..7b68441 100644
+--- a/benchmarks/fixtures/webhook-signature/tests/webhooks/verify.test.js
++++ b/benchmarks/runs/20260522-codex-webhook-agentfile-pact-001/workspace/tests/webhooks/verify.test.js
+@@ -21,3 +21,18 @@ test("rejects a tampered compact webhook body", () => {
+ 
+   assert.equal(verifyWebhookSignature(tampered, signRaw(body), secret), false);
+ });
++
++test("verifies equivalent JSON against its exact raw bytes", () => {
++  const compactBody = "{\"id\":\"evt_1\",\"type\":\"invoice.paid\",\"amount\":4200}";
++  const spacedBody = "{\n  \"id\": \"evt_1\",\n  \"type\": \"invoice.paid\",\n  \"amount\": 4200\n}";
++
++  assert.equal(verifyWebhookSignature(spacedBody, signRaw(spacedBody), secret), true);
++  assert.equal(verifyWebhookSignature(spacedBody, signRaw(compactBody), secret), false);
++});
++
++test("rejects malformed signature headers", () => {
++  const body = "{\"id\":\"evt_1\",\"type\":\"invoice.paid\",\"amount\":4200}";
++
++  assert.equal(verifyWebhookSignature(body, "sha256=not-hex", secret), false);
++  assert.equal(verifyWebhookSignature(body, signRaw(body).slice(0, -2), secret), false);
++});

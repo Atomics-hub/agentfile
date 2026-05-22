@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added matched webhook-signature benchmark receipts showing both conditions ran proof while Agentfile added stronger regression tests.
 - Added a raw-body webhook signature benchmark fixture with exact HMAC proof vectors.
 - Added matched audit-evidence benchmark receipts showing both conditions ran the dedicated proof check.
 - Added a second proof-sensitive audit-evidence benchmark fixture for refund approval receipts.

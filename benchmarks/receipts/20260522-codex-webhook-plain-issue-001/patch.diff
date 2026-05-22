@@ -1,0 +1,20 @@
+diff --git a/benchmarks/fixtures/webhook-signature/src/webhooks/verify.js b/benchmarks/runs/20260522-codex-webhook-plain-issue-001/workspace/src/webhooks/verify.js
+index 62c869f..ebe1dfd 100644
+--- a/benchmarks/fixtures/webhook-signature/src/webhooks/verify.js
++++ b/benchmarks/runs/20260522-codex-webhook-plain-issue-001/workspace/src/webhooks/verify.js
+@@ -1,9 +1,10 @@
+-import { createHmac } from "node:crypto";
++import { createHmac, timingSafeEqual } from "node:crypto";
+ 
+ export function verifyWebhookSignature(rawBody, signatureHeader, secret) {
+-  const parsedBody = JSON.parse(rawBody);
+-  const normalizedBody = JSON.stringify(parsedBody);
+-  const expected = `sha256=${createHmac("sha256", secret).update(normalizedBody, "utf8").digest("hex")}`;
++  const expected = `sha256=${createHmac("sha256", secret).update(rawBody, "utf8").digest("hex")}`;
++  const actualSignature = Buffer.from(signatureHeader, "utf8");
++  const expectedSignature = Buffer.from(expected, "utf8");
+ 
+-  return signatureHeader === expected;
++  return actualSignature.length === expectedSignature.length
++    && timingSafeEqual(actualSignature, expectedSignature);
+ }

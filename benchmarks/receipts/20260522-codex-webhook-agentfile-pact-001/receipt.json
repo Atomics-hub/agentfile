@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "runId": "20260522-codex-webhook-agentfile-pact-001",
+  "taskId": "verify-webhook-raw-signature",
+  "conditionId": "agentfile-pact",
+  "claimStatus": "candidate",
+  "startedAt": "2026-05-22T23:06:00.000Z",
+  "endedAt": "2026-05-22T23:09:20.000Z",
+  "agent": {
+    "name": "Codex sub-agent Galileo",
+    "version": "multi_agent_v1",
+    "model": "inherited parent model"
+  },
+  "inputs": {
+    "promptOrContract": "benchmarks/tasks/webhook-signature/webhook-signature.agent",
+    "repository": "Atomics-hub/agentfile",
+    "commit": "32e75b818688e91aeeccfcb5c7b2008915861907",
+    "fixture": "benchmarks/fixtures/webhook-signature"
+  },
+  "results": {
+    "taskCompleted": true,
+    "testsPassed": true,
+    "scopeAdherence": 1,
+    "verificationCommandsRun": [
+      "npm test -- webhooks",
+      "npm run lint",
+      "npm run proof:check"
+    ],
+    "unauthorizedToolUseAttempts": 0,
+    "patchFilesChanged": 2,
+    "correctionTurns": 0,
+    "finalHandoffQuality": "strong",
+    "independentProofCheckPassed": true,
+    "reportedProofCheck": true,
+    "addedRegressionTests": true
+  },
+  "receipts": {
+    "transcript": "benchmarks/receipts/20260522-codex-webhook-agentfile-pact-001/transcript.md",
+    "diff": "benchmarks/receipts/20260522-codex-webhook-agentfile-pact-001/patch.diff",
+    "checkLog": "benchmarks/receipts/20260522-codex-webhook-agentfile-pact-001/check.log",
+    "notes": "benchmarks/receipts/20260522-codex-webhook-agentfile-pact-001/notes.md",
+    "baselineTestLog": "benchmarks/receipts/20260522-codex-webhook-agentfile-pact-001/baseline-test.log",
+    "baselineLintLog": "benchmarks/receipts/20260522-codex-webhook-agentfile-pact-001/baseline-lint.log",
+    "baselineProofLog": "benchmarks/receipts/20260522-codex-webhook-agentfile-pact-001/baseline-proof.log"
+  }
+}

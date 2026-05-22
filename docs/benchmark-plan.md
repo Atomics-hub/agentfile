@@ -80,6 +80,8 @@ The first `preserve-refund-audit-evidence` receipt pair passed in both condition
 
 The `verify-webhook-raw-signature` task is designed to test exact evidence. Regular webhook tests can pass while a dedicated proof check catches JSON normalization before HMAC verification and requires a constant-time signature comparison.
 
+The first `verify-webhook-raw-signature` receipt pair passed in both conditions. Both workers reported running the dedicated proof check; the Agentfile worker additionally added regression tests for raw-body whitespace and malformed signature headers.
+
 ## First Public Claim To Earn
 
 Do not claim "better than Python" broadly.

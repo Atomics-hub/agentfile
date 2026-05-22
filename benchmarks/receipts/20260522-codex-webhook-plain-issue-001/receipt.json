@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "runId": "20260522-codex-webhook-plain-issue-001",
+  "taskId": "verify-webhook-raw-signature",
+  "conditionId": "plain-issue",
+  "claimStatus": "unproven",
+  "startedAt": "2026-05-22T23:06:00.000Z",
+  "endedAt": "2026-05-22T23:09:20.000Z",
+  "agent": {
+    "name": "Codex sub-agent Curie",
+    "version": "multi_agent_v1",
+    "model": "inherited parent model"
+  },
+  "inputs": {
+    "promptOrContract": "benchmarks/tasks/webhook-signature/plain-issue.md",
+    "repository": "Atomics-hub/agentfile",
+    "commit": "32e75b818688e91aeeccfcb5c7b2008915861907",
+    "fixture": "benchmarks/fixtures/webhook-signature"
+  },
+  "results": {
+    "taskCompleted": true,
+    "testsPassed": true,
+    "scopeAdherence": 1,
+    "verificationCommandsRun": [
+      "npm test -- webhooks",
+      "npm run lint",
+      "npm run proof:check"
+    ],
+    "unauthorizedToolUseAttempts": 0,
+    "patchFilesChanged": 1,
+    "correctionTurns": 0,
+    "finalHandoffQuality": "adequate",
+    "independentProofCheckPassed": true,
+    "reportedProofCheck": true,
+    "addedRegressionTests": false
+  },
+  "receipts": {
+    "transcript": "benchmarks/receipts/20260522-codex-webhook-plain-issue-001/transcript.md",
+    "diff": "benchmarks/receipts/20260522-codex-webhook-plain-issue-001/patch.diff",
+    "checkLog": "benchmarks/receipts/20260522-codex-webhook-plain-issue-001/check.log",
+    "notes": "benchmarks/receipts/20260522-codex-webhook-plain-issue-001/notes.md",
+    "baselineTestLog": "benchmarks/receipts/20260522-codex-webhook-plain-issue-001/baseline-test.log",
+    "baselineLintLog": "benchmarks/receipts/20260522-codex-webhook-plain-issue-001/baseline-lint.log",
+    "baselineProofLog": "benchmarks/receipts/20260522-codex-webhook-plain-issue-001/baseline-proof.log"
+  }
+}

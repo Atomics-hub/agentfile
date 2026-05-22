@@ -33,6 +33,8 @@ The first `preserve-refund-audit-evidence` receipt pair passed in both condition
 
 The `verify-webhook-raw-signature` fixture is a harder proof-sensitive security task. Regular webhook tests pass against compact JSON, while `npm run proof:check` catches implementations that parse and reserialize JSON instead of verifying HMAC signatures against exact raw request body bytes.
 
+The first `verify-webhook-raw-signature` receipt pair passed in both conditions. Both workers reported running `npm run proof:check`; the Agentfile worker also added explicit regression tests for raw-body and malformed-signature cases.
+
 ## First Claim To Test
 
 > On repo-local software delegation tasks, Agentfile contracts improve scope adherence and verification rate compared with plain issue prompts.
