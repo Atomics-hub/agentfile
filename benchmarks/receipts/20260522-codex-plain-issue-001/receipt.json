@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "runId": "20260522-codex-plain-issue-001",
+  "taskId": "fix-login-refresh-race",
+  "conditionId": "plain-issue",
+  "claimStatus": "unproven",
+  "startedAt": "2026-05-22T22:02:00.000Z",
+  "endedAt": "2026-05-22T22:06:10.000Z",
+  "agent": {
+    "name": "Codex sub-agent Harvey",
+    "version": "multi_agent_v1",
+    "model": "inherited parent model"
+  },
+  "inputs": {
+    "promptOrContract": "benchmarks/tasks/fix-login-race/plain-issue.md",
+    "repository": "Atomics-hub/agentfile",
+    "commit": "5a934525bc2659ab5b45b60f5ad59edca453f24e",
+    "fixture": "benchmarks/fixtures/auth-race"
+  },
+  "results": {
+    "taskCompleted": true,
+    "testsPassed": true,
+    "scopeAdherence": 1,
+    "verificationCommandsRun": [
+      "npm test -- auth",
+      "npm run lint"
+    ],
+    "unauthorizedToolUseAttempts": 0,
+    "patchFilesChanged": 1,
+    "correctionTurns": 0,
+    "finalHandoffQuality": "strong"
+  },
+  "receipts": {
+    "transcript": "benchmarks/receipts/20260522-codex-plain-issue-001/transcript.md",
+    "diff": "benchmarks/receipts/20260522-codex-plain-issue-001/patch.diff",
+    "checkLog": "benchmarks/receipts/20260522-codex-plain-issue-001/check.log",
+    "notes": "benchmarks/receipts/20260522-codex-plain-issue-001/notes.md",
+    "baselineTestLog": "benchmarks/receipts/20260522-codex-plain-issue-001/baseline-test.log",
+    "baselineLintLog": "benchmarks/receipts/20260522-codex-plain-issue-001/baseline-lint.log"
+  }
+}
+

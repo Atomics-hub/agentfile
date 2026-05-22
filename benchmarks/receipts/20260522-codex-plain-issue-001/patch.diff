@@ -1,0 +1,37 @@
+diff --git a/src/auth/refresh.js b/src/auth/refresh.js
+index 8e457ad..f288e53 100644
+--- a/src/auth/refresh.js
++++ b/src/auth/refresh.js
+@@ -1,10 +1,26 @@
+ export function createAuthClient({ refreshToken }) {
+   let accessToken = "expired";
++  let refreshInFlight = null;
++
++  async function refreshAccessToken() {
++    if (!refreshInFlight) {
++      refreshInFlight = refreshToken()
++        .then((token) => {
++          accessToken = token;
++          return token;
++        })
++        .finally(() => {
++          refreshInFlight = null;
++        });
++    }
++
++    return refreshInFlight;
++  }
+ 
+   return {
+     async request(path) {
+       if (accessToken === "expired") {
+-        accessToken = await refreshToken();
++        await refreshAccessToken();
+       }
+ 
+       return {
+@@ -18,4 +34,3 @@ export function createAuthClient({ refreshToken }) {
+     }
+   };
+ }
+-

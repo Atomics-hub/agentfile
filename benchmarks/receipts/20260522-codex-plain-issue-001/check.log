@@ -1,0 +1,19 @@
+
+> agentfile-auth-race-fixture@0.0.0 test
+> node scripts/test.mjs auth
+
+✔ refreshes an expired token before a request (1.192583ms)
+✔ shares one in-flight refresh across concurrent requests (3.506916ms)
+✔ clears failed refreshes so a later request can retry (1.142167ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 149.176417
+
+> agentfile-auth-race-fixture@0.0.0 lint
+> node scripts/lint.mjs
+

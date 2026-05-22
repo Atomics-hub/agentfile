@@ -64,7 +64,7 @@ The full benchmark harness should:
 
 Each receipt should follow `benchmarks/receipt.schema.json` and live under `benchmarks/receipts/` with links to its transcript, diff, check log, and review notes.
 
-The first stored receipt covers the `agentfile-pact` condition for `fix-login-refresh-race`. Treat it as an evidence-pipeline smoke test until there is a matching `plain-issue` run and enough repeated runs to compare outcomes.
+The first stored receipt pair covers both `agentfile-pact` and `plain-issue` conditions for `fix-login-refresh-race`. Treat it as an evidence-pipeline smoke test until there are enough repeated runs to compare outcomes.
 
 ## First Public Claim To Earn
 

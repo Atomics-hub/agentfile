@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added the matching plain-issue benchmark receipt for the auth-race fixture.
 - Added an executable auth-race benchmark fixture and one validated Agentfile-condition benchmark receipt.
 - Added a benchmark receipt schema, template, and validation path so future evidence can be stored consistently.
 - Tightened pre-public package metadata, guarded npm publishing, and added a conservative benchmark skeleton with a plain-issue baseline.
