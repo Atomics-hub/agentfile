@@ -9,7 +9,7 @@ This checklist is the public gate. A release candidate should satisfy every requ
 | Area | Required standard | Current status |
 | --- | --- | --- |
 | Clear README/demo | A new visitor can understand the thesis, install locally, run one `.agent` example, and see generated outputs for `AGENTS.md`, `CLAUDE.md`, Cursor, and Copilot. | Mostly ready |
-| Clean compiler architecture | Parse, validate, lower, compile target selection, and renderers have obvious ownership boundaries and focused tests. | Partial |
+| Clean compiler architecture | Parse, validate, lower, compile target selection, and renderers have obvious ownership boundaries and focused tests. | Mostly ready |
 | Stable CLI | Core commands have documented behavior, useful errors, and integration tests that exercise packaged output. | Mostly ready |
 | Fast reliable tests | `npm run check` passes locally, stays fast enough for frequent automation, and does not rely on stale generated files. | Mostly ready |
 | Private security posture | The remote remains private until launch, risky authority defaults are conservative, and broad permissions trigger diagnostics or lint warnings. | Mostly ready |
@@ -53,8 +53,8 @@ The repository is ready to go public when:
 
 ## Current Highest-Leverage Work
 
-1. Split target renderers into smaller modules now that compile target metadata is centralized.
-2. Review package metadata before any public visibility change.
-3. Tighten the README around the one public claim the demo earns.
-4. Add a tiny benchmark harness skeleton with a plain-issue baseline and Agentfile condition.
-5. Keep broad benchmark claims out of public docs until data exists.
+1. Review package metadata before any public visibility change.
+2. Tighten the README around the one public claim the demo earns.
+3. Add a tiny benchmark harness skeleton with a plain-issue baseline and Agentfile condition.
+4. Keep broad benchmark claims out of public docs until data exists.
+5. Add JSON Schema export or document why it is post-launch.

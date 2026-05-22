@@ -14,7 +14,6 @@
 ## v0.2
 
 - Add formatter and golden fixtures for `.agent`.
-- Split target renderers into focused modules.
 - Add trace format for agent actions and verification.
 - Add GitHub Actions integration.
 - Add JSON Schema export.

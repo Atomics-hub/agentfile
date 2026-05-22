@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Split prompt, Pact source, and agent-instruction renderers into focused modules while keeping compiler target orchestration centralized.
 - Added golden fixture tests for demo-facing compiler outputs so public examples cannot drift silently.
 - Added an end-to-end demo that walks from Pact source to YAML IR, policy JSON, and generated instruction files for existing coding agents.
 - Added a public launch readiness gate that defines the required README/demo, CLI, compiler, security, benchmark, and launch-risk standards before the repository goes public.
