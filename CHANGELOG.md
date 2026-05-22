@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added matched audit-evidence benchmark receipts showing both conditions ran the dedicated proof check.
 - Added a second proof-sensitive audit-evidence benchmark fixture for refund approval receipts.
 - Added a conservative benchmark-results summary for the current receipt set and launch-readiness limits.
 - Added matched redact-auth-logs benchmark receipts showing a candidate proof-checking signal for Agentfile.

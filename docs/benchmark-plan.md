@@ -76,6 +76,8 @@ The first `redact-auth-logs` receipt pair produced a candidate signal for Agentf
 
 The `preserve-refund-audit-evidence` task adds a second proof-sensitive fixture. Regular refund tests can pass while a dedicated proof check catches approval audit events that fail to preserve actor, request, reason, and timestamp evidence.
 
+The first `preserve-refund-audit-evidence` receipt pair passed in both conditions. Both workers reported running the dedicated proof check, so this fixture adds coverage but does not yet strengthen the comparative proof-discipline claim.
+
 ## First Public Claim To Earn
 
 Do not claim "better than Python" broadly.

@@ -54,7 +54,7 @@ The repository is ready to go public when:
 ## Current Highest-Leverage Work
 
 1. Repeat `redact-auth-logs` enough times to test whether the proof-check signal holds.
-2. Run matched receipts for `preserve-refund-audit-evidence` so the public evidence is not tied to one task.
+2. Add a harder proof-sensitive fixture, such as raw webhook signature verification, where ordinary tests can pass while exact proof vectors fail.
 3. Keep broad benchmark claims out of public docs until comparative data exists.
 4. Add JSON Schema export or document why it is post-launch.
 5. Do a final public-readiness review from a clean clone.

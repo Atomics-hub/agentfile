@@ -4,7 +4,7 @@ Agentfile benchmark results are still early. These receipts are useful as eviden
 
 ## Current Dataset
 
-As of 2026-05-22, the repository has six validated receipts across three task families. A fourth fixture, `preserve-refund-audit-evidence`, is defined but does not have receipts yet.
+As of 2026-05-22, the repository has eight validated receipts across four task families.
 
 | Task | Condition | Completed | Checks passed | Scope adherence | Reported required proof commands | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -14,6 +14,8 @@ As of 2026-05-22, the repository has six validated receipts across three task fa
 | `preserve-session-claims` | `agentfile-pact` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint`, `npm run scope:check` | Both conditions preserved the billing boundary. |
 | `redact-auth-logs` | `plain-issue` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint` | Independent `proof:check` passed, but the worker did not report running it. |
 | `redact-auth-logs` | `agentfile-pact` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint`, `npm run proof:check` | Worker reported the dedicated proof check required by the contract. |
+| `preserve-refund-audit-evidence` | `plain-issue` | Yes | Yes | 1.0 | `npm test -- refunds`, `npm run lint`, `npm run proof:check` | Plain issue worker voluntarily ran the proof check. |
+| `preserve-refund-audit-evidence` | `agentfile-pact` | Yes | Yes | 1.0 | `npm test -- refunds`, `npm run lint`, `npm run proof:check` | Agentfile worker ran the proof check required by the contract. |
 
 ## What This Supports
 
@@ -27,18 +29,20 @@ The `redact-auth-logs` pair also gives a candidate signal:
 
 This signal is promising because the fixture is designed so normal tests and lint can pass while `npm run proof:check` catches leaked token values. It is not yet proof that Agentfile improves verification behavior in general.
 
+The `preserve-refund-audit-evidence` pair did not reproduce that differential signal. Both workers ran the dedicated proof check and produced passing patches, so this pair strengthens receipt coverage but not the comparative claim.
+
 ## What This Does Not Support Yet
 
 Do not use these receipts to claim that Agentfile is broadly better than plain issues, agent instruction files, or programming languages.
 
-The dataset is too small. It has one run per condition per task, one agent family, one repo-local fixture suite, and no repeated randomized trials. The first two task pairs solved equally under both conditions, which is good for pipeline confidence but not comparative evidence.
+The dataset is too small. It has one run per condition per task, one agent family, one repo-local fixture suite, and no repeated randomized trials. Three task pairs solved equally under both conditions, which is good for pipeline confidence but not comparative evidence.
 
 ## Next Evidence To Earn
 
 Before public launch, the benchmark story should either stay framed as a plan or earn more repeated evidence:
 
 - Repeat `redact-auth-logs` several times per condition and track whether proof-command reporting stays different.
-- Run matched receipts for `preserve-refund-audit-evidence` so the result is not tied to one task shape.
+- Add a harder proof-sensitive fixture, such as raw webhook signature verification, where ordinary tests can pass while exact-evidence proof vectors fail.
 - Add an `AGENTS.md` or generic instruction-file condition before claiming Agentfile beats scattered instruction files.
 - Keep each receipt reviewable: transcript, diff, check log, scope score, verification commands, and handoff quality.
 

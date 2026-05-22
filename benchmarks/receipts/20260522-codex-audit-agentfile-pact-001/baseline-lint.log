@@ -1,0 +1,4 @@
+
+> agentfile-audit-evidence-fixture@0.0.0 lint
+> node scripts/lint.mjs
+
