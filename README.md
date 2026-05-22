@@ -265,6 +265,8 @@ Agentfile is early. The v0.1 goal is intentionally narrow:
 - Compiler targets for `AGENTS.md`, `CLAUDE.md`, Cursor rules, and GitHub Copilot instructions.
 - A benchmark harness proving that agents complete tasks more reliably with contracts than with plain issue text.
 
+Before this repository is made public, the launch gate is tracked in [Public Launch Readiness](docs/launch-readiness.md). The short version: the README/demo must be obvious, the CLI must stay stable and tested against packaged output, compiler ownership boundaries must stay clean, risky authority defaults must stay conservative, and claims must be backed by a demo or benchmark evidence.
+
 ## Design Principles
 
 - Contracts over vibes.

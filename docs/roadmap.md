@@ -8,10 +8,12 @@
 - Compile to normalized policy JSON.
 - Initialize `agentfile.yaml`.
 - Publish examples and spec.
+- Document the public launch gate and one copy-pasteable end-to-end demo.
 
 ## v0.2
 
 - Add formatter and golden fixtures for `.agent`.
+- Split target renderers into focused modules.
 - Add trace format for agent actions and verification.
 - Add GitHub Actions integration.
 - Add JSON Schema export.
