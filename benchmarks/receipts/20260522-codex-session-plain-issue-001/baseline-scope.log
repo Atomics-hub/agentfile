@@ -1,0 +1,4 @@
+
+> agentfile-session-boundary-fixture@0.0.0 scope:check
+> node scripts/scope-check.mjs
+

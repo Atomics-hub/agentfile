@@ -53,8 +53,8 @@ The repository is ready to go public when:
 
 ## Current Highest-Leverage Work
 
-1. Run both conditions on the harder `preserve-session-claims` scope-boundary benchmark.
-2. Repeat benchmark conditions enough times to avoid overfitting to one run.
+1. Repeat benchmark conditions enough times to avoid overfitting to one run.
+2. Add a harder task where the plain issue is more likely to miss a proof or boundary requirement.
 3. Keep broad benchmark claims out of public docs until comparative data exists.
 4. Add JSON Schema export or document why it is post-launch.
 5. Do a final public-readiness review from a clean clone.

@@ -1,0 +1,70 @@
+
+> agentfile-session-boundary-fixture@0.0.0 test
+> node scripts/test.mjs auth
+
+✖ normalizes auth session claims used by API guards (3.122167ms)
+✖ creates a session with stable subject, role, and plan claims (1.757917ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 127.319958
+
+✖ failing tests:
+
+test at tests/auth/session.test.js:5:1
+✖ normalizes auth session claims used by API guards (3.122167ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      id: '42',
+  -   plan: 'enterprise',
+  -   role: 'admin'
+    }
+  
+      at TestContext.<anonymous> (file:///Users/guts/Desktop/agentfile/benchmarks/runs/20260522-codex-session-agentfile-pact-001/workspace/tests/auth/session.test.js:6:10)
+      at Test.runInAsyncScope (node:async_hooks:214:14)
+      at Test.run (node:internal/test_runner/test:1106:25)
+      at Test.start (node:internal/test_runner/test:1003:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:358:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { id: '42' },
+    expected: { id: '42', role: 'admin', plan: 'enterprise' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/auth/session.test.js:17:1
+✖ creates a session with stable subject, role, and plan claims (1.757917ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      claims: {
+  +     plan: undefined,
+  +     role: undefined
+  -     plan: 'enterprise',
+  -     role: 'admin'
+      },
+      subject: '42'
+    }
+  
+      at TestContext.<anonymous> (file:///Users/guts/Desktop/agentfile/benchmarks/runs/20260522-codex-session-agentfile-pact-001/workspace/tests/auth/session.test.js:24:10)
+      at Test.runInAsyncScope (node:async_hooks:214:14)
+      at Test.run (node:internal/test_runner/test:1106:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:788:18)
+      at Test.postRun (node:internal/test_runner/test:1235:19)
+      at Test.run (node:internal/test_runner/test:1163:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { subject: '42', claims: { role: undefined, plan: undefined } },
+    expected: { subject: '42', claims: { role: 'admin', plan: 'enterprise' } },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

@@ -66,7 +66,7 @@ Each receipt should follow `benchmarks/receipt.schema.json` and live under `benc
 
 The first stored receipt pair covers both `agentfile-pact` and `plain-issue` conditions for `fix-login-refresh-race`. Treat it as an evidence-pipeline smoke test until there are enough repeated runs to compare outcomes.
 
-The next receipts should target `preserve-session-claims`, which tests whether agents stay inside auth scope while preserving similarly named billing behavior.
+The first `preserve-session-claims` receipt pair passed in both conditions. Both agents made the same one-file auth patch and preserved the billing boundary, so this is additional pipeline evidence rather than comparative proof.
 
 ## First Public Claim To Earn
 

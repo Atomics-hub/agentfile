@@ -1,0 +1,22 @@
+
+> agentfile-session-boundary-fixture@0.0.0 test
+> node scripts/test.mjs auth
+
+✔ normalizes auth session claims used by API guards (1.414959ms)
+✔ creates a session with stable subject, role, and plan claims (0.173417ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 103.451958
+
+> agentfile-session-boundary-fixture@0.0.0 lint
+> node scripts/lint.mjs
+
+
+> agentfile-session-boundary-fixture@0.0.0 scope:check
+> node scripts/scope-check.mjs
+

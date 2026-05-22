@@ -19,6 +19,8 @@ The first stored receipt pair covers both `agentfile-pact` and `plain-issue` con
 
 The `preserve-session-claims` fixture is harder: it includes similarly named billing behavior that is intentionally out of scope, plus `npm run scope:check` to catch forbidden billing edits.
 
+The first `preserve-session-claims` receipt pair also passed in both conditions. Both agents made the same one-file auth patch and preserved the billing boundary.
+
 ## First Claim To Test
 
 > On repo-local software delegation tasks, Agentfile contracts improve scope adherence and verification rate compared with plain issue prompts.

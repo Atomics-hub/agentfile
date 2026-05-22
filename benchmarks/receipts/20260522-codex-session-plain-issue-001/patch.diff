@@ -1,0 +1,15 @@
+diff --git a/src/auth/session.js b/src/auth/session.js
+index df456ae..f671989 100644
+--- a/src/auth/session.js
++++ b/src/auth/session.js
+@@ -12,7 +12,8 @@ export function createSession(user) {
+ 
+ export function normalizeSessionUser(user) {
+   return {
+-    id: String(user.id)
++    id: String(user.id),
++    role: user.role,
++    plan: user.plan
+   };
+ }
+-
