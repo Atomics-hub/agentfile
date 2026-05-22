@@ -13,7 +13,7 @@ This checklist is the public gate. A release candidate should satisfy every requ
 | Stable CLI | Core commands have documented behavior, useful errors, and integration tests that exercise packaged output. | Mostly ready |
 | Fast reliable tests | `npm run check` passes locally, stays fast enough for frequent automation, and does not rely on stale generated files. | Mostly ready |
 | Private security posture | The remote remains private until launch, risky authority defaults are conservative, and broad permissions trigger diagnostics or lint warnings. | Mostly ready |
-| Benchmark/demo proof | At least one scripted or documented task shows why Agentfile beats plain issue text or scattered instruction files. | Partial |
+| Benchmark/demo proof | At least one scripted or documented task shows why Agentfile beats plain issue text or scattered instruction files. | Mostly ready |
 | Launch risk | Public package metadata, repo URLs, examples, contribution docs, and claims are reviewed for accuracy and restraint. | Mostly ready |
 
 ## Minimum Public Demo
@@ -53,8 +53,8 @@ The repository is ready to go public when:
 
 ## Current Highest-Leverage Work
 
-1. Repeat benchmark conditions enough times to avoid overfitting to one run.
-2. Run the `redact-auth-logs` proof-discipline benchmark pair.
-3. Keep broad benchmark claims out of public docs until comparative data exists.
+1. Repeat `redact-auth-logs` enough times to test whether the proof-check signal holds.
+2. Keep broad benchmark claims out of public docs until comparative data exists.
+3. Summarize the benchmark receipts without overstating them.
 4. Add JSON Schema export or document why it is post-launch.
 5. Do a final public-readiness review from a clean clone.

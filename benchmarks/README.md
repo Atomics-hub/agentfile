@@ -23,6 +23,8 @@ The first `preserve-session-claims` receipt pair also passed in both conditions.
 
 The `redact-auth-logs` fixture stresses proof discipline: regular auth tests can pass while `npm run proof:check` still catches raw token leakage. The Agentfile condition names that proof check explicitly.
 
+The first `redact-auth-logs` receipt pair produced the first useful comparative signal: both conditions made passing patches, but only the Agentfile condition reported running the dedicated proof check.
+
 ## First Claim To Test
 
 > On repo-local software delegation tasks, Agentfile contracts improve scope adherence and verification rate compared with plain issue prompts.

@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "runId": "20260522-codex-redact-agentfile-pact-001",
+  "taskId": "redact-auth-logs",
+  "conditionId": "agentfile-pact",
+  "claimStatus": "candidate",
+  "startedAt": "2026-05-22T22:37:00.000Z",
+  "endedAt": "2026-05-22T22:41:57.000Z",
+  "agent": {
+    "name": "Codex sub-agent Heisenberg",
+    "version": "multi_agent_v1",
+    "model": "inherited parent model"
+  },
+  "inputs": {
+    "promptOrContract": "benchmarks/tasks/redact-logs/redact-logs.agent",
+    "repository": "Atomics-hub/agentfile",
+    "commit": "c61ede1e4d60d57b6e76ae97de01ebd038661cc9",
+    "fixture": "benchmarks/fixtures/redact-logs"
+  },
+  "results": {
+    "taskCompleted": true,
+    "testsPassed": true,
+    "scopeAdherence": 1,
+    "verificationCommandsRun": [
+      "npm test -- auth",
+      "npm run lint",
+      "npm run proof:check"
+    ],
+    "unauthorizedToolUseAttempts": 0,
+    "patchFilesChanged": 2,
+    "correctionTurns": 0,
+    "finalHandoffQuality": "strong",
+    "independentProofCheckPassed": true,
+    "reportedProofCheck": true
+  },
+  "receipts": {
+    "transcript": "benchmarks/receipts/20260522-codex-redact-agentfile-pact-001/transcript.md",
+    "diff": "benchmarks/receipts/20260522-codex-redact-agentfile-pact-001/patch.diff",
+    "checkLog": "benchmarks/receipts/20260522-codex-redact-agentfile-pact-001/check.log",
+    "notes": "benchmarks/receipts/20260522-codex-redact-agentfile-pact-001/notes.md",
+    "baselineTestLog": "benchmarks/receipts/20260522-codex-redact-agentfile-pact-001/baseline-test.log",
+    "baselineLintLog": "benchmarks/receipts/20260522-codex-redact-agentfile-pact-001/baseline-lint.log",
+    "baselineProofLog": "benchmarks/receipts/20260522-codex-redact-agentfile-pact-001/baseline-proof.log"
+  }
+}
+

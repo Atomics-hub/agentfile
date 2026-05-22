@@ -1,0 +1,43 @@
+diff --git a/src/auth/logging.js b/src/auth/logging.js
+index 6ada0b8..ddd172c 100644
+--- a/src/auth/logging.js
++++ b/src/auth/logging.js
+@@ -2,8 +2,8 @@ export function formatAuthLog(event) {
+   return JSON.stringify({
+     type: event.type,
+     userId: event.userId,
+-    refreshToken: event.refreshToken,
+-    accessToken: event.accessToken
++    refreshToken: "[REDACTED]",
++    accessToken: "[REDACTED]"
+   });
+ }
+ 
+@@ -12,4 +12,3 @@ export function writeAuthLog(event, sink = console.log) {
+   sink(line);
+   return line;
+ }
+-
+diff --git a/tests/auth/logging.test.js b/tests/auth/logging.test.js
+index 88fe720..8369029 100644
+--- a/tests/auth/logging.test.js
++++ b/tests/auth/logging.test.js
+@@ -13,6 +13,10 @@ test("writes auth log events as JSON", () => {
+   const parsed = JSON.parse(line);
+   assert.equal(parsed.type, "refresh");
+   assert.equal(parsed.userId, "user-1");
++  assert.equal(parsed.refreshToken, "[REDACTED]");
++  assert.equal(parsed.accessToken, "[REDACTED]");
++  assert.ok(!line.includes("refresh-secret"));
++  assert.ok(!line.includes("access-secret"));
+ });
+ 
+ test("writes auth logs to the provided sink", () => {
+@@ -26,5 +30,6 @@ test("writes auth logs to the provided sink", () => {
+ 
+   assert.equal(lines.length, 1);
+   assert.equal(lines[0], line);
++  assert.ok(!line.includes("refresh-secret"));
++  assert.ok(!line.includes("access-secret"));
+ });
+-

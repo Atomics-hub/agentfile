@@ -1,0 +1,47 @@
+diff --git a/src/auth/logging.js b/src/auth/logging.js
+index 6ada0b8..d05421b 100644
+--- a/src/auth/logging.js
++++ b/src/auth/logging.js
+@@ -1,9 +1,15 @@
++const REDACTED_TOKEN = "[REDACTED]";
++
++function redactToken(token) {
++  return token == null ? token : REDACTED_TOKEN;
++}
++
+ export function formatAuthLog(event) {
+   return JSON.stringify({
+     type: event.type,
+     userId: event.userId,
+-    refreshToken: event.refreshToken,
+-    accessToken: event.accessToken
++    refreshToken: redactToken(event.refreshToken),
++    accessToken: redactToken(event.accessToken)
+   });
+ }
+ 
+@@ -12,4 +18,3 @@ export function writeAuthLog(event, sink = console.log) {
+   sink(line);
+   return line;
+ }
+-
+diff --git a/tests/auth/logging.test.js b/tests/auth/logging.test.js
+index 88fe720..aebf011 100644
+--- a/tests/auth/logging.test.js
++++ b/tests/auth/logging.test.js
+@@ -13,6 +13,10 @@ test("writes auth log events as JSON", () => {
+   const parsed = JSON.parse(line);
+   assert.equal(parsed.type, "refresh");
+   assert.equal(parsed.userId, "user-1");
++  assert.equal(parsed.refreshToken, "[REDACTED]");
++  assert.equal(parsed.accessToken, "[REDACTED]");
++  assert.ok(!line.includes("refresh-secret"));
++  assert.ok(!line.includes("access-secret"));
+ });
+ 
+ test("writes auth logs to the provided sink", () => {
+@@ -27,4 +31,3 @@ test("writes auth logs to the provided sink", () => {
+   assert.equal(lines.length, 1);
+   assert.equal(lines[0], line);
+ });
+-

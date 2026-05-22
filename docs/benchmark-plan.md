@@ -70,6 +70,8 @@ The first `preserve-session-claims` receipt pair passed in both conditions. Both
 
 The `redact-auth-logs` task is designed to test proof discipline: regular auth tests can pass while a dedicated proof check catches leaked token values. The plain issue asks for tests and lint; the Agentfile condition explicitly requires `npm run proof:check`.
 
+The first `redact-auth-logs` receipt pair produced a candidate signal for Agentfile's proof-checking value: both patches passed independent verification, but only the Agentfile-condition worker reported executing the dedicated proof check.
+
 ## First Public Claim To Earn
 
 Do not claim "better than Python" broadly.
