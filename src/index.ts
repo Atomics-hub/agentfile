@@ -1,5 +1,6 @@
 export {
   compileAgentfile,
+  compileAgentSource,
   compileAgentPrompt,
   compileAgentsMarkdown,
   compileClaudeMarkdown,

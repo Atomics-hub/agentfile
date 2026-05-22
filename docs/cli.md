@@ -53,6 +53,7 @@ Compile a contract.
 
 Targets:
 
+- `agent`: canonical Pact `.agent` source generated from the contract IR.
 - `prompt`: plain-text prompt for a coding agent.
 - `json`: strict JSON contract IR for automation.
 - `policy-json`: normalized policy JSON projection for policy engines and audit tooling.

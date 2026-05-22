@@ -213,6 +213,12 @@ Compile to canonical YAML contract IR:
 agentfile compile examples/fix-login-race.agent --target yaml
 ```
 
+Compile a YAML/JSON contract back into canonical Pact source:
+
+```sh
+agentfile compile examples/fix-login-race.agentfile --target agent
+```
+
 Generate an `AGENTS.md` instruction file:
 
 ```sh
@@ -241,6 +247,7 @@ Agentfile is early. The v0.1 goal is intentionally narrow:
 - A stable YAML-based contract format.
 - A strict validator.
 - Prompt, JSON, and YAML compilation targets.
+- Canonical Pact `.agent` rendering from the strict IR.
 - Security-first defaults.
 - Initial risky-authority lint warnings for broad permissions.
 - `agentfile init` for fast adoption.

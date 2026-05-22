@@ -69,7 +69,7 @@ program
   .argument("[file]", "Agentfile path")
   .option(
     "-t, --target <target>",
-    "prompt, json, policy-json, yaml, agents-md, claude-md, cursor-mdc, or copilot-md",
+    "agent, prompt, json, policy-json, yaml, agents-md, claude-md, cursor-mdc, or copilot-md",
     "prompt"
   )
   .action(async (file: string, options: { target: string }) => {
@@ -150,6 +150,7 @@ async function load(filePath: string) {
 
 function parseTarget(value: string): CompileTarget {
   if (
+    value === "agent" ||
     value === "prompt" ||
     value === "json" ||
     value === "policy-json" ||
@@ -163,7 +164,7 @@ function parseTarget(value: string): CompileTarget {
   }
 
   throw new AgentfileError(
-    `unknown compile target "${value}". Expected "prompt", "json", "policy-json", "yaml", "agents-md", "claude-md", "cursor-mdc", or "copilot-md".`
+    `unknown compile target "${value}". Expected "agent", "prompt", "json", "policy-json", "yaml", "agents-md", "claude-md", "cursor-mdc", or "copilot-md".`
   );
 }
 

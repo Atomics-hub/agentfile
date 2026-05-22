@@ -902,6 +902,21 @@ mission split-filesystem-scope {
     expect(contract.permissions.filesystem.deny).toEqual(["dist/**"]);
   });
 
+  it("renders canonical Pact source that round-trips through the parser", async () => {
+    const source = await readFile("examples/fix-login-race.agent", "utf8");
+    const contract = parsePactSource(source, "examples/fix-login-race.agent");
+    const rendered = compileAgentfile(contract, "agent");
+
+    expect(rendered).toContain("mission fix-login-refresh-race {");
+    expect(rendered).toContain("touch src/auth/**, tests/auth/**");
+    expect(rendered).toContain('must preserve "Public auth APIs"');
+    expect(rendered).toContain('must_not leak "Refresh tokens"');
+    expect(rendered).toContain('run "npm run lint"');
+    expect(rendered).toContain("list changed_files");
+
+    expect(parsePactSource(rendered, "generated.agent")).toEqual(contract);
+  });
+
   it("supports required manual proof checks", () => {
     const contract = parsePactSource(`
 mission release-review {

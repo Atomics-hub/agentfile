@@ -10,6 +10,7 @@ const execFileAsync = promisify(execFile);
 
 const cliPath = fileURLToPath(new URL("../src/cli.ts", import.meta.url));
 const examplePath = fileURLToPath(new URL("../examples/fix-login-race.agent", import.meta.url));
+const exampleContractPath = fileURLToPath(new URL("../examples/fix-login-race.agentfile", import.meta.url));
 const tsxPath = fileURLToPath(new URL("../node_modules/tsx/dist/cli.mjs", import.meta.url));
 
 const tempDirs: string[] = [];
@@ -114,6 +115,20 @@ describe("agentfile file discovery", () => {
     expect(policy.task).toBe("fix-login-refresh-race");
     expect(policy.permissions.network.default).toBe("deny");
     expect(policy.workflow.id).toBe("implement");
+  });
+
+  it("compiles YAML IR back into Pact source through the CLI", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-agent-target-"));
+    tempDirs.push(cwd);
+
+    const { stdout } = await execFileAsync("node", [tsxPath, cliPath, "compile", exampleContractPath, "--target", "agent"], {
+      cwd
+    });
+
+    expect(stdout).toContain("mission fix-login-refresh-race {");
+    expect(stdout).toContain('summary "Prevent duplicate token refresh requests during concurrent auth calls."');
+    expect(stdout).toContain('must "Public auth APIs must not change."');
+    expect(stdout).toContain('must_not "Refresh tokens must never be logged."');
   });
 });
 
