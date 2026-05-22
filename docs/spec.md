@@ -119,6 +119,8 @@ Exact path entries may not appear in both `permissions.filesystem.read` or `perm
 
 Exact `permissions.filesystem.write` entries must also appear in `permissions.filesystem.read`.
 
+`permissions.network.allow` entries must be bare hosts without schemes, paths, or wildcards. `permissions.secrets.allow` entries must name concrete secrets instead of wildcard patterns.
+
 Authority lists should be normalized. Duplicate exact entries in shell allow/deny lists, network host allowlists, filesystem read/write/deny lists, secret allowlists, and approval requirements are invalid.
 
 ### `policies`

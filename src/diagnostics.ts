@@ -2,7 +2,6 @@ import type { ZodError } from "zod";
 import type { Agentfile } from "./schema.js";
 import {
   isRepoWidePattern,
-  looksLikeBroadNetworkHost,
   looksLikeDependencyChangeCommand,
   looksLikeDestructiveShellCommand,
   looksLikePublishCommand,
@@ -116,16 +115,6 @@ export function lintAgentfile(agentfile: Agentfile): LintDiagnostic[] {
     });
   }
 
-  for (const host of agentfile.permissions.network.allow) {
-    if (looksLikeBroadNetworkHost(host)) {
-      diagnostics.push({
-        code: "risky-network-host-pattern",
-        path: "permissions.network.allow",
-        message: `network allowlist entry should be a bare host without wildcard, scheme, or path: ${host}`
-      });
-    }
-  }
-
   if (
     agentfile.permissions.secrets.access === "allow" &&
     agentfile.permissions.secrets.allow.length === 0
@@ -146,16 +135,6 @@ export function lintAgentfile(agentfile: Agentfile): LintDiagnostic[] {
       path: "permissions.approvals.requiredFor",
       message: "secret access is allowed without secret_access approval gating"
     });
-  }
-
-  for (const secret of agentfile.permissions.secrets.allow) {
-    if (secret.includes("*")) {
-      diagnostics.push({
-        code: "risky-secret-allow-pattern",
-        path: "permissions.secrets.allow",
-        message: `secret allowlist entry should name a concrete secret instead of a wildcard: ${secret}`
-      });
-    }
   }
 
   for (const path of agentfile.permissions.filesystem.read) {

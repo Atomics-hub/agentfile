@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Strict YAML/JSON IR validation now rejects malformed network host allowlist entries and wildcard secret allowlist entries, matching Pact source semantics instead of downgrading them to lint warnings.
 - Pact source now rejects duplicate exact metadata and authority entries such as repeated `owner`, `label`, `can run`, `cannot run`, network host, secret, and delimited policy-target declarations instead of silently normalizing them away.
 - IR validation now rejects filesystem read/write grants that fall outside declared `scope.include`, keeping mission scope as the outer boundary for file authority.
 - `compile --target agent` now renders canonical Pact `.agent` source from the strict contract IR, enabling source-language roundtrips and adapter-friendly source generation.

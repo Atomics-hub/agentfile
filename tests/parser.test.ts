@@ -177,6 +177,52 @@ workflow:
 `)).toThrow(/permissions\.shell\.deny: shell command cannot be both allowed and denied: npm test/);
   });
 
+  it("rejects malformed IR allowlist entries", () => {
+    expect(() => parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: invalid-network-host
+task:
+  id: invalid-network-host
+  goal: Keep IR network allowlists concrete.
+scope:
+  include:
+    - src/**
+permissions:
+  network:
+    default: deny
+    allow:
+      - https://api.github.com/repos
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`)).toThrow(/permissions\.network\.allow: network allowlist entry must be a bare host without wildcard, scheme, or path: https:\/\/api\.github\.com\/repos/);
+
+    expect(() => parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: invalid-secret-allow
+task:
+  id: invalid-secret-allow
+  goal: Keep IR secret allowlists concrete.
+scope:
+  include:
+    - src/**
+permissions:
+  secrets:
+    access: allow
+    allow:
+      - "*"
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`)).toThrow(/permissions\.secrets\.allow: secret allowlist entry must name a concrete secret instead of a wildcard: \*/);
+  });
+
   it("rejects contradictory IR filesystem states", () => {
     expect(() => parseAgentfile(`
 agentfile: "0.1.0"
@@ -1791,59 +1837,6 @@ workflow:
         code: "risky-filesystem-write-broad",
         path: "permissions.filesystem.write",
         message: "filesystem write scope is repository-wide; prefer narrower write paths: **"
-      }
-    ]);
-  });
-
-  it("reports risky wildcard-style allowlist entries", () => {
-    const contract = parseAgentfile(`
-agentfile: "0.1.0"
-kind: TaskContract
-info:
-  title: risky-allowlists
-task:
-  id: risky-allowlists
-  goal: Exercise lint warnings for wildcard-like allowlists.
-scope:
-  include:
-    - src/**
-permissions:
-  network:
-    default: deny
-    allow:
-      - https://api.github.com/repos
-      - "*.githubusercontent.com"
-  secrets:
-    access: allow
-    allow:
-      - "*"
-  approvals:
-    requiredFor:
-      - dependency_change
-      - network_access
-      - scope_expansion
-      - secret_access
-workflow:
-  id: implement
-  acceptance:
-    - Done.
-`);
-
-    expect(lintAgentfile(contract)).toEqual([
-      {
-        code: "risky-network-host-pattern",
-        path: "permissions.network.allow",
-        message: "network allowlist entry should be a bare host without wildcard, scheme, or path: https://api.github.com/repos"
-      },
-      {
-        code: "risky-network-host-pattern",
-        path: "permissions.network.allow",
-        message: "network allowlist entry should be a bare host without wildcard, scheme, or path: *.githubusercontent.com"
-      },
-      {
-        code: "risky-secret-allow-pattern",
-        path: "permissions.secrets.allow",
-        message: "secret allowlist entry should name a concrete secret instead of a wildcard: *"
       }
     ]);
   });

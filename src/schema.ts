@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isWildcardSecret, looksLikeBroadNetworkHost } from "./risk.js";
 
 export const accessSchema = z.object({
   access: z.enum(["allow", "deny"]).default("deny"),
@@ -135,6 +136,26 @@ export const permissionsSchema = z.object({
       path: ["secrets", "allow"],
       message: "secret allowlist requires permissions.secrets.access to be allow"
     });
+  }
+
+  for (const host of permissions.network.allow) {
+    if (looksLikeBroadNetworkHost(host)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["network", "allow"],
+        message: `network allowlist entry must be a bare host without wildcard, scheme, or path: ${host}`
+      });
+    }
+  }
+
+  for (const secret of permissions.secrets.allow) {
+    if (isWildcardSecret(secret)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["secrets", "allow"],
+        message: `secret allowlist entry must name a concrete secret instead of a wildcard: ${secret}`
+      });
+    }
   }
 
   const filesystemOverlap = [

@@ -39,11 +39,9 @@ The initial lint pass flags:
 - Repository-wide mission scope include patterns such as `**`.
 - Broad network access with `permissions.network.default: allow`.
 - Allowed network access without `network_access` in `permissions.approvals.requiredFor`.
-- Network allowlist entries that include wildcards, schemes, or paths instead of bare hosts.
 - Broad secret access with `permissions.secrets.access: allow` and no explicit allowlist.
 - Allowed secret access without `secret_access` in `permissions.approvals.requiredFor`.
 - Repository-wide filesystem read patterns such as `**`.
-- Secret allowlist wildcards instead of concrete secret names.
 - Repository-wide filesystem write patterns such as `**`.
 - Publish, dependency-changing, or destructive shell commands without matching approval gates such as `release_publish`, `dependency_change`, or `destructive_write`.
 
