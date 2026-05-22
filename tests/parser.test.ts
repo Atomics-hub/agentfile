@@ -3,11 +3,13 @@ import { describe, expect, it } from "vitest";
 import { parseDocument } from "yaml";
 import {
   compileAgentfile,
+  compileTargets,
   defaultOutputPathForTarget,
   lintAgentfile,
   parseAgentfile,
   parsePactSource,
   parseSource,
+  targetDefinition,
   toNormalizedPolicy,
   toJsonContract
 } from "../src/index.js";
@@ -766,6 +768,27 @@ mission scoped-prompt {
     expect(defaultOutputPathForTarget("claude-md")).toBe("CLAUDE.md");
     expect(defaultOutputPathForTarget("cursor-mdc")).toBe(".cursor/rules/agentfile.mdc");
     expect(defaultOutputPathForTarget("copilot-md")).toBe(".github/copilot-instructions.md");
+  });
+
+  it("declares compile targets in a central registry", () => {
+    expect(compileTargets.map((target) => target.id)).toEqual([
+      "agent",
+      "prompt",
+      "json",
+      "policy-json",
+      "yaml",
+      "agents-md",
+      "claude-md",
+      "cursor-mdc",
+      "copilot-md"
+    ]);
+    expect(targetDefinition("cursor-mdc")).toMatchObject({
+      fileBacked: true,
+      defaultOutputPath: ".cursor/rules/agentfile.mdc"
+    });
+    expect(targetDefinition("json")).toMatchObject({
+      fileBacked: false
+    });
   });
 });
 

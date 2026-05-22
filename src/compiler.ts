@@ -1,18 +1,8 @@
 import { stringify } from "yaml";
 import type { Agentfile } from "./schema.js";
+import { createTargetRegistry, findTarget, type CompileTarget, type CompileTargetDefinition, type SyncTarget } from "./targets.js";
 
-export type CompileTarget =
-  | "agent"
-  | "prompt"
-  | "json"
-  | "policy-json"
-  | "yaml"
-  | "agents-md"
-  | "claude-md"
-  | "cursor-mdc"
-  | "copilot-md";
-
-export type SyncTarget = Exclude<CompileTarget, "prompt" | "json" | "yaml">;
+export type { CompileTarget, CompileTargetDefinition, SyncTarget } from "./targets.js";
 export type JsonContract = Agentfile;
 
 export interface NormalizedPolicy {
@@ -115,39 +105,27 @@ export function compileAgentPrompt(agentfile: Agentfile): string {
 }
 
 export function compileAgentfile(agentfile: Agentfile, target: CompileTarget): string {
-  if (target === "agent") {
-    return compileAgentSource(agentfile);
-  }
+  return targetDefinition(target).render(agentfile);
+}
 
-  if (target === "json") {
-    return `${JSON.stringify(toJsonContract(agentfile), null, 2)}\n`;
-  }
+export const compileTargets = createTargetRegistry({
+  agent: compileAgentSource,
+  prompt: compileAgentPrompt,
+  json: (agentfile) => `${JSON.stringify(toJsonContract(agentfile), null, 2)}\n`,
+  "policy-json": (agentfile) => `${JSON.stringify(toNormalizedPolicy(agentfile), null, 2)}\n`,
+  yaml: (agentfile) => `${stringify(toJsonContract(agentfile))}`,
+  "agents-md": compileAgentsMarkdown,
+  "claude-md": compileClaudeMarkdown,
+  "cursor-mdc": compileCursorRule,
+  "copilot-md": compileCopilotMarkdown
+});
 
-  if (target === "policy-json") {
-    return `${JSON.stringify(toNormalizedPolicy(agentfile), null, 2)}\n`;
+export function targetDefinition(target: CompileTarget): CompileTargetDefinition {
+  const definition = findTarget(compileTargets, target);
+  if (!definition) {
+    throw new Error(`missing compile target definition: ${target}`);
   }
-
-  if (target === "yaml") {
-    return `${stringify(toJsonContract(agentfile))}`;
-  }
-
-  if (target === "agents-md") {
-    return compileAgentsMarkdown(agentfile);
-  }
-
-  if (target === "claude-md") {
-    return compileClaudeMarkdown(agentfile);
-  }
-
-  if (target === "cursor-mdc") {
-    return compileCursorRule(agentfile);
-  }
-
-  if (target === "copilot-md") {
-    return compileCopilotMarkdown(agentfile);
-  }
-
-  return compileAgentPrompt(agentfile);
+  return definition;
 }
 
 export function toJsonContract(agentfile: Agentfile): JsonContract {
@@ -364,23 +342,11 @@ export function compileCursorRule(agentfile: Agentfile): string {
 }
 
 export function defaultOutputPathForTarget(target: SyncTarget): string {
-  if (target === "claude-md") {
-    return "CLAUDE.md";
-  }
-
-  if (target === "cursor-mdc") {
-    return ".cursor/rules/agentfile.mdc";
-  }
-
-  if (target === "copilot-md") {
-    return ".github/copilot-instructions.md";
-  }
-
-  return "AGENTS.md";
+  return targetDefinition(target).defaultOutputPath as string;
 }
 
 export function isSyncTarget(target: CompileTarget): target is SyncTarget {
-  return target === "agents-md" || target === "claude-md" || target === "cursor-mdc" || target === "copilot-md";
+  return targetDefinition(target).fileBacked;
 }
 
 function compileInstructionMarkdown(

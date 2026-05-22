@@ -80,9 +80,23 @@ describe("agentfile sync", () => {
       execFileAsync("node", [tsxPath, cliPath, "sync", examplePath, "--target", "yaml"], { cwd })
     ).rejects.toMatchObject({
       stderr: expect.stringContaining(
-        'sync target "yaml" is not file-backed. Expected "agents-md", "claude-md", "cursor-mdc", or "copilot-md".'
+        'sync target "yaml" is not file-backed. Expected "agents-md", "claude-md", "cursor-mdc", "copilot-md".'
       )
     });
+  });
+});
+
+describe("agentfile targets", () => {
+  it("lists compile targets and file-backed output paths", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-targets-"));
+    tempDirs.push(cwd);
+
+    const { stdout } = await execFileAsync("node", [tsxPath, cliPath, "targets"], { cwd });
+
+    expect(stdout).toContain("json");
+    expect(stdout).toContain("strict JSON contract IR");
+    expect(stdout).toContain("agents-md -> AGENTS.md");
+    expect(stdout).toContain("cursor-mdc -> .cursor/rules/agentfile.mdc");
   });
 });
 

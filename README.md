@@ -243,6 +243,12 @@ Explain the contract:
 agentfile explain examples/fix-login-race.agentfile
 ```
 
+List compile and sync targets:
+
+```sh
+agentfile targets
+```
+
 ## Project Status
 
 Agentfile is early. The v0.1 goal is intentionally narrow:

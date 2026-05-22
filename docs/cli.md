@@ -61,6 +61,10 @@ Targets:
 - `cursor-mdc`: generated Cursor project rule content for `.cursor/rules/agentfile.mdc`.
 - `copilot-md`: generated GitHub Copilot repository instructions.
 
+## `agentfile targets`
+
+List supported compile targets, descriptions, and default output paths for file-backed targets.
+
 ## `agentfile sync [file] --target <target> --output <file>`
 
 Generate an agent instruction file.

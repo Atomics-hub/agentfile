@@ -5,12 +5,14 @@ import { dirname } from "node:path";
 import { Command } from "commander";
 import {
   compileAgentfile,
+  compileTargets,
   defaultOutputPathForTarget,
   isSyncTarget,
   type CompileTarget
 } from "./compiler.js";
 import { AgentfileError, lintAgentfile } from "./diagnostics.js";
 import { parseSource } from "./source.js";
+import { findTarget, quotedTargetIds } from "./targets.js";
 
 const program = new Command();
 
@@ -67,11 +69,7 @@ program
   .command("compile")
   .description("Compile an Agentfile contract.")
   .argument("[file]", "Agentfile path")
-  .option(
-    "-t, --target <target>",
-    "agent, prompt, json, policy-json, yaml, agents-md, claude-md, cursor-mdc, or copilot-md",
-    "prompt"
-  )
+  .option("-t, --target <target>", compileTargetHelp(), "prompt")
   .action(async (file: string, options: { target: string }) => {
     const target = parseTarget(options.target);
     const resolved = await resolveFile(file);
@@ -83,14 +81,14 @@ program
   .command("sync")
   .description("Generate an agent instruction file from an Agentfile contract.")
   .argument("[file]", "Agentfile path")
-  .option("-t, --target <target>", "agents-md, claude-md, cursor-mdc, or copilot-md", "agents-md")
+  .option("-t, --target <target>", syncTargetHelp(), "agents-md")
   .option("-o, --output <file>", "output path")
   .option("-f, --force", "overwrite an existing output file", false)
   .action(async (file: string, options: { target: string; output?: string; force: boolean }) => {
     const target = parseTarget(options.target);
     if (!isSyncTarget(target)) {
       throw new AgentfileError(
-        `sync target "${target}" is not file-backed. Expected "agents-md", "claude-md", "cursor-mdc", or "copilot-md".`
+        `sync target "${target}" is not file-backed. Expected ${syncTargetList()}.`
       );
     }
 
@@ -105,6 +103,17 @@ program
     await mkdir(dirname(output), { recursive: true });
     await writeFile(output, compileAgentfile(agentfile, target), "utf8");
     console.log(`Wrote ${output}`);
+  });
+
+program
+  .command("targets")
+  .description("List compile targets and default sync output paths.")
+  .action(() => {
+    for (const target of compileTargets) {
+      const output = target.fileBacked ? ` -> ${target.defaultOutputPath}` : "";
+      console.log(`${target.id}${output}`);
+      console.log(`  ${target.description}`);
+    }
   });
 
 program
@@ -149,23 +158,28 @@ async function load(filePath: string) {
 }
 
 function parseTarget(value: string): CompileTarget {
-  if (
-    value === "agent" ||
-    value === "prompt" ||
-    value === "json" ||
-    value === "policy-json" ||
-    value === "yaml" ||
-    value === "agents-md" ||
-    value === "claude-md" ||
-    value === "cursor-mdc" ||
-    value === "copilot-md"
-  ) {
-    return value;
+  const target = findTarget(compileTargets, value);
+  if (target) {
+    return target.id;
   }
 
-  throw new AgentfileError(
-    `unknown compile target "${value}". Expected "agent", "prompt", "json", "policy-json", "yaml", "agents-md", "claude-md", "cursor-mdc", or "copilot-md".`
-  );
+  throw new AgentfileError(`unknown compile target "${value}". Expected ${quotedTargetIds(compileTargets)}.`);
+}
+
+function compileTargetHelp(): string {
+  return compileTargets.map((target) => target.id).join(", ");
+}
+
+function syncTargets() {
+  return compileTargets.filter((target) => target.fileBacked);
+}
+
+function syncTargetHelp(): string {
+  return syncTargets().map((target) => target.id).join(", ");
+}
+
+function syncTargetList(): string {
+  return quotedTargetIds(syncTargets());
 }
 
 type InitFormat = "yaml" | "agent";
