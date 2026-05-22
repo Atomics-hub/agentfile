@@ -1,5 +1,13 @@
 import { AgentfileError, formatZodError } from "./diagnostics.js";
 import { parseAgentfile } from "./parser.js";
+import {
+  isWildcardSecret,
+  looksLikeBroadNetworkHost,
+  looksLikeDependencyChangeCommand,
+  looksLikeDestructiveShellCommand,
+  looksLikePublishCommand,
+  normalizeShellCommand
+} from "./risk.js";
 import { agentfileSchema, type Agentfile } from "./schema.js";
 
 type Section = "mission" | "plan" | "prove" | "handoff";
@@ -232,6 +240,7 @@ function parseMissionLine(
       throw syntaxError(`conflicting shell policy for command: ${command}`, filePath, lineNo);
     }
     pushUnique(state.shellAllow, command);
+    ensureCommandApprovals(state, command);
     return;
   }
 
@@ -319,6 +328,7 @@ function parseMissionLine(
     state.secrets = "allow";
     state.secretsSpecified = true;
     state.secretsAllAllowed = true;
+    ensureApproval(state, "secret_access");
     return;
   }
 
@@ -350,6 +360,7 @@ function parseMissionLine(
       );
     }
     pushUnique(state.secretAllow, secret);
+    ensureApproval(state, "secret_access");
     return;
   }
 
@@ -492,6 +503,7 @@ function parseProveLine(
     if (!state.shellAllow.includes(command)) {
       pushUnique(state.shellAllow, command);
     }
+    ensureCommandApprovals(state, command);
     state.checks.push({
       id: slug(command),
       command,
@@ -512,6 +524,7 @@ function parseProveLine(
     if (!state.shellAllow.includes(command)) {
       pushUnique(state.shellAllow, command);
     }
+    ensureCommandApprovals(state, command);
     state.checks.push({
       id: slug(command),
       command,
@@ -884,6 +897,22 @@ function ensureApproval(state: PactState, approval: string): void {
   }
 }
 
+function ensureCommandApprovals(state: PactState, command: string): void {
+  const normalized = normalizeShellCommand(command);
+
+  if (looksLikePublishCommand(normalized)) {
+    ensureApproval(state, "release_publish");
+  }
+
+  if (looksLikeDependencyChangeCommand(normalized)) {
+    ensureApproval(state, "dependency_change");
+  }
+
+  if (looksLikeDestructiveShellCommand(normalized)) {
+    ensureApproval(state, "destructive_write");
+  }
+}
+
 function ensureSectionLine(
   existingLine: number | undefined,
   section: Section,
@@ -1145,14 +1174,6 @@ function uniqueValues(values: string[]): string[] {
   }
 
   return unique;
-}
-
-function looksLikeBroadNetworkHost(host: string): boolean {
-  return host.includes("*") || host.includes("://") || host.includes("/");
-}
-
-function isWildcardSecret(secret: string): boolean {
-  return secret.includes("*");
 }
 
 function looksLikePact(source: string): boolean {

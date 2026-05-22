@@ -758,6 +758,37 @@ mission release-prep {
     expect(contract.permissions.shell.deny).toEqual(["npm publish"]);
   });
 
+  it("auto-adds approval gates for risky Pact secret and shell grants", () => {
+    const contract = parsePactSource(`
+mission risky-authority {
+  goal "Keep source lowering conservative"
+  touch src/**, scripts/**
+
+  can read secret "NPM_TOKEN"
+  can run "npm publish --tag next"
+  can run "rm -rf dist"
+
+  prove {
+    run "pnpm add zod"
+  }
+}
+`);
+
+    expect(contract.permissions.approvals.requiredFor).toEqual([
+      "dependency_change",
+      "network_access",
+      "scope_expansion",
+      "secret_access",
+      "release_publish",
+      "destructive_write"
+    ]);
+    expect(contract.permissions.shell.allow).toEqual([
+      "npm publish --tag next",
+      "rm -rf dist",
+      "pnpm add zod"
+    ]);
+  });
+
   it("lowers cannot add dependency into a policy guard", () => {
     const contract = parsePactSource(`
 mission guarded-dependencies {

@@ -57,6 +57,8 @@ The source language can express grants, denials, approval gates, metadata, and b
 
 Broad secret access via `can read secrets` is intentionally mutually exclusive with named `can read secret "NAME"` entries so Pact always lowers to one unambiguous IR secret policy.
 
+Pact source also keeps approval posture conservative when it lowers risky authority: secret grants add `secret_access`, publish commands add `release_publish`, destructive commands add `destructive_write`, and dependency-changing commands retain `dependency_change`.
+
 Quoted source strings support escaped quotes and backslashes, so commands like `run "node --test --grep \\\"auth flow\\\""` and notes like `note "follow-up on C:\\\\temp fixtures"` lower correctly.
 
 Filesystem scope can now distinguish read-only and writable areas with `read ...` and `write ...`. `touch ...` remains available as shorthand for paths that should be both readable and writable, and `write` implies read access when lowered into the contract IR.

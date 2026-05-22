@@ -204,4 +204,6 @@ Pact source may add project-specific approval gates with lines such as:
 ask approval for release_publish, destructive_write
 ```
 
+Pact lowering is conservative about risky authority. Source lines that grant secret access add `secret_access`, publish commands add `release_publish`, destructive shell commands add `destructive_write`, and dependency-changing commands retain `dependency_change` in the lowered IR.
+
 Approval identifiers use the same conservative shape as other ids: lowercase alphanumerics plus `.`, `_`, or `-`, starting with an alphanumeric character.
