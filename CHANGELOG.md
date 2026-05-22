@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- IR validation now rejects filesystem read/write grants that fall outside declared `scope.include`, keeping mission scope as the outer boundary for file authority.
 - `compile --target agent` now renders canonical Pact `.agent` source from the strict contract IR, enabling source-language roundtrips and adapter-friendly source generation.
 - Lint warnings now flag contracts that grant secret access without an explicit `secret_access` approval gate.
 - Lint warnings now flag risky allowed shell commands that publish artifacts, mutate dependencies, or destroy local state.

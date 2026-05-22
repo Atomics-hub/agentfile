@@ -193,6 +193,8 @@ export const agentfileSchema = z.object({
   addDuplicateValueIssues(agentfile.scope.include, "scope include path", ["scope", "include"], ctx);
   addDuplicateValueIssues(agentfile.scope.exclude, "scope exclude path", ["scope", "exclude"], ctx);
 
+  const scopeIncludes = new Set(agentfile.scope.include);
+
   if (agentfile.info.title !== agentfile.task.id) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
@@ -215,6 +217,28 @@ export const agentfileSchema = z.object({
       code: z.ZodIssueCode.custom,
       path: ["scope", "exclude"],
       message: `scope path cannot be both included and excluded: ${path}`
+    });
+  }
+
+  const filesystemReadOutsideScope = agentfile.permissions.filesystem.read.filter(
+    (path) => !scopeIncludes.has(path)
+  );
+  for (const path of filesystemReadOutsideScope) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["permissions", "filesystem", "read"],
+      message: `filesystem read path must appear in scope.include: ${path}`
+    });
+  }
+
+  const filesystemWriteOutsideScope = agentfile.permissions.filesystem.write.filter(
+    (path) => !scopeIncludes.has(path)
+  );
+  for (const path of filesystemWriteOutsideScope) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["permissions", "filesystem", "write"],
+      message: `filesystem write path must appear in scope.include: ${path}`
     });
   }
 

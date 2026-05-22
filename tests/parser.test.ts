@@ -229,6 +229,54 @@ workflow:
 `)).toThrow(/permissions\.filesystem\.write: filesystem write path must also appear in read: tests\/\*\*/);
   });
 
+  it("rejects IR filesystem authority outside declared mission scope", () => {
+    expect(() => parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: invalid-filesystem-read-scope
+task:
+  id: invalid-filesystem-read-scope
+  goal: Keep filesystem authority bounded by scope.
+scope:
+  include:
+    - src/**
+permissions:
+  filesystem:
+    read:
+      - src/**
+      - tests/**
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`)).toThrow(/permissions\.filesystem\.read: filesystem read path must appear in scope\.include: tests\/\*\*/);
+
+    expect(() => parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: invalid-filesystem-write-scope
+task:
+  id: invalid-filesystem-write-scope
+  goal: Keep writable authority bounded by scope.
+scope:
+  include:
+    - src/**
+permissions:
+  filesystem:
+    read:
+      - src/**
+      - tests/**
+    write:
+      - tests/**
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`)).toThrow(/permissions\.filesystem\.write: filesystem write path must appear in scope\.include: tests\/\*\*/);
+  });
+
   it("rejects duplicate IR scope and permission entries", () => {
     expect(() => parseAgentfile(`
 agentfile: "0.1.0"
