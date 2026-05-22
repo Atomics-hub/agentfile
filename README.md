@@ -61,9 +61,9 @@ Pact source also keeps approval posture conservative when it lowers risky author
 
 Quoted source strings support escaped quotes and backslashes, so commands like `run "node --test --grep \\\"auth flow\\\""` and notes like `note "follow-up on C:\\\\temp fixtures"` lower correctly.
 
-Filesystem scope can now distinguish read-only and writable areas with `read ...` and `write ...`. `touch ...` remains available as shorthand for paths that should be both readable and writable, and `write` implies read access when lowered into the contract IR. In the strict contract IR, filesystem `read` and `write` entries must stay within `scope.include`, so mission scope remains the outer boundary for file authority.
+Filesystem scope can now distinguish read-only and writable areas with `read ...` and `write ...`. Pact source also distinguishes mission exclusions with `exclude ...` and filesystem deny rules with `deny ...`; `never ...` remains available as shorthand for paths that should be both excluded and denied. `write` implies read access when lowered into the contract IR. In the strict contract IR, filesystem `read` and `write` entries must stay within `scope.include`, so mission scope remains the outer boundary for file authority.
 
-Comma-delimited source lists are strict: `read`, `write`, `touch`, `never`, `ask approval for`, and policy `for ...` targets require concrete entries and reject blank items, trailing commas, and duplicate exact entries.
+Comma-delimited source lists are strict: `read`, `write`, `touch`, `exclude`, `deny`, `never`, `ask approval for`, and policy `for ...` targets require concrete entries and reject blank items, trailing commas, and duplicate exact entries.
 
 Repeated Pact metadata and authority entries such as duplicate `owner`, `label`, `can run`, `cannot run`, `can use network host`, or `can read secret` lines are rejected instead of being silently normalized away.
 

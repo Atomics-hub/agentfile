@@ -127,6 +127,9 @@ describe("agentfile file discovery", () => {
 
     expect(stdout).toContain("mission fix-login-refresh-race {");
     expect(stdout).toContain('summary "Prevent duplicate token refresh requests during concurrent auth calls."');
+    expect(stdout).toContain("write src/auth/**, tests/auth/**");
+    expect(stdout).toContain("exclude src/billing/**, infra/**");
+    expect(stdout).toContain("deny .env, .env.*");
     expect(stdout).toContain('must "Public auth APIs must not change."');
     expect(stdout).toContain('must_not "Refresh tokens must never be logged."');
   });

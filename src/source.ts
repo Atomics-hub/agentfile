@@ -98,7 +98,7 @@ export function parsePactSource(source: string, filePath?: string): Agentfile {
     },
     scope: {
       include: state.read,
-      exclude: state.never
+      exclude: state.exclude
     },
     permissions: {
       shell: {
@@ -112,7 +112,7 @@ export function parsePactSource(source: string, filePath?: string): Agentfile {
       filesystem: {
         read: state.read,
         write: state.write,
-        deny: state.never
+        deny: state.deny
       },
       secrets: {
         access: state.secrets,
@@ -215,7 +215,7 @@ function parseMissionLine(
   if (readPaths !== undefined) {
     addScopedPaths(
       state.read,
-      state.never,
+      state,
       readPaths,
       filePath,
       lineNo
@@ -239,6 +239,28 @@ function parseMissionLine(
     addNeverPaths(
       state,
       neverPaths,
+      filePath,
+      lineNo
+    );
+    return;
+  }
+
+  const excludePaths = listDirective(line, "exclude", "path", filePath, lineNo);
+  if (excludePaths !== undefined) {
+    addExcludePaths(
+      state,
+      excludePaths,
+      filePath,
+      lineNo
+    );
+    return;
+  }
+
+  const denyPaths = listDirective(line, "deny", "path", filePath, lineNo);
+  if (denyPaths !== undefined) {
+    addDenyPaths(
+      state,
+      denyPaths,
       filePath,
       lineNo
     );
@@ -620,7 +642,8 @@ function emptyState(): PactState {
     labels: [],
     read: [],
     write: [],
-    never: [],
+    exclude: [],
+    deny: [],
     shellAllow: [],
     shellDeny: [],
     network: "deny",
@@ -653,7 +676,8 @@ interface PactState {
   labels: string[];
   read: string[];
   write: string[];
-  never: string[];
+  exclude: string[];
+  deny: string[];
   shellAllow: string[];
   shellDeny: string[];
   network: "allow" | "deny";
@@ -776,15 +800,16 @@ function parseDelimitedList(
 
 function addScopedPaths(
   target: string[],
-  denied: string[],
+  state: PactState,
   values: string[],
   filePath: string | undefined,
   lineNo: number
 ): void {
   for (const value of values) {
-    if (denied.includes(value)) {
+    const conflict = restrictedPathDirective(state, value);
+    if (conflict) {
       throw syntaxError(
-        `scope path cannot appear in both read/write/touch and never: ${value}`,
+        `scope path cannot appear in both read/write/touch and ${conflict}: ${value}`,
         filePath,
         lineNo
       );
@@ -799,8 +824,8 @@ function addTouchPaths(
   filePath: string | undefined,
   lineNo: number
 ): void {
-  addScopedPaths(state.read, state.never, values, filePath, lineNo);
-  addScopedPaths(state.write, state.never, values, filePath, lineNo);
+  addScopedPaths(state.read, state, values, filePath, lineNo);
+  addScopedPaths(state.write, state, values, filePath, lineNo);
 }
 
 function addWritePaths(
@@ -809,8 +834,8 @@ function addWritePaths(
   filePath: string | undefined,
   lineNo: number
 ): void {
-  addScopedPaths(state.read, state.never, values, filePath, lineNo);
-  addScopedPaths(state.write, state.never, values, filePath, lineNo);
+  addScopedPaths(state.read, state, values, filePath, lineNo);
+  addScopedPaths(state.write, state, values, filePath, lineNo);
 }
 
 function addNeverPaths(
@@ -827,8 +852,64 @@ function addNeverPaths(
         lineNo
       );
     }
-    pushUnique(state.never, value);
+    pushUnique(state.exclude, value);
+    pushUnique(state.deny, value);
   }
+}
+
+function addExcludePaths(
+  state: PactState,
+  values: string[],
+  filePath: string | undefined,
+  lineNo: number
+): void {
+  for (const value of values) {
+    if (state.read.includes(value) || state.write.includes(value)) {
+      throw syntaxError(
+        `scope path cannot appear in both read/write/touch and exclude: ${value}`,
+        filePath,
+        lineNo
+      );
+    }
+    pushUnique(state.exclude, value);
+  }
+}
+
+function addDenyPaths(
+  state: PactState,
+  values: string[],
+  filePath: string | undefined,
+  lineNo: number
+): void {
+  for (const value of values) {
+    if (state.read.includes(value) || state.write.includes(value)) {
+      throw syntaxError(
+        `scope path cannot appear in both read/write/touch and deny: ${value}`,
+        filePath,
+        lineNo
+      );
+    }
+    pushUnique(state.deny, value);
+  }
+}
+
+function restrictedPathDirective(state: PactState, value: string): "never" | "exclude" | "deny" | undefined {
+  const excluded = state.exclude.includes(value);
+  const denied = state.deny.includes(value);
+
+  if (excluded && denied) {
+    return "never";
+  }
+
+  if (excluded) {
+    return "exclude";
+  }
+
+  if (denied) {
+    return "deny";
+  }
+
+  return undefined;
 }
 
 function quotedArg(

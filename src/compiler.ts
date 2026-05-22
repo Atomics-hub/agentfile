@@ -159,6 +159,15 @@ export function compileAgentSource(agentfile: Agentfile): string {
   const readOnlyPaths = agentfile.permissions.filesystem.read.filter(
     (path) => !agentfile.permissions.filesystem.write.includes(path)
   );
+  const sharedNeverPaths = agentfile.scope.exclude.filter(
+    (path) => agentfile.permissions.filesystem.deny.includes(path)
+  );
+  const excludeOnlyPaths = agentfile.scope.exclude.filter(
+    (path) => !agentfile.permissions.filesystem.deny.includes(path)
+  );
+  const denyOnlyPaths = agentfile.permissions.filesystem.deny.filter(
+    (path) => !agentfile.scope.exclude.includes(path)
+  );
   const proofCommands = new Set(
     agentfile.checks
       .filter((check) => check.command)
@@ -193,22 +202,32 @@ export function compileAgentSource(agentfile: Agentfile): string {
     lines.push("");
   }
 
-  if (agentfile.permissions.filesystem.write.length > 0) {
-    lines.push(`  touch ${agentfile.permissions.filesystem.write.join(", ")}`);
-  }
-
   if (readOnlyPaths.length > 0) {
     lines.push(`  read ${readOnlyPaths.join(", ")}`);
   }
 
-  if (agentfile.permissions.filesystem.deny.length > 0) {
-    lines.push(`  never ${agentfile.permissions.filesystem.deny.join(", ")}`);
+  if (agentfile.permissions.filesystem.write.length > 0) {
+    lines.push(`  write ${agentfile.permissions.filesystem.write.join(", ")}`);
+  }
+
+  if (sharedNeverPaths.length > 0) {
+    lines.push(`  never ${sharedNeverPaths.join(", ")}`);
+  }
+
+  if (excludeOnlyPaths.length > 0) {
+    lines.push(`  exclude ${excludeOnlyPaths.join(", ")}`);
+  }
+
+  if (denyOnlyPaths.length > 0) {
+    lines.push(`  deny ${denyOnlyPaths.join(", ")}`);
   }
 
   if (
-    agentfile.permissions.filesystem.write.length > 0 ||
     readOnlyPaths.length > 0 ||
-    agentfile.permissions.filesystem.deny.length > 0
+    agentfile.permissions.filesystem.write.length > 0 ||
+    sharedNeverPaths.length > 0 ||
+    excludeOnlyPaths.length > 0 ||
+    denyOnlyPaths.length > 0
   ) {
     lines.push("");
   }

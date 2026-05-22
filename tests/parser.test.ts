@@ -1024,6 +1024,35 @@ mission split-filesystem-scope {
       "tests/**"
     ]);
     expect(contract.permissions.filesystem.deny).toEqual(["dist/**"]);
+
+    const rendered = compileAgentfile(contract, "agent");
+    expect(rendered).toContain("read docs/**, package.json");
+    expect(rendered).toContain("write src/**, tests/**");
+    expect(rendered).toContain("never dist/**");
+  });
+
+  it("supports separate exclude and deny directives for exact IR round-trips", () => {
+    const contract = parsePactSource(`
+mission split-restrictions {
+  goal "Preserve scope excludes separately from filesystem denies"
+  read docs/**
+  write src/**
+  exclude dist/**, fixtures/generated/**
+  deny .env, .env.*
+}
+`);
+
+    expect(contract.scope.exclude).toEqual(["dist/**", "fixtures/generated/**"]);
+    expect(contract.permissions.filesystem.deny).toEqual([".env", ".env.*"]);
+
+    const rendered = compileAgentfile(contract, "agent");
+    expect(rendered).toContain("read docs/**");
+    expect(rendered).toContain("write src/**");
+    expect(rendered).toContain("exclude dist/**, fixtures/generated/**");
+    expect(rendered).toContain("deny .env, .env.*");
+    expect(rendered).not.toContain("never dist/**");
+
+    expect(parsePactSource(rendered, "generated-split.agent")).toEqual(contract);
   });
 
   it("renders canonical Pact source that round-trips through the parser", async () => {
@@ -1032,13 +1061,27 @@ mission split-filesystem-scope {
     const rendered = compileAgentfile(contract, "agent");
 
     expect(rendered).toContain("mission fix-login-refresh-race {");
-    expect(rendered).toContain("touch src/auth/**, tests/auth/**");
+    expect(rendered).toContain("write src/auth/**, tests/auth/**");
     expect(rendered).toContain('must preserve "Public auth APIs"');
     expect(rendered).toContain('must_not leak "Refresh tokens"');
     expect(rendered).toContain('run "npm run lint"');
     expect(rendered).toContain("list changed_files");
 
     expect(parsePactSource(rendered, "generated.agent")).toEqual(contract);
+  });
+
+  it("round-trips IR contracts with distinct scope excludes and filesystem denies", async () => {
+    const source = await readFile("examples/fix-login-race.agentfile", "utf8");
+    const contract = parseAgentfile(source, "examples/fix-login-race.agentfile");
+    const rendered = compileAgentfile(contract, "agent");
+
+    expect(rendered).toContain("exclude src/billing/**, infra/**");
+    expect(rendered).toContain("deny .env, .env.*");
+
+    const reparsed = parsePactSource(rendered, "generated-from-ir.agent");
+    expect(reparsed.scope.exclude).toEqual(contract.scope.exclude);
+    expect(reparsed.permissions.filesystem.deny).toEqual(contract.permissions.filesystem.deny);
+    expect(reparsed.permissions.filesystem.write).toEqual(contract.permissions.filesystem.write);
   });
 
   it("supports required manual proof checks", () => {
@@ -1643,6 +1686,22 @@ mission contradictory-read-scope {
   never src/**
 }
 `)).toThrow(/scope path cannot appear in both read\/write\/touch and never: src\/\*\*/);
+
+    expect(() => parsePactSource(`
+mission contradictory-exclude-scope {
+  goal "Exercise exclude diagnostics"
+  touch src/**
+  exclude src/**
+}
+`)).toThrow(/scope path cannot appear in both read\/write\/touch and exclude: src\/\*\*/);
+
+    expect(() => parsePactSource(`
+mission contradictory-deny-scope {
+  goal "Exercise deny diagnostics"
+  write src/**
+  deny src/**
+}
+`)).toThrow(/scope path cannot appear in both read\/write\/touch and deny: src\/\*\*/);
 
     expect(() => parsePactSource(`
 mission duplicate-proof {
