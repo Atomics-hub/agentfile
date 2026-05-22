@@ -206,7 +206,7 @@ Lint a contract for risky broad authority:
 agentfile lint examples/fix-login-race.agentfile
 ```
 
-The linter warns on repo-wide mission scope, overly broad filesystem access, risky network or secret authority, high-risk shell commands such as publish, dependency-changing, or destructive operations, and missing approval gates for risky network, secret, or shell authority without rejecting the contract.
+The linter warns on missing proof obligations, manual-only proof without an executable check, repo-wide mission scope, overly broad filesystem access, risky network or secret authority, high-risk shell commands such as publish, dependency-changing, or destructive operations, and missing approval gates for risky network, secret, or shell authority without rejecting the contract.
 
 Compile to a prompt for a coding agent:
 

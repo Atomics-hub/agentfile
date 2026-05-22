@@ -243,4 +243,56 @@ workflow:
     expect(stdout).toContain("permissions.approvals.requiredFor: network access is allowed without network_access approval gating");
     expect(stdout).toContain("permissions.approvals.requiredFor: secret access is allowed without secret_access approval gating");
   });
+
+  it("reports missing proof obligations and executable checks", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-lint-proof-"));
+    tempDirs.push(cwd);
+
+    const noProofPath = join(cwd, "missing-proof.agentfile");
+    await writeFile(noProofPath, `agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: missing-proof
+task:
+  id: missing-proof
+  goal: Exercise proof lint output.
+scope:
+  include:
+    - src/**
+workflow:
+  id: implement
+`, "utf8");
+
+    const manualOnlyPath = join(cwd, "manual-proof.agentfile");
+    await writeFile(manualOnlyPath, `agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: manual-proof
+task:
+  id: manual-proof
+  goal: Exercise executable proof lint output.
+scope:
+  include:
+    - src/**
+checks:
+  - id: review-logs
+    description: Review the auth logs
+workflow:
+  id: implement
+  acceptance:
+    - Auth logs look correct.
+`, "utf8");
+
+    const missingProof = await runCli(["lint", noProofPath], cwd);
+    expect(missingProof.stdout).toContain(`WARN ${noProofPath}`);
+    expect(missingProof.stdout).toContain(
+      "checks: contract defines no proof requirements; add a check or workflow.acceptance expectation"
+    );
+
+    const manualOnly = await runCli(["lint", manualOnlyPath], cwd);
+    expect(manualOnly.stdout).toContain(`WARN ${manualOnlyPath}`);
+    expect(manualOnly.stdout).toContain(
+      "checks: contract has no executable verification command; prefer at least one command-backed check"
+    );
+  });
 });

@@ -156,6 +156,8 @@ Each check must define exactly one proof mechanism: `command` for executable ver
 
 Check ids must be unique within a contract.
 
+Contracts should define at least one proof obligation through `checks` or `workflow.acceptance`. Contracts that only use manual proof and omit every executable `checks[*].command` are still valid IR, but the CLI linter warns so teams can keep verification posture concrete.
+
 ### `workflow`
 
 The execution plan, acceptance, and handoff requirements for the agent run.

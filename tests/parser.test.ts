@@ -1829,6 +1829,9 @@ permissions:
       - network_access
       - scope_expansion
       - secret_access
+checks:
+  - id: lint
+    command: npm run lint
 workflow:
   id: implement
   acceptance:
@@ -1883,6 +1886,9 @@ permissions:
       - pnpm add zod
       - rm -rf dist
       - git clean -fd
+checks:
+  - id: lint
+    command: npm run lint
 workflow:
   id: implement
   acceptance:
@@ -1957,6 +1963,9 @@ permissions:
   approvals:
     requiredFor:
       - scope_expansion
+checks:
+  - id: lint
+    command: npm run lint
 workflow:
   id: implement
   acceptance:
@@ -2012,5 +2021,60 @@ workflow:
     const contract = parsePactSource(source, "examples/fix-login-race.agent");
 
     expect(lintAgentfile(contract)).toEqual([]);
+  });
+
+  it("reports contracts with no proof obligations", () => {
+    const contract = parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: missing-proof
+task:
+  id: missing-proof
+  goal: Exercise proof lint warnings.
+scope:
+  include:
+    - src/**
+workflow:
+  id: implement
+`);
+
+    expect(lintAgentfile(contract)).toEqual([
+      {
+        code: "missing-proof-requirement",
+        path: "checks",
+        message: "contract defines no proof requirements; add a check or workflow.acceptance expectation"
+      }
+    ]);
+  });
+
+  it("reports contracts that rely on manual proof only", () => {
+    const contract = parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: manual-proof-only
+task:
+  id: manual-proof-only
+  goal: Exercise executable proof lint warnings.
+scope:
+  include:
+    - src/**
+checks:
+  - id: review-logs
+    description: Review the auth logs
+workflow:
+  id: implement
+  acceptance:
+    - Auth logs look correct.
+`);
+
+    expect(lintAgentfile(contract)).toEqual([
+      {
+        code: "missing-executable-proof-check",
+        path: "checks",
+        message: "contract has no executable verification command; prefer at least one command-backed check"
+      }
+    ]);
   });
 });

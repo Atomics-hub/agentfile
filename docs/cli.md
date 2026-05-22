@@ -36,6 +36,8 @@ Report non-blocking warnings for risky authority and broad permissions.
 
 The initial lint pass flags:
 
+- Contracts with no proof obligations in `checks` or `workflow.acceptance`.
+- Contracts that rely only on manual proof and do not define an executable `checks[*].command`.
 - Repository-wide mission scope include patterns such as `**`.
 - Broad network access with `permissions.network.default: allow`.
 - Allowed network access without `network_access` in `permissions.approvals.requiredFor`.

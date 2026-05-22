@@ -33,6 +33,23 @@ export function formatZodError(error: ZodError): string {
 export function lintAgentfile(agentfile: Agentfile): LintDiagnostic[] {
   const diagnostics: LintDiagnostic[] = [];
   const approvals = new Set(agentfile.permissions.approvals.requiredFor);
+  const hasProofRequirement =
+    agentfile.checks.length > 0 || agentfile.workflow.acceptance.length > 0;
+  const hasExecutableCheck = agentfile.checks.some((check) => check.command);
+
+  if (!hasProofRequirement) {
+    diagnostics.push({
+      code: "missing-proof-requirement",
+      path: "checks",
+      message: "contract defines no proof requirements; add a check or workflow.acceptance expectation"
+    });
+  } else if (!hasExecutableCheck) {
+    diagnostics.push({
+      code: "missing-executable-proof-check",
+      path: "checks",
+      message: "contract has no executable verification command; prefer at least one command-backed check"
+    });
+  }
 
   for (const path of agentfile.scope.include) {
     if (isRepoWidePattern(path)) {
