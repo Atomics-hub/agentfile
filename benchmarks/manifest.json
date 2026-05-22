@@ -56,6 +56,28 @@
           "input": "benchmarks/tasks/session-boundary/session-boundary.agent"
         }
       ]
+    },
+    {
+      "id": "redact-auth-logs",
+      "family": "security_sensitive_change_with_evidence_requirements",
+      "fixture": "benchmarks/fixtures/redact-logs",
+      "checks": [
+        "npm test -- auth",
+        "npm run lint",
+        "npm run proof:check"
+      ],
+      "conditions": [
+        {
+          "id": "plain-issue",
+          "description": "Plain natural-language issue text that asks for tests and lint but does not name the extra proof check.",
+          "input": "benchmarks/tasks/redact-logs/plain-issue.md"
+        },
+        {
+          "id": "agentfile-pact",
+          "description": "Pact source mission with explicit no-token-leak policies and proof check.",
+          "input": "benchmarks/tasks/redact-logs/redact-logs.agent"
+        }
+      ]
     }
   ]
 }

@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added a redact-auth-logs benchmark fixture that can pass regular tests while requiring a separate token-leak proof check.
 - Added matched benchmark receipts for the session-claims scope-boundary fixture.
 - Added a harder session-claims benchmark fixture with an explicit billing scope boundary and scope check.
 - Added the matching plain-issue benchmark receipt for the auth-race fixture.

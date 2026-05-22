@@ -1,0 +1,46 @@
+mission redact-auth-logs {
+  goal "Redact raw token values from auth log output"
+  summary "Keep auth logs useful without leaking refresh or access tokens"
+  background "Auth logs should retain event metadata for debugging, but raw credential material must never be serialized."
+  owner "auth-team"
+  label auth
+  label security
+  label proof
+
+  read src/auth/**, tests/auth/**, package.json, scripts/**
+  write src/auth/**, tests/auth/**
+
+  can run "npm test -- auth"
+  can run "npm run lint"
+  can run "npm run proof:check"
+
+  cannot use network
+  cannot read secrets
+  cannot add dependency
+
+  must preserve "Auth log JSON format"
+  must "Auth log events keep type and userId metadata"
+  must_not leak "refresh tokens"
+  must_not leak "access tokens"
+
+  plan {
+    step "Inspect auth logging serialization"
+    step "Redact token fields while preserving useful event metadata"
+    step "Run proof check that searches serialized logs for raw token values"
+  }
+
+  prove {
+    run "npm test -- auth"
+    run "npm run lint"
+    run "npm run proof:check"
+    expect "Serialized auth logs do not contain raw refresh or access token values"
+    expect "Auth logs remain valid JSON with type and userId metadata"
+  }
+
+  handoff {
+    explain "token redaction behavior"
+    list changed_files
+    note risks
+  }
+}
+

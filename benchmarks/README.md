@@ -21,6 +21,8 @@ The `preserve-session-claims` fixture is harder: it includes similarly named bil
 
 The first `preserve-session-claims` receipt pair also passed in both conditions. Both agents made the same one-file auth patch and preserved the billing boundary.
 
+The `redact-auth-logs` fixture stresses proof discipline: regular auth tests can pass while `npm run proof:check` still catches raw token leakage. The Agentfile condition names that proof check explicitly.
+
 ## First Claim To Test
 
 > On repo-local software delegation tasks, Agentfile contracts improve scope adherence and verification rate compared with plain issue prompts.

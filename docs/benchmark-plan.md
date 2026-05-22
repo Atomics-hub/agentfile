@@ -68,6 +68,8 @@ The first stored receipt pair covers both `agentfile-pact` and `plain-issue` con
 
 The first `preserve-session-claims` receipt pair passed in both conditions. Both agents made the same one-file auth patch and preserved the billing boundary, so this is additional pipeline evidence rather than comparative proof.
 
+The `redact-auth-logs` task is designed to test proof discipline: regular auth tests can pass while a dedicated proof check catches leaked token values. The plain issue asks for tests and lint; the Agentfile condition explicitly requires `npm run proof:check`.
+
 ## First Public Claim To Earn
 
 Do not claim "better than Python" broadly.
