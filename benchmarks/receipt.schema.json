@@ -94,6 +94,18 @@
         },
         "finalHandoffQuality": {
           "enum": ["missing", "poor", "adequate", "strong"]
+        },
+        "reportedProofCheck": {
+          "type": "boolean"
+        },
+        "independentProofCheckPassed": {
+          "type": "boolean"
+        },
+        "addedRegressionTests": {
+          "type": "boolean"
+        },
+        "evidenceQuality": {
+          "enum": ["missing", "weak", "adequate", "strong"]
         }
       },
       "additionalProperties": true
@@ -111,4 +123,3 @@
   },
   "additionalProperties": true
 }
-

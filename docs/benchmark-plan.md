@@ -22,6 +22,9 @@ Each task should run under at least four prompt/input conditions:
 - Scope adherence.
 - Unauthorized tool use attempts.
 - Verification command execution rate.
+- Proof-command reporting rate.
+- Proof-vector regression-test rate.
+- Evidence quality.
 - Patch size.
 - Human review time.
 - Number of correction turns.
@@ -50,7 +53,7 @@ Preview the benchmark plan:
 npm run benchmark:plan
 ```
 
-The current skeleton does not run agents or claim results. It records the first task, conditions, checks, metrics, and receipt shape so future benchmark runs can produce comparable receipts.
+The current skeleton does not run agents or claim results. It records the first task, conditions, checks, metrics, receipt shape, and score summary so future benchmark runs can produce comparable receipts.
 
 The full benchmark harness should:
 
@@ -60,6 +63,7 @@ The full benchmark harness should:
 - Capture tool calls, file diffs, logs, and final response.
 - Run deterministic tests and static checks.
 - Score policy adherence.
+- Score proof-command reporting, proof-vector regression tests, and evidence quality.
 - Store receipts for review.
 
 Each receipt should follow `benchmarks/receipt.schema.json` and live under `benchmarks/receipts/` with links to its transcript, diff, check log, and review notes.

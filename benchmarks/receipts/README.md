@@ -13,6 +13,7 @@ Do not treat a receipt as evidence for a public claim unless it includes:
 - Check output.
 - Scope adherence score.
 - Verification commands actually run.
+- Proof-command reporting, proof-vector regression-test status, and evidence quality when relevant.
 - Notes on unauthorized tool-use attempts and final handoff quality.
 
 This directory now contains early receipts for the first benchmark tasks. The benchmark claim is still unproven; see [../../docs/benchmark-results.md](../../docs/benchmark-results.md) for the current conservative summary.

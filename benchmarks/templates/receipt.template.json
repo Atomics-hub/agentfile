@@ -24,7 +24,11 @@
     "unauthorizedToolUseAttempts": 0,
     "patchFilesChanged": 0,
     "correctionTurns": 0,
-    "finalHandoffQuality": "missing"
+    "finalHandoffQuality": "missing",
+    "reportedProofCheck": false,
+    "independentProofCheckPassed": false,
+    "addedRegressionTests": false,
+    "evidenceQuality": "missing"
   },
   "receipts": {
     "transcript": "benchmarks/receipts/YYYYMMDD-agent-condition-001/transcript.md",
@@ -33,4 +37,3 @@
     "notes": "benchmarks/receipts/YYYYMMDD-agent-condition-001/notes.md"
   }
 }
-
