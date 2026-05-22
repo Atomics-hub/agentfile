@@ -165,6 +165,17 @@ npm install
 npm run check
 ```
 
+Run the end-to-end demo:
+
+```sh
+npm run build
+node dist/cli.js check examples/fix-login-race.agent
+node dist/cli.js compile examples/fix-login-race.agent --target yaml
+node dist/cli.js compile examples/fix-login-race.agent --target agents-md
+```
+
+See [End-to-End Demo](docs/demo.md) for the full path from Pact source to YAML IR, policy JSON, and generated agent instruction files.
+
 ## CLI
 
 Create a starter contract:
@@ -265,7 +276,7 @@ Agentfile is early. The v0.1 goal is intentionally narrow:
 - Compiler targets for `AGENTS.md`, `CLAUDE.md`, Cursor rules, and GitHub Copilot instructions.
 - A benchmark harness proving that agents complete tasks more reliably with contracts than with plain issue text.
 
-Before this repository is made public, the launch gate is tracked in [Public Launch Readiness](docs/launch-readiness.md). The short version: the README/demo must be obvious, the CLI must stay stable and tested against packaged output, compiler ownership boundaries must stay clean, risky authority defaults must stay conservative, and claims must be backed by a demo or benchmark evidence.
+Before this repository is made public, the launch gate is tracked in [Public Launch Readiness](docs/launch-readiness.md). The short version: the README/demo must be obvious, the CLI must stay stable and tested against packaged output, compiler ownership boundaries must stay clean, risky authority defaults must stay conservative, and claims must be backed by the [end-to-end demo](docs/demo.md) or benchmark evidence.
 
 ## Design Principles
 

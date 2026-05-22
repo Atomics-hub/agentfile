@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added an end-to-end demo that walks from Pact source to YAML IR, policy JSON, and generated instruction files for existing coding agents.
 - Added a public launch readiness gate that defines the required README/demo, CLI, compiler, security, benchmark, and launch-risk standards before the repository goes public.
 - Compile target metadata now lives in a central registry, and `agentfile targets` lists supported outputs and default file paths.
 - Strict YAML/JSON IR validation now rejects malformed network host allowlist entries and wildcard secret allowlist entries, matching Pact source semantics instead of downgrading them to lint warnings.

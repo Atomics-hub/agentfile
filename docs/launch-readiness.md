@@ -8,7 +8,7 @@ This checklist is the public gate. A release candidate should satisfy every requ
 
 | Area | Required standard | Current status |
 | --- | --- | --- |
-| Clear README/demo | A new visitor can understand the thesis, install locally, run one `.agent` example, and see generated outputs for `AGENTS.md`, `CLAUDE.md`, Cursor, and Copilot. | Partial |
+| Clear README/demo | A new visitor can understand the thesis, install locally, run one `.agent` example, and see generated outputs for `AGENTS.md`, `CLAUDE.md`, Cursor, and Copilot. | Mostly ready |
 | Clean compiler architecture | Parse, validate, lower, compile target selection, and renderers have obvious ownership boundaries and focused tests. | Partial |
 | Stable CLI | Core commands have documented behavior, useful errors, and integration tests that exercise packaged output. | Mostly ready |
 | Fast reliable tests | `npm run check` passes locally, stays fast enough for frequent automation, and does not rely on stale generated files. | Mostly ready |
@@ -53,9 +53,8 @@ The repository is ready to go public when:
 
 ## Current Highest-Leverage Work
 
-1. Add a copy-paste demo document with expected command output.
-2. Split target renderers into smaller modules now that compile target metadata is centralized.
-3. Add golden snapshot fixtures for the demo outputs.
-4. Review package metadata before any public visibility change.
+1. Split target renderers into smaller modules now that compile target metadata is centralized.
+2. Add golden snapshot fixtures for the demo outputs.
+3. Review package metadata before any public visibility change.
+4. Tighten the README around the one public claim the demo earns.
 5. Build the first benchmark harness only after the demo and docs are crisp.
-
