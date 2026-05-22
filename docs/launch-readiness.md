@@ -13,7 +13,7 @@ This checklist is the public gate. A release candidate should satisfy every requ
 | Stable CLI | Core commands have documented behavior, useful errors, and integration tests that exercise packaged output. | Mostly ready |
 | Fast reliable tests | `npm run check` passes locally, stays fast enough for frequent automation, and does not rely on stale generated files. | Mostly ready |
 | Private security posture | The remote remains private until launch, risky authority defaults are conservative, and broad permissions trigger diagnostics or lint warnings. | Mostly ready |
-| Benchmark/demo proof | At least one scripted or documented task shows why Agentfile beats plain issue text or scattered instruction files. | Missing |
+| Benchmark/demo proof | At least one scripted or documented task shows why Agentfile beats plain issue text or scattered instruction files. | Partial |
 | Launch risk | Public package metadata, repo URLs, examples, contribution docs, and claims are reviewed for accuracy and restraint. | Partial |
 
 ## Minimum Public Demo
@@ -54,7 +54,7 @@ The repository is ready to go public when:
 ## Current Highest-Leverage Work
 
 1. Split target renderers into smaller modules now that compile target metadata is centralized.
-2. Add golden snapshot fixtures for the demo outputs.
-3. Review package metadata before any public visibility change.
-4. Tighten the README around the one public claim the demo earns.
-5. Build the first benchmark harness only after the demo and docs are crisp.
+2. Review package metadata before any public visibility change.
+3. Tighten the README around the one public claim the demo earns.
+4. Add a tiny benchmark harness skeleton with a plain-issue baseline and Agentfile condition.
+5. Keep broad benchmark claims out of public docs until data exists.

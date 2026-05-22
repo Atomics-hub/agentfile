@@ -9,7 +9,7 @@
 - Initialize `agentfile.yaml`.
 - Publish examples and spec.
 - Document the public launch gate and one copy-pasteable end-to-end demo.
-- Add golden fixtures for generated demo outputs.
+- Keep golden fixtures for generated demo outputs aligned with the public demo.
 
 ## v0.2
 

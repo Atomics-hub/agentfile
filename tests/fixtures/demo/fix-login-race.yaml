@@ -1,0 +1,87 @@
+agentfile: 0.1.0
+kind: TaskContract
+info:
+  title: fix-login-refresh-race
+  version: 0.1.0
+  summary: Prevent duplicate token refresh requests during concurrent auth calls
+  owners:
+    - auth-team
+  labels:
+    - auth
+    - concurrency
+task:
+  id: fix-login-refresh-race
+  goal: Share one in-flight refresh across concurrent auth calls
+  background: Several API calls can receive 401 responses at the same time and
+    trigger duplicate refresh requests
+scope:
+  include:
+    - src/auth/**
+    - tests/auth/**
+  exclude:
+    - src/billing/**
+    - infra/**
+permissions:
+  shell:
+    allow:
+      - npm test -- auth
+      - npm run lint
+    deny: []
+  network:
+    default: deny
+    allow: []
+  filesystem:
+    read:
+      - src/auth/**
+      - tests/auth/**
+    write:
+      - src/auth/**
+      - tests/auth/**
+    deny:
+      - src/billing/**
+      - infra/**
+  secrets:
+    access: deny
+    allow: []
+  approvals:
+    requiredFor:
+      - dependency_change
+      - network_access
+      - scope_expansion
+policies:
+  - id: no-dependency-change
+    level: must_not
+    appliesTo: []
+    statement: New runtime dependencies may not be added.
+  - id: preserve-public-auth-apis-must-be-preserved
+    level: must
+    appliesTo: []
+    statement: Public auth APIs must be preserved.
+  - id: no-refresh-tokens-must-not-be-leaked
+    level: must_not
+    appliesTo: []
+    statement: Refresh tokens must not be leaked.
+checks:
+  - id: npm-test-auth
+    command: npm test -- auth
+    required: true
+  - id: npm-run-lint
+    command: npm run lint
+    required: true
+workflow:
+  id: implement
+  steps:
+    - id: inspect-the-refresh-gate-used-by-concurrent-auth-calls
+      do: Inspect the refresh gate used by concurrent auth calls
+    - id: add-a-regression-test-for-duplicate-refresh-requests
+      do: Add a regression test for duplicate refresh requests
+    - id: update-the-refresh-flow-to-reuse-and-clear-one-in-flight-operation
+      do: Update the refresh flow to reuse and clear one in-flight operation
+  acceptance:
+    - Concurrent refresh calls result in exactly one upstream token request
+    - Failed refreshes clear the in-flight operation
+  review:
+    - Explain changed control flow.
+    - Explain remaining race assumptions.
+    - List changed files.
+    - Note risks.
