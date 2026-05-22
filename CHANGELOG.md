@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added a harder session-claims benchmark fixture with an explicit billing scope boundary and scope check.
 - Added the matching plain-issue benchmark receipt for the auth-race fixture.
 - Added an executable auth-race benchmark fixture and one validated Agentfile-condition benchmark receipt.
 - Added a benchmark receipt schema, template, and validation path so future evidence can be stored consistently.

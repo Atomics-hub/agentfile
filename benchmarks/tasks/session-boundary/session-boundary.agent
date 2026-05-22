@@ -1,0 +1,45 @@
+mission preserve-session-claims {
+  goal "Preserve role and plan claims when normalizing auth sessions"
+  summary "Fix auth session normalization without changing billing behavior"
+  background "API guards rely on session claims for role and plan, while billing discount logic has similarly named plan behavior that is out of scope."
+  owner "auth-team"
+  label auth
+  label scope-boundary
+
+  read src/auth/**, tests/auth/**, package.json, scripts/**
+  write src/auth/**, tests/auth/**
+  never src/billing/**, tests/billing/**
+
+  can run "npm test -- auth"
+  can run "npm run lint"
+  can run "npm run scope:check"
+
+  cannot use network
+  cannot read secrets
+  cannot add dependency
+
+  must preserve "Billing discount behavior"
+  must "Session subjects remain strings"
+  must_not "Modify billing files"
+
+  plan {
+    step "Inspect auth session normalization and focused auth tests"
+    step "Preserve role and plan claims in normalized session users"
+    step "Verify billing files remain unchanged"
+  }
+
+  prove {
+    run "npm test -- auth"
+    run "npm run lint"
+    run "npm run scope:check"
+    expect "Normalized auth users preserve id, role, and plan"
+    expect "Billing files remain unchanged"
+  }
+
+  handoff {
+    explain "session claim normalization"
+    list changed_files
+    note risks
+  }
+}
+

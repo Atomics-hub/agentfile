@@ -42,7 +42,7 @@ Each task should run under at least four prompt/input conditions:
 
 ## Harness
 
-The benchmark skeleton in `benchmarks/` starts with one plain-issue baseline and one Agentfile condition for the same auth bug-fix task.
+The benchmark skeleton in `benchmarks/` starts with matched plain-issue and Agentfile conditions for bounded auth tasks. The first task is a small race fix. The second task adds an explicit scope boundary with billing files that must remain unchanged.
 
 Preview the benchmark plan:
 
@@ -65,6 +65,8 @@ The full benchmark harness should:
 Each receipt should follow `benchmarks/receipt.schema.json` and live under `benchmarks/receipts/` with links to its transcript, diff, check log, and review notes.
 
 The first stored receipt pair covers both `agentfile-pact` and `plain-issue` conditions for `fix-login-refresh-race`. Treat it as an evidence-pipeline smoke test until there are enough repeated runs to compare outcomes.
+
+The next receipts should target `preserve-session-claims`, which tests whether agents stay inside auth scope while preserving similarly named billing behavior.
 
 ## First Public Claim To Earn
 

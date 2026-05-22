@@ -34,6 +34,28 @@
           "input": "examples/fix-login-race.agent"
         }
       ]
+    },
+    {
+      "id": "preserve-session-claims",
+      "family": "security_sensitive_change_with_forbidden_paths",
+      "fixture": "benchmarks/fixtures/session-boundary",
+      "checks": [
+        "npm test -- auth",
+        "npm run lint",
+        "npm run scope:check"
+      ],
+      "conditions": [
+        {
+          "id": "plain-issue",
+          "description": "Plain natural-language issue text with no structured authority contract.",
+          "input": "benchmarks/tasks/session-boundary/plain-issue.md"
+        },
+        {
+          "id": "agentfile-pact",
+          "description": "Pact source mission with explicit scope, authority, proof, and handoff requirements.",
+          "input": "benchmarks/tasks/session-boundary/session-boundary.agent"
+        }
+      ]
     }
   ]
 }

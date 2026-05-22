@@ -1,0 +1,12 @@
+{
+  "name": "agentfile-session-boundary-fixture",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node scripts/test.mjs",
+    "lint": "node scripts/lint.mjs",
+    "scope:check": "node scripts/scope-check.mjs"
+  }
+}
+
