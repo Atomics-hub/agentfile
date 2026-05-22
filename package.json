@@ -3,15 +3,15 @@
   "version": "0.1.0",
   "description": "The Agentfile Contract Language for safe, reviewable AI coding agent work.",
   "type": "module",
+  "private": true,
   "license": "MIT",
-  "author": "",
-  "homepage": "https://github.com/agentfile/agentfile#readme",
+  "homepage": "https://github.com/Atomics-hub/agentfile#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/agentfile/agentfile.git"
+    "url": "git+https://github.com/Atomics-hub/agentfile.git"
   },
   "bugs": {
-    "url": "https://github.com/agentfile/agentfile/issues"
+    "url": "https://github.com/Atomics-hub/agentfile/issues"
   },
   "keywords": [
     "agents",
@@ -41,6 +41,7 @@
     "dev": "tsx src/cli.ts",
     "lint": "tsc -p tsconfig.json --noEmit",
     "test": "npm run build && vitest run",
+    "benchmark:plan": "node benchmarks/run.mjs",
     "audit": "npm audit --audit-level=moderate",
     "check": "npm run lint && npm test && npm run audit"
   },

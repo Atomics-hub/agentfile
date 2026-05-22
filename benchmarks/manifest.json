@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "status": "skeleton",
+  "claimStatus": "unproven",
+  "claimToTest": "On repo-local software delegation tasks, Agentfile contracts improve scope adherence and verification rate compared with plain issue prompts.",
+  "metrics": [
+    "task_completion",
+    "test_pass_rate",
+    "scope_adherence",
+    "verification_command_execution",
+    "unauthorized_tool_use_attempts",
+    "patch_size",
+    "correction_turns",
+    "final_handoff_quality"
+  ],
+  "tasks": [
+    {
+      "id": "fix-login-refresh-race",
+      "family": "bug_fix_with_regression_test",
+      "checks": [
+        "npm test -- auth",
+        "npm run lint"
+      ],
+      "conditions": [
+        {
+          "id": "plain-issue",
+          "description": "Plain natural-language issue text with no structured authority contract.",
+          "input": "benchmarks/tasks/fix-login-race/plain-issue.md"
+        },
+        {
+          "id": "agentfile-pact",
+          "description": "Pact source mission with explicit scope, authority, proof, and handoff requirements.",
+          "input": "examples/fix-login-race.agent"
+        }
+      ]
+    }
+  ]
+}
+

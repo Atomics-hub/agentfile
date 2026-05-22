@@ -2,7 +2,7 @@
 
 Agentfile is an experimental language for agentic software work.
 
-The goal is to build a language that coding agents can understand, write, verify, and execute better than today's ad hoc prompts, instruction files, and general-purpose languages for delegation work.
+The goal is to build a language that coding agents can understand, write, verify, and execute more reliably than today's ad hoc prompts and scattered instruction files for delegation work.
 
 The current YAML format is the strict contract IR. The next layer is a source language that feels more like this:
 
@@ -154,8 +154,12 @@ The long-term bet is bigger: Agentfile should become the language of delegation,
 
 ## Install
 
+Agentfile is pre-public and not published to npm yet. For now, run it from source:
+
 ```sh
-npm install -g agentfile-contract
+npm install
+npm run build
+node dist/cli.js --help
 ```
 
 Local development:
@@ -274,7 +278,7 @@ Agentfile is early. The v0.1 goal is intentionally narrow:
 - `agentfile init` for fast adoption.
 - `agentfile init` can scaffold either YAML IR or Pact `.agent` source.
 - Compiler targets for `AGENTS.md`, `CLAUDE.md`, Cursor rules, and GitHub Copilot instructions.
-- A benchmark harness proving that agents complete tasks more reliably with contracts than with plain issue text.
+- A benchmark skeleton that can compare plain issue text against Agentfile-guided tasks without claiming results before data exists.
 
 Before this repository is made public, the launch gate is tracked in [Public Launch Readiness](docs/launch-readiness.md). The short version: the README/demo must be obvious, the CLI must stay stable and tested against packaged output, compiler ownership boundaries must stay clean, risky authority defaults must stay conservative, and claims must be backed by the [end-to-end demo](docs/demo.md) or benchmark evidence.
 

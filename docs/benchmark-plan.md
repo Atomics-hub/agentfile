@@ -4,7 +4,7 @@ Agentfile must prove that the language improves agent work.
 
 ## Hypothesis
 
-For bounded software tasks, a constrained source language with explicit scope, authority, invariants, proof, and handoff requirements will outperform plain natural-language issues and generic instruction files.
+For bounded software tasks, a constrained source language with explicit scope, authority, invariants, proof, and handoff requirements should improve scope adherence and verification behavior compared with plain natural-language issues and generic instruction files.
 
 ## Conditions To Compare
 
@@ -42,7 +42,17 @@ Each task should run under at least four prompt/input conditions:
 
 ## Harness
 
-The benchmark harness should:
+The benchmark skeleton in `benchmarks/` starts with one plain-issue baseline and one Agentfile condition for the same auth bug-fix task.
+
+Preview the benchmark plan:
+
+```sh
+npm run benchmark:plan
+```
+
+The current skeleton does not run agents or claim results. It only records the first task, conditions, checks, and metrics so future benchmark runs can produce comparable receipts.
+
+The full benchmark harness should:
 
 - Create clean worktrees per run.
 - Feed the same task through each condition.
