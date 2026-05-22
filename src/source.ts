@@ -178,13 +178,25 @@ function parseMissionLine(
 
   const owner = trailingArg(line, "owner", filePath, lineNo);
   if (owner !== undefined) {
-    pushUnique(state.owners, requireNonEmptyText(owner, "owner", filePath, lineNo));
+    pushUniqueOrThrow(
+      state.owners,
+      requireNonEmptyText(owner, "owner", filePath, lineNo),
+      "owner",
+      filePath,
+      lineNo
+    );
     return;
   }
 
   const label = trailingArg(line, "label", filePath, lineNo);
   if (label !== undefined) {
-    pushUnique(state.labels, requireNonEmptyText(label, "label", filePath, lineNo));
+    pushUniqueOrThrow(
+      state.labels,
+      requireNonEmptyText(label, "label", filePath, lineNo),
+      "label",
+      filePath,
+      lineNo
+    );
     return;
   }
 
@@ -239,7 +251,7 @@ function parseMissionLine(
     if (state.shellDeny.includes(command)) {
       throw syntaxError(`conflicting shell policy for command: ${command}`, filePath, lineNo);
     }
-    pushUnique(state.shellAllow, command);
+    pushUniqueOrThrow(state.shellAllow, command, "allowed command", filePath, lineNo);
     ensureCommandApprovals(state, command);
     return;
   }
@@ -250,7 +262,7 @@ function parseMissionLine(
     if (state.shellAllow.includes(command)) {
       throw syntaxError(`conflicting shell policy for command: ${command}`, filePath, lineNo);
     }
-    pushUnique(state.shellDeny, command);
+    pushUniqueOrThrow(state.shellDeny, command, "denied command", filePath, lineNo);
     return;
   }
 
@@ -302,10 +314,7 @@ function parseMissionLine(
         lineNo
       );
     }
-    pushUnique(
-      state.networkAllow,
-      host
-    );
+    pushUniqueOrThrow(state.networkAllow, host, "network host", filePath, lineNo);
     return;
   }
 
@@ -359,7 +368,7 @@ function parseMissionLine(
         lineNo
       );
     }
-    pushUnique(state.secretAllow, secret);
+    pushUniqueOrThrow(state.secretAllow, secret, "secret name", filePath, lineNo);
     ensureApproval(state, "secret_access");
     return;
   }
@@ -753,6 +762,15 @@ function parseDelimitedList(
     values.push(value);
   }
 
+  const duplicates = duplicateValues(values);
+  if (duplicates.length > 0) {
+    throw syntaxError(
+      `${keyword} contains a duplicate ${itemLabel}: ${duplicates[0]}`,
+      filePath,
+      lineNo
+    );
+  }
+
   return values;
 }
 
@@ -941,6 +959,20 @@ function pushUnique(values: string[], value: string): void {
   if (!values.includes(value)) {
     values.push(value);
   }
+}
+
+function pushUniqueOrThrow(
+  values: string[],
+  value: string,
+  label: string,
+  filePath: string | undefined,
+  lineNo: number
+): void {
+  if (values.includes(value)) {
+    throw syntaxError(`duplicate ${label}: ${value}`, filePath, lineNo);
+  }
+
+  values.push(value);
 }
 
 function parseLiteralArg(
@@ -1174,6 +1206,22 @@ function uniqueValues(values: string[]): string[] {
   }
 
   return unique;
+}
+
+function duplicateValues(values: string[]): string[] {
+  const seen = new Set<string>();
+  const duplicates: string[] = [];
+
+  for (const value of values) {
+    if (seen.has(value)) {
+      duplicates.push(value);
+      continue;
+    }
+
+    seen.add(value);
+  }
+
+  return duplicates;
 }
 
 function looksLikePact(source: string): boolean {

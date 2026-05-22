@@ -837,6 +837,84 @@ mission risky-authority {
     ]);
   });
 
+  it("rejects duplicate Pact metadata and exact authority entries", () => {
+    expect(() => parsePactSource(`
+mission duplicate-owner {
+  goal "Reject duplicate owners"
+  touch src/**
+
+  owner auth-team
+  owner auth-team
+}
+`)).toThrow(/duplicate owner: auth-team/);
+
+    expect(() => parsePactSource(`
+mission duplicate-label {
+  goal "Reject duplicate labels"
+  touch src/**
+
+  label auth
+  label auth
+}
+`)).toThrow(/duplicate label: auth/);
+
+    expect(() => parsePactSource(`
+mission duplicate-can-run {
+  goal "Reject duplicate allowed commands"
+  touch src/**
+
+  can run "npm test"
+  can run "npm test"
+}
+`)).toThrow(/duplicate allowed command: npm test/);
+
+    expect(() => parsePactSource(`
+mission duplicate-cannot-run {
+  goal "Reject duplicate denied commands"
+  touch src/**
+
+  cannot run "npm publish"
+  cannot run "npm publish"
+}
+`)).toThrow(/duplicate denied command: npm publish/);
+
+    expect(() => parsePactSource(`
+mission duplicate-network-host {
+  goal "Reject duplicate network hosts"
+  touch src/**
+
+  can use network host "api.github.com"
+  can use network host "api.github.com"
+}
+`)).toThrow(/duplicate network host: api.github.com/);
+
+    expect(() => parsePactSource(`
+mission duplicate-secret-name {
+  goal "Reject duplicate secret names"
+  touch src/**
+
+  can read secret "OPENAI_API_KEY"
+  can read secret "OPENAI_API_KEY"
+}
+`)).toThrow(/duplicate secret name: OPENAI_API_KEY/);
+
+    expect(() => parsePactSource(`
+mission duplicate-list-entries {
+  goal "Reject duplicate delimited entries"
+  touch src/**, src/**
+}
+`)).toThrow(/touch contains a duplicate path: src\/\*\*/);
+
+    expect(() => parsePactSource(`
+mission duplicate-policy-targets {
+  goal "Reject duplicate policy targets"
+  touch src/**
+
+  must "Keep auth latency within budget." for src/auth/**, src/auth/**
+}
+`)).toThrow(/must for contains a duplicate policy target: src\/auth\/\*\*/);
+  });
+
   it("lowers cannot add dependency into a policy guard", () => {
     const contract = parsePactSource(`
 mission guarded-dependencies {
@@ -882,15 +960,13 @@ mission mixed-secret-grants-reversed {
 `)).toThrow(/conflicting secrets policy: already restricted to named secrets/);
   });
 
-  it("supports explicit source metadata with deduplicated owners and labels", () => {
+  it("supports explicit source metadata lowering", () => {
     const contract = parsePactSource(`
 mission metadata {
   goal "Exercise source metadata lowering"
   summary "Short source-level summary"
   owner "auth-team"
-  owner auth-team
   owner "security-review"
-  label auth
   label auth
   label "release-prep"
   touch src/**
@@ -1251,7 +1327,7 @@ mission scoped-policies {
   touch src/**
 
   must preserve "Public auth APIs" for src/auth/**, src/public/**
-  must_not leak "Refresh tokens" for logs/**, logs/**
+  must_not leak "Refresh tokens" for logs/**
   should "Prefer narrow diffs." for docs/**
 }
 `);
