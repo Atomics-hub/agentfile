@@ -798,6 +798,8 @@ describe("Pact source parser", () => {
     const contract = parsePactSource(source, "examples/fix-login-race.agent");
 
     expect(contract.task.id).toBe("fix-login-refresh-race");
+    expect(contract.info.version).toBe("0.1.0");
+    expect(contract.info.license).toBe("MIT");
     expect(contract.info.summary).toBe("Prevent duplicate token refresh requests during concurrent auth calls");
     expect(contract.info.owners).toEqual(["auth-team"]);
     expect(contract.info.labels).toEqual(["auth", "concurrency"]);
@@ -1083,6 +1085,8 @@ mission mixed-secret-grants-reversed {
     const contract = parsePactSource(`
 mission metadata {
   goal "Exercise source metadata lowering"
+  version "0.2.0"
+  license "Apache-2.0"
   summary "Short source-level summary"
   owner "auth-team"
   owner "security-review"
@@ -1092,9 +1096,31 @@ mission metadata {
 }
 `);
 
+    expect(contract.info.version).toBe("0.2.0");
+    expect(contract.info.license).toBe("Apache-2.0");
     expect(contract.info.summary).toBe("Short source-level summary");
     expect(contract.info.owners).toEqual(["auth-team", "security-review"]);
     expect(contract.info.labels).toEqual(["auth", "release-prep"]);
+  });
+
+  it("keeps omitted source metadata absent instead of synthesizing defaults", () => {
+    const contract = parsePactSource(`
+mission metadata-omitted {
+  goal "Only the goal is explicit"
+  touch src/**
+}
+`);
+
+    expect(contract.info.version).toBeUndefined();
+    expect(contract.info.license).toBeUndefined();
+    expect(contract.info.summary).toBeUndefined();
+
+    const rendered = compileAgentfile(contract, "agent");
+    expect(rendered).not.toContain("version ");
+    expect(rendered).not.toContain("license ");
+    expect(rendered).not.toContain("summary ");
+
+    expect(parsePactSource(rendered, "metadata-omitted.agent")).toEqual(contract);
   });
 
   it("preserves source metadata and intent in compiled JSON", () => {
@@ -1673,6 +1699,24 @@ mission duplicate-summary {
   touch src/**
 }
 `)).toThrow(/duplicate summary declaration/);
+
+    expect(() => parsePactSource(`
+mission duplicate-version {
+  goal "Exercise version diagnostics"
+  version "0.1.0"
+  version "0.2.0"
+  touch src/**
+}
+`)).toThrow(/duplicate version declaration/);
+
+    expect(() => parsePactSource(`
+mission duplicate-license {
+  goal "Exercise license diagnostics"
+  license "MIT"
+  license "Apache-2.0"
+  touch src/**
+}
+`)).toThrow(/duplicate license declaration/);
 
     expect(() => parsePactSource(`
 mission duplicate-background {

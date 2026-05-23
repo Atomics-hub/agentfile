@@ -47,13 +47,15 @@ mission fix-login-refresh-race {
 Mission metadata can stay close to the task body:
 
 ```agent
+version "0.1.0"
+license "MIT"
 summary "Prevent duplicate token refresh requests during concurrent auth calls"
 owner "auth-team"
 label auth
 label concurrency
 ```
 
-These lines lower into `info.summary`, `info.owners`, and `info.labels` in the contract IR.
+These lines lower into `info.version`, `info.license`, `info.summary`, `info.owners`, and `info.labels` in the contract IR.
 
 Quoted source strings accept escaped quotes and backslashes, which keeps realistic shell commands and file-path examples representable without breaking the small grammar.
 

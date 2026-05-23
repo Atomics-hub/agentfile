@@ -36,6 +36,14 @@ export function compileAgentSource(agentfile: Agentfile): string {
 
   lines.push(`  goal ${quoteAgentString(agentfile.task.goal)}`);
 
+  if (agentfile.info.version) {
+    lines.push(`  version ${quoteAgentString(agentfile.info.version)}`);
+  }
+
+  if (agentfile.info.license) {
+    lines.push(`  license ${quoteAgentString(agentfile.info.license)}`);
+  }
+
   if (agentfile.info.summary) {
     lines.push(`  summary ${quoteAgentString(agentfile.info.summary)}`);
   }
@@ -53,6 +61,8 @@ export function compileAgentSource(agentfile: Agentfile): string {
   }
 
   if (
+    agentfile.info.version ||
+    agentfile.info.license ||
     agentfile.info.summary ||
     agentfile.task.background ||
     agentfile.info.owners.length > 0 ||

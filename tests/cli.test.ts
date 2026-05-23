@@ -137,6 +137,8 @@ describe("agentfile file discovery", () => {
     const { stdout } = await runCli(["compile", exampleContractPath, "--target", "agent"], cwd);
 
     expect(stdout).toContain("mission fix-login-refresh-race {");
+    expect(stdout).toContain('version "0.1.0"');
+    expect(stdout).toContain('license "MIT"');
     expect(stdout).toContain('summary "Prevent duplicate token refresh requests during concurrent auth calls."');
     expect(stdout).toContain("touch src/auth/**, tests/auth/**");
     expect(stdout).toContain("exclude src/billing/**, infra/**");

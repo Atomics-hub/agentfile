@@ -9,6 +9,8 @@ The current YAML format is the strict contract IR. The next layer is a source la
 ```agent
 mission fix-login-refresh-race {
   goal "Share one in-flight refresh across concurrent auth calls"
+  version "0.1.0"
+  license "MIT"
   summary "Prevent duplicate token refresh requests during concurrent auth calls"
   owner "auth-team"
   label auth
@@ -53,7 +55,7 @@ mission fix-login-refresh-race {
 }
 ```
 
-The source language can express grants, denials, approval gates, metadata, and both automated and manual proof requirements. For example: `summary "..."`, `owner "auth-team"`, `label auth`, `can use network`, `can use network host "api.github.com"`, `cannot run "npm publish"`, `can read secret "OPENAI_API_KEY"`, `check "Review the release checklist"`, `run optional "npm run perf"`, `check optional "Review benchmark drift"`, and `ask approval for release_publish`.
+The source language can express grants, denials, approval gates, metadata, and both automated and manual proof requirements. For example: `version "0.1.0"`, `license "MIT"`, `summary "..."`, `owner "auth-team"`, `label auth`, `can use network`, `can use network host "api.github.com"`, `cannot run "npm publish"`, `can read secret "OPENAI_API_KEY"`, `check "Review the release checklist"`, `run optional "npm run perf"`, `check optional "Review benchmark drift"`, and `ask approval for release_publish`.
 
 Broad secret access via `can read secrets` is intentionally mutually exclusive with named `can read secret "NAME"` entries so Pact always lowers to one unambiguous IR secret policy.
 

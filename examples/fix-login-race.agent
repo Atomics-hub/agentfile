@@ -1,5 +1,7 @@
 mission fix-login-refresh-race {
   goal "Share one in-flight refresh across concurrent auth calls"
+  version "0.1.0"
+  license "MIT"
   summary "Prevent duplicate token refresh requests during concurrent auth calls"
   background "Several API calls can receive 401 responses at the same time and trigger duplicate refresh requests"
   owner "auth-team"

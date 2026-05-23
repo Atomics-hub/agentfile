@@ -3,6 +3,7 @@ kind: TaskContract
 info:
   title: fix-login-refresh-race
   version: 0.1.0
+  license: MIT
   summary: Prevent duplicate token refresh requests during concurrent auth calls
   owners:
     - auth-team

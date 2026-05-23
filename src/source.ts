@@ -86,8 +86,9 @@ export function parsePactSource(source: string, filePath?: string): Agentfile {
     kind: "TaskContract",
     info: {
       title: state.id,
-      version: "0.1.0",
-      summary: state.summary ?? state.goal,
+      version: state.version,
+      license: state.license,
+      summary: state.summary,
       owners: state.owners,
       labels: state.labels
     },
@@ -163,6 +164,26 @@ function parseMissionLine(
     }
     state.summary = requireNonEmptyText(summary, "summary", filePath, lineNo);
     state.summaryLine = lineNo;
+    return;
+  }
+
+  const version = quotedArg(line, "version", filePath, lineNo);
+  if (version !== undefined) {
+    if (state.versionLine) {
+      throw syntaxError("duplicate version declaration", filePath, lineNo);
+    }
+    state.version = requireNonEmptyText(version, "version", filePath, lineNo);
+    state.versionLine = lineNo;
+    return;
+  }
+
+  const license = quotedArg(line, "license", filePath, lineNo);
+  if (license !== undefined) {
+    if (state.licenseLine) {
+      throw syntaxError("duplicate license declaration", filePath, lineNo);
+    }
+    state.license = requireNonEmptyText(license, "license", filePath, lineNo);
+    state.licenseLine = lineNo;
     return;
   }
 
@@ -668,6 +689,10 @@ interface PactState {
   goalLine?: number;
   summary?: string;
   summaryLine?: number;
+  version?: string;
+  versionLine?: number;
+  license?: string;
+  licenseLine?: number;
   background?: string;
   backgroundLine?: number;
   owners: string[];

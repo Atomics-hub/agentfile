@@ -30,6 +30,8 @@ The demo mission is [examples/fix-login-race.agent](../examples/fix-login-race.a
 ```agent
 mission fix-login-refresh-race {
   goal "Share one in-flight refresh across concurrent auth calls"
+  version "0.1.0"
+  license "MIT"
   summary "Prevent duplicate token refresh requests during concurrent auth calls"
 
   read src/auth/**, tests/auth/**
@@ -204,4 +206,3 @@ The same `.agent` mission becomes:
 That is Agentfile's first public claim:
 
 > Agentfile turns a coding task into a reviewable contract that can compile into instructions and policy surfaces for multiple agents.
-
