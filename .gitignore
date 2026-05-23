@@ -2,6 +2,7 @@ node_modules/
 dist/
 coverage/
 benchmarks/runs/
+.agentfile/
 .DS_Store
 .env
 .env.*

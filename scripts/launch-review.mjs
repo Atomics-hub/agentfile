@@ -7,14 +7,19 @@ import { reviewPublicClaims } from "./public-claim-review.mjs";
 const execFileAsync = promisify(execFile);
 const root = resolve(new URL("..", import.meta.url).pathname);
 const benchmarkRunnerPath = resolve(root, "benchmarks/run.mjs");
+const cleanCloneReportPath = resolve(root, process.env.AGENTFILE_CLEAN_CLONE_REPORT ?? ".agentfile/clean-clone-report.json");
 const packageJson = JSON.parse(await readFile(resolve(root, "package.json"), "utf8"));
 const benchmarkPlan = await loadBenchmarkPlan();
 const claimReview = await reviewPublicClaims();
+const currentCommit = await loadCurrentCommit();
+const cleanCloneReport = await loadCleanCloneReport();
 
 process.stdout.write(renderLaunchReview({
   packageJson,
   benchmarkPlan,
   claimReview,
+  currentCommit,
+  cleanCloneReport,
   files: await probeFiles([
     "README.md",
     "docs/demo.md",
@@ -41,6 +46,34 @@ async function loadBenchmarkPlan() {
   return JSON.parse(stdout);
 }
 
+async function loadCurrentCommit() {
+  const { stdout } = await execFileAsync("git", ["rev-parse", "HEAD"], {
+    cwd: root,
+    env: process.env,
+    maxBuffer: 1024 * 1024
+  });
+
+  return stdout.trim();
+}
+
+async function loadCleanCloneReport() {
+  try {
+    const report = JSON.parse(await readFile(cleanCloneReportPath, "utf8"));
+    const valid = report.status === "pass"
+      && typeof report.sourceHead === "string"
+      && report.sourceHead === report.cloneHead
+      && Array.isArray(report.steps)
+      && report.steps.some((step) => step.name === "Run launch dry run" && step.status === "pass");
+
+    return {
+      ...report,
+      valid
+    };
+  } catch {
+    return null;
+  }
+}
+
 async function probeFiles(paths) {
   const entries = await Promise.all(paths.map(async (path) => [path, await exists(resolve(root, path))]));
   return Object.fromEntries(entries);
@@ -50,7 +83,8 @@ async function exists(path) {
   return access(path).then(() => true).catch(() => false);
 }
 
-function renderLaunchReview({ packageJson, benchmarkPlan, claimReview, files }) {
+function renderLaunchReview({ packageJson, benchmarkPlan, claimReview, currentCommit, cleanCloneReport, files }) {
+  const cleanCloneReady = cleanCloneReport?.valid === true && cleanCloneReport.sourceHead === currentCommit;
   const gates = [
     gate("Clear README/demo", files["README.md"] && files["docs/demo.md"] && files["examples/fix-login-race.agent"], [
       "README, demo doc, and Pact example are present.",
@@ -64,9 +98,11 @@ function renderLaunchReview({ packageJson, benchmarkPlan, claimReview, files }) 
       "CLI entry point, package bin, and CLI docs are present.",
       "Run `npm run check` before any launch decision."
     ]),
-    gate("Fast reliable tests", null, [
-      "This report does not execute `npm run check`.",
-      "Launch gate requires a fresh clean-clone `npm run check`."
+    gate("Fast reliable tests", cleanCloneReady ? true : null, [
+      cleanCloneReady
+        ? `Clean-clone verification passed for current commit ${currentCommit.slice(0, 7)}.`
+        : "No current clean-clone verification report found.",
+      "Run `npm run launch:clean-clone` after committing launch-gate changes."
     ]),
     gate("Private security posture", packageJson.private === true && files["docs/security-model.md"], [
       "`package.json` is private and security docs are present.",
@@ -103,7 +139,7 @@ function renderLaunchReview({ packageJson, benchmarkPlan, claimReview, files }) 
     "",
     "## Required Manual Checks",
     "",
-    "- Run `npm run check` from a clean clone.",
+    "- Run `npm run launch:clean-clone` after launch-gate changes.",
     "- Verify GitHub remote visibility is private before any push or launch review.",
     "- Review public README, package metadata, and docs against `docs/public-claims.md`.",
     "- Keep package publishing disabled until an explicit release decision.",

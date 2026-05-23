@@ -58,7 +58,7 @@ npm run claims:review
 npm run launch:review
 ```
 
-The generated review is a decision aid. It does not replace a clean-clone `npm run check`, private remote verification, or manual claim review against [Public Claims Policy](public-claims.md).
+The generated review is a decision aid. It does not replace private remote verification or manual claim review against [Public Claims Policy](public-claims.md). The fast-test gate becomes ready only when `npm run launch:clean-clone` has written a passing report for the current commit.
 
 Run the local pre-public dry run before treating the repository as launchable:
 
@@ -67,7 +67,7 @@ npm run launch:dry-run
 npm run launch:clean-clone
 ```
 
-The dry run executes `npm run check`, validates the benchmark plan, renders the benchmark report, renders the launch-review gate, and confirms `package.json` still has `private: true`. The clean-clone verifier clones the committed checkout into a temporary directory, runs `npm ci`, then runs the same dry run from that clean checkout. Neither command publishes packages, pushes commits, or changes repository visibility. Remote privacy still requires a separate `gh repo view Atomics-hub/agentfile --json visibility` check.
+The dry run executes `npm run check`, validates the benchmark plan, renders the benchmark report, renders the launch-review gate, and confirms `package.json` still has `private: true`. The clean-clone verifier clones the committed checkout into a temporary directory, runs `npm ci`, then runs the same dry run from that clean checkout. It writes `.agentfile/clean-clone-report.json`, which `npm run launch:review` uses to mark the fast-test gate ready when the report matches the current commit. Neither command publishes packages, pushes commits, or changes repository visibility. Remote privacy still requires a separate `gh repo view Atomics-hub/agentfile --json visibility` check.
 
 ## Current Highest-Leverage Work
 

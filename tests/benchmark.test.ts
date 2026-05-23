@@ -183,6 +183,45 @@ describe("benchmark receipt scoring", () => {
     expect(stdout).toContain("Verify GitHub remote visibility is private");
   });
 
+  it("marks fast tests ready when a current clean-clone report is available", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "agentfile-launch-review-"));
+    tempDirs.push(directory);
+    const reportPath = resolve(directory, "clean-clone-report.json");
+    const { stdout: commit } = await execFileAsync("git", ["rev-parse", "HEAD"], {
+      cwd: resolve(new URL("..", import.meta.url).pathname),
+      maxBuffer: 1024 * 1024
+    });
+
+    await writeFile(reportPath, JSON.stringify({
+      status: "pass",
+      generatedAt: "2026-05-23T15:43:34.162Z",
+      source: "/tmp/source",
+      clonePath: "/tmp/clone",
+      sourceHead: commit.trim(),
+      cloneHead: commit.trim(),
+      steps: [
+        {
+          name: "Run launch dry run",
+          status: "pass",
+          durationMs: 1,
+          command: "npm run launch:dry-run",
+          detail: "ok"
+        }
+      ]
+    }, null, 2));
+
+    const { stdout } = await execFileAsync("node", [launchReviewPath], {
+      env: {
+        ...process.env,
+        AGENTFILE_CLEAN_CLONE_REPORT: reportPath
+      },
+      maxBuffer: 1024 * 1024
+    });
+
+    expect(stdout).toContain("| Fast reliable tests | ready |");
+    expect(stdout).toContain(`Clean-clone verification passed for current commit ${commit.trim().slice(0, 7)}`);
+  });
+
   it("keeps launch-facing public claims inside the approved claim policy", async () => {
     const { stdout } = await execFileAsync("node", [publicClaimReviewPath, "--json"], {
       maxBuffer: 1024 * 1024

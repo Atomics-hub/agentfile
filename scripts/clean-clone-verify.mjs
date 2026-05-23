@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 import { execFile } from "node:child_process";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { basename, join, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
@@ -12,16 +12,20 @@ const args = new Set(process.argv.slice(2));
 const keep = args.has("--keep");
 const planOnly = args.has("--plan");
 const source = valueAfter("--source") ?? root;
+const reportPath = args.has("--no-report")
+  ? null
+  : resolve(root, valueAfter("--report") ?? ".agentfile/clean-clone-report.json");
 const maxBuffer = 40 * 1024 * 1024;
 
 if (args.has("--help") || args.has("-h")) {
   process.stdout.write([
-    "Usage: npm run launch:clean-clone -- [--source <path>] [--plan] [--keep]",
+    "Usage: npm run launch:clean-clone -- [--source <path>] [--report <path>] [--no-report] [--plan] [--keep]",
     "",
     "Clones the repository into a temporary clean checkout, runs `npm ci`,",
     "then runs `npm run launch:dry-run` inside that checkout.",
     "",
     "This command does not publish packages, push commits, or change repository visibility.",
+    "By default it writes `.agentfile/clean-clone-report.json` for `launch:review`.",
     ""
   ].join("\n"));
   process.exit(0);
@@ -53,11 +57,12 @@ const plan = [
 if (planOnly) {
   process.stdout.write(renderReport({
     status: "plan",
+    generatedAt: new Date().toISOString(),
     source,
     clonePath: "<temp>/agentfile",
     sourceHead: "<not-resolved>",
     cloneHead: "<not-created>",
-    results: plan.map((step) => ({
+    steps: plan.map((step) => ({
       ...step,
       status: "planned",
       durationMs: 0,
@@ -125,27 +130,33 @@ try {
   });
 
   const failed = results.some((result) => result.status === "fail");
-  process.stdout.write(renderReport({
+  const report = buildReport({
     status: failed ? "blocked" : "pass",
     source,
     clonePath,
     sourceHead: sourceHead.trim(),
     cloneHead: cloneHead.trim(),
     results
-  }));
+  });
+
+  await writeReportFile(report);
+  process.stdout.write(renderReport(report));
 
   if (failed) {
     process.exitCode = 1;
   }
 } catch {
-  process.stdout.write(renderReport({
+  const report = buildReport({
     status: "blocked",
     source,
     clonePath,
     sourceHead: sourceHead.trim(),
     cloneHead: cloneHead.trim(),
     results
-  }));
+  });
+
+  await writeReportFile(report);
+  process.stdout.write(renderReport(report));
   process.exitCode = 1;
 } finally {
   if (tempRoot && !keep) {
@@ -198,7 +209,34 @@ async function captureStep(results, step) {
   }
 }
 
-function renderReport({ status, source, clonePath, sourceHead, cloneHead, results }) {
+function buildReport({ status, source, clonePath, sourceHead, cloneHead, results }) {
+  return {
+    status,
+    generatedAt: new Date().toISOString(),
+    source,
+    clonePath,
+    sourceHead,
+    cloneHead,
+    steps: results.map((result) => ({
+      name: result.name,
+      status: result.status,
+      durationMs: result.durationMs,
+      command: result.command,
+      detail: result.detail
+    }))
+  };
+}
+
+async function writeReportFile(report) {
+  if (!reportPath) {
+    return;
+  }
+
+  await mkdir(dirname(reportPath), { recursive: true });
+  await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`);
+}
+
+function renderReport({ status, source, clonePath, sourceHead, cloneHead, steps }) {
   return [
     "# Agentfile Clean-Clone Verification",
     "",
@@ -212,7 +250,7 @@ function renderReport({ status, source, clonePath, sourceHead, cloneHead, result
     "",
     table(
       ["Step", "Status", "Duration", "Command"],
-      results.map((result) => [
+      steps.map((result) => [
         result.name,
         result.status,
         formatDuration(result.durationMs),
@@ -226,7 +264,7 @@ function renderReport({ status, source, clonePath, sourceHead, cloneHead, result
     "- It verifies the committed checkout only; uncommitted local work is intentionally excluded.",
     "- Use `--keep` only when debugging a failed clone.",
     "",
-    ...results.filter((result) => result.status === "fail").flatMap((result) => [
+    ...steps.filter((result) => result.status === "fail").flatMap((result) => [
       `## ${result.name}`,
       "",
       result.detail || "No output.",

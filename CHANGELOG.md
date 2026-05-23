@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- `npm run launch:review` now consumes the clean-clone verification report and marks the fast-test gate ready only when it matches the current commit.
 - Added `npm run launch:clean-clone` to verify a committed checkout from a temporary clean clone with locked install plus the full launch dry run.
 - Added `npm run claims:review` and wired launch review to an automated public-claim scan for launch-facing surfaces.
 - Added `npm run launch:dry-run` as a non-publishing pre-public gate that runs checks, benchmark validation, benchmark report rendering, launch review, and the local package privacy check.
