@@ -1,16 +1,22 @@
 import { execFile } from "node:child_process";
+import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 const execFileAsync = promisify(execFile);
 const benchmarkRunnerPath = fileURLToPath(new URL("../benchmarks/run.mjs", import.meta.url));
+const tempDirs: string[] = [];
+
+afterEach(async () => {
+  await Promise.all(tempDirs.splice(0).map((directory) => rm(directory, { recursive: true, force: true })));
+});
 
 describe("benchmark receipt scoring", () => {
   it("summarizes proof and evidence quality signals from stored receipts", async () => {
-    const { stdout } = await execFileAsync("node", [benchmarkRunnerPath], {
-      maxBuffer: 1024 * 1024
-    });
+    const { stdout } = await runBenchmark();
     const plan = JSON.parse(stdout);
 
     expect(plan.receiptCount).toBeGreaterThanOrEqual(10);
@@ -55,4 +61,138 @@ describe("benchmark receipt scoring", () => {
       })
     ]));
   });
+
+  it("rejects receipts whose metadata and artifacts do not match the manifest", async () => {
+    const fixture = await createBenchmarkFixture();
+    const mismatchedPromptPath = resolve(fixture.sandboxDir, "tasks", "wrong.agent");
+    const missingTranscriptPath = resolve(fixture.runDir, "missing-transcript.md");
+
+    await writeFile(mismatchedPromptPath, "mission wrong-input {\n  goal \"Mismatch\"\n}\n");
+    await writeFile(fixture.receiptPath, JSON.stringify({
+      version: 1,
+      runId: fixture.runId,
+      taskId: "receipt-integrity",
+      conditionId: "agentfile-pact",
+      claimStatus: "candidate",
+      startedAt: "2026-05-22T02:00:00.000Z",
+      endedAt: "2026-05-22T01:59:00.000Z",
+      agent: {
+        name: "test-agent",
+        version: "1.0.0",
+        model: "test-model"
+      },
+      inputs: {
+        promptOrContract: mismatchedPromptPath,
+        repository: "Atomics-hub/agentfile",
+        fixture: fixture.fixturePath
+      },
+      results: {
+        taskCompleted: true,
+        testsPassed: true,
+        scopeAdherence: 1,
+        verificationCommandsRun: ["npm test -- receipt-integrity"],
+        unauthorizedToolUseAttempts: 0,
+        patchFilesChanged: 1,
+        correctionTurns: 0,
+        finalHandoffQuality: "strong",
+        reportedProofCheck: true,
+        independentProofCheckPassed: true,
+        addedRegressionTests: true,
+        evidenceQuality: "strong"
+      },
+      receipts: {
+        transcript: missingTranscriptPath,
+        diff: resolve(fixture.runDir, "patch.diff"),
+        checkLog: resolve(fixture.runDir, "check.log"),
+        notes: resolve(fixture.runDir, "notes.md")
+      }
+    }, null, 2));
+
+    const error = await runBenchmarkExpectingFailure({
+      AGENTFILE_BENCHMARK_MANIFEST: fixture.manifestPath,
+      AGENTFILE_BENCHMARK_RECEIPTS_DIR: fixture.receiptsDir
+    });
+
+    expect(error.stderr).toContain("endedAt must be greater than or equal to startedAt");
+    expect(error.stderr).toContain("inputs.promptOrContract must match receipt-integrity/agentfile-pact input");
+    expect(error.stderr).toContain("results.reportedProofCheck requires verificationCommandsRun to include npm run proof:check");
+    expect(error.stderr).toContain(`receipts.transcript file is missing: ${missingTranscriptPath}`);
+  });
 });
+
+async function runBenchmark(env: NodeJS.ProcessEnv = {}) {
+  return execFileAsync("node", [benchmarkRunnerPath], {
+    env: {
+      ...process.env,
+      ...env
+    },
+    maxBuffer: 1024 * 1024
+  });
+}
+
+async function runBenchmarkExpectingFailure(env: NodeJS.ProcessEnv) {
+  try {
+    await runBenchmark(env);
+  } catch (error) {
+    return error as Error & { stderr: string };
+  }
+
+  throw new Error("expected benchmark runner to fail");
+}
+
+async function createBenchmarkFixture() {
+  const sandboxDir = await mkdtemp(join(tmpdir(), "agentfile-benchmark-"));
+  tempDirs.push(sandboxDir);
+
+  const tasksDir = resolve(sandboxDir, "tasks");
+  const fixturesDir = resolve(sandboxDir, "fixtures");
+  const receiptsDir = resolve(sandboxDir, "receipts");
+  const fixturePath = resolve(fixturesDir, "receipt-integrity");
+  const manifestPath = resolve(sandboxDir, "manifest.json");
+  const promptPath = resolve(tasksDir, "receipt-integrity.agent");
+  const runId = "receipt-integrity-agentfile-pact-001";
+  const runDir = resolve(receiptsDir, runId);
+  const receiptPath = resolve(runDir, "receipt.json");
+
+  await mkdir(dirname(promptPath), { recursive: true });
+  await mkdir(fixturePath, { recursive: true });
+  await mkdir(runDir, { recursive: true });
+
+  await writeFile(promptPath, "mission receipt-integrity {\n  goal \"Validate receipts\"\n}\n");
+  await writeFile(resolve(runDir, "patch.diff"), "diff --git a/file b/file\n");
+  await writeFile(resolve(runDir, "check.log"), "npm test -- receipt-integrity\n");
+  await writeFile(resolve(runDir, "notes.md"), "notes\n");
+
+  await writeFile(manifestPath, JSON.stringify({
+    version: 1,
+    status: "skeleton",
+    claimStatus: "unproven",
+    claimToTest: "Receipt validation catches broken evidence.",
+    metrics: ["evidence_quality"],
+    tasks: [
+      {
+        id: "receipt-integrity",
+        family: "evidence_validation",
+        fixture: fixturePath,
+        checks: ["npm test -- receipt-integrity", "npm run proof:check"],
+        conditions: [
+          {
+            id: "agentfile-pact",
+            description: "Pact source",
+            input: promptPath
+          }
+        ]
+      }
+    ]
+  }, null, 2));
+
+  return {
+    sandboxDir,
+    manifestPath,
+    receiptsDir,
+    fixturePath,
+    runId,
+    runDir,
+    receiptPath
+  };
+}
