@@ -113,6 +113,8 @@ async function validateReceipt(receipt, receiptPath) {
   requireField(receipt, "conditionId", "string", receiptPath, errors);
   requireField(receipt, "runId", "string", receiptPath, errors);
   requireField(receipt, "claimStatus", "string", receiptPath, errors);
+  requireField(receipt, "startedAt", "string", receiptPath, errors);
+  requireField(receipt, "endedAt", "string", receiptPath, errors);
   requireField(receipt, "agent", "object", receiptPath, errors);
   requireField(receipt, "inputs", "object", receiptPath, errors);
   requireField(receipt, "results", "object", receiptPath, errors);
@@ -156,8 +158,12 @@ async function validateReceipt(receipt, receiptPath) {
   if (receipt.inputs && typeof receipt.inputs === "object") {
     requireField(receipt.inputs, "promptOrContract", "string", `${receiptPath}: inputs`, errors);
     requireField(receipt.inputs, "repository", "string", `${receiptPath}: inputs`, errors);
-    optionalField(receipt.inputs, "commit", "string", `${receiptPath}: inputs`, errors);
+    requireField(receipt.inputs, "commit", "string", `${receiptPath}: inputs`, errors);
     optionalField(receipt.inputs, "fixture", "string", `${receiptPath}: inputs`, errors);
+
+    if (task?.fixture) {
+      requireField(receipt.inputs, "fixture", "string", `${receiptPath}: inputs`, errors);
+    }
 
     if (condition && receipt.inputs.promptOrContract !== condition.input) {
       errors.push(
@@ -880,6 +886,11 @@ function escapeRegex(value) {
 
 function requireField(value, field, type, label, errors) {
   const actual = value?.[field];
+  if (actual === undefined) {
+    errors.push(`${label}: ${field} is required`);
+    return;
+  }
+
   const matches = type === "array"
     ? Array.isArray(actual)
     : actual !== null && typeof actual === type && !Array.isArray(actual);

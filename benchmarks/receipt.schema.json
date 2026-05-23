@@ -9,6 +9,8 @@
     "taskId",
     "conditionId",
     "claimStatus",
+    "startedAt",
+    "endedAt",
     "agent",
     "inputs",
     "results",
@@ -51,11 +53,12 @@
     },
     "inputs": {
       "type": "object",
-      "required": ["promptOrContract", "repository"],
+      "required": ["promptOrContract", "repository", "commit", "fixture"],
       "properties": {
         "promptOrContract": { "type": "string" },
         "repository": { "type": "string" },
-        "commit": { "type": "string" }
+        "commit": { "type": "string" },
+        "fixture": { "type": "string" }
       },
       "additionalProperties": true
     },

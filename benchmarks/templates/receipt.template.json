@@ -14,7 +14,8 @@
   "inputs": {
     "promptOrContract": "benchmarks/tasks/fix-login-race/plain-issue.md",
     "repository": "Atomics-hub/agentfile",
-    "commit": "commit-sha"
+    "commit": "commit-sha",
+    "fixture": "benchmarks/fixtures/auth-race"
   },
   "results": {
     "taskCompleted": false,

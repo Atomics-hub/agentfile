@@ -72,6 +72,7 @@ Do not publish this as a result until benchmark receipts exist.
 Each real benchmark run should store:
 
 - Input condition and model/agent version.
+- Exact repository provenance: `inputs.commit`, `inputs.fixture`, and the `startedAt`/`endedAt` window for the run.
 - Tool-call transcript or equivalent execution log.
 - Patch diff that supports any reported changed-file counts or regression-test claims.
 - Check results.
@@ -84,4 +85,5 @@ Each real benchmark run should store:
 - Final handoff quality notes.
 
 Use [templates/receipt.template.json](templates/receipt.template.json) for new runs. Receipt JSON files belong under `benchmarks/receipts/`, alongside transcript, diff, check log, and notes artifacts.
+`npm run benchmark:plan` now rejects receipts that omit commit SHA, fixture path, or run timestamps, because benchmark claims need reproducible provenance as well as pass/fail logs.
 The `runId` should use `YYYYMMDD-agent-task-slug-condition-id-NNN`; `npm run benchmark:plan` now cross-checks that suffix against the manifest task slug and condition so receipts stay sortable and auditable.

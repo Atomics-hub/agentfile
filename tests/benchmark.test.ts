@@ -276,11 +276,75 @@ describe("benchmark receipt scoring", () => {
     });
 
     expect(error.stderr).toContain("endedAt must be greater than or equal to startedAt");
+    expect(error.stderr).toContain("inputs: commit is required");
     expect(error.stderr).toContain("inputs.promptOrContract must match receipt-integrity/agentfile-pact input");
     expect(error.stderr).toContain("results.reportedProofCheck requires verificationCommandsRun to include npm run proof:check");
     expect(error.stderr).toContain('receipts.baselineProofLog is required for task check "npm run proof:check"');
     expect(error.stderr).toContain('receipts.baselineScopeLog is required for task check "npm run scope:check"');
     expect(error.stderr).toContain(`receipts.transcript file is missing: ${missingTranscriptPath}`);
+  });
+
+  it("rejects receipts that omit reproducibility provenance", async () => {
+    const fixture = await createBenchmarkFixture();
+
+    await writeFile(fixture.receiptPath, JSON.stringify({
+      version: 1,
+      runId: fixture.runId,
+      taskId: "receipt-integrity",
+      conditionId: "agentfile-pact",
+      claimStatus: "candidate",
+      agent: {
+        name: "test-agent",
+        version: "1.0.0",
+        model: "test-model"
+      },
+      inputs: {
+        promptOrContract: fixture.promptPath,
+        repository: "Atomics-hub/agentfile"
+      },
+      results: {
+        taskCompleted: true,
+        testsPassed: true,
+        scopeAdherence: 1,
+        verificationCommandsRun: [
+          "npm test -- receipt-integrity",
+          "npm run lint",
+          "npm run proof:check",
+          "npm run scope:check"
+        ],
+        unauthorizedToolUseAttempts: 0,
+        patchFilesChanged: 1,
+        correctionTurns: 0,
+        finalHandoffQuality: "strong",
+        reportedProofCheck: true,
+        independentProofCheckPassed: true,
+        addedRegressionTests: false,
+        evidenceQuality: "strong"
+      },
+      receipts: {
+        transcript: resolve(fixture.runDir, "transcript.md"),
+        diff: resolve(fixture.runDir, "patch.diff"),
+        checkLog: resolve(fixture.runDir, "check.log"),
+        notes: resolve(fixture.runDir, "notes.md"),
+        baselineTestLog: resolve(fixture.runDir, "baseline-test.log"),
+        baselineLintLog: resolve(fixture.runDir, "baseline-lint.log"),
+        baselineProofLog: resolve(fixture.runDir, "baseline-proof.log"),
+        baselineScopeLog: resolve(fixture.runDir, "baseline-scope.log")
+      }
+    }, null, 2));
+    await writeFile(resolve(fixture.runDir, "transcript.md"), "transcript\n");
+    await writeFile(resolve(fixture.runDir, "baseline-proof.log"), proofLog());
+    await writeFile(resolve(fixture.runDir, "baseline-scope.log"), scopeLog());
+
+    const error = await runBenchmarkExpectingFailure({
+      AGENTFILE_BENCHMARK_MANIFEST: fixture.manifestPath,
+      AGENTFILE_BENCHMARK_RECEIPTS_DIR: fixture.receiptsDir
+    });
+
+    expect(error.stderr).toContain("startedAt is required");
+    expect(error.stderr).toContain("endedAt is required");
+    expect(error.stderr).toContain("inputs: commit is required");
+    expect(error.stderr).toContain("inputs: fixture is required");
   });
 
   it("rejects receipts whose runId does not match the manifest task slug and condition", async () => {
@@ -315,6 +379,7 @@ describe("benchmark receipt scoring", () => {
       inputs: {
         promptOrContract: fixture.promptPath,
         repository: "Atomics-hub/agentfile",
+        commit: "abc1234",
         fixture: fixture.fixturePath
       },
       results: {
@@ -378,6 +443,7 @@ describe("benchmark receipt scoring", () => {
       inputs: {
         promptOrContract: fixture.promptPath,
         repository: "Atomics-hub/agentfile",
+        commit: "abc1234",
         fixture: fixture.fixturePath
       },
       results: {
@@ -443,6 +509,7 @@ describe("benchmark receipt scoring", () => {
       inputs: {
         promptOrContract: fixture.promptPath,
         repository: "Atomics-hub/agentfile",
+        commit: "abc1234",
         fixture: fixture.fixturePath
       },
       results: {
@@ -517,6 +584,7 @@ describe("benchmark receipt scoring", () => {
       inputs: {
         promptOrContract: fixture.promptPath,
         repository: "Atomics-hub/agentfile",
+        commit: "abc1234",
         fixture: fixture.fixturePath
       },
       results: {
@@ -578,6 +646,7 @@ describe("benchmark receipt scoring", () => {
       inputs: {
         promptOrContract: fixture.promptPath,
         repository: "Atomics-hub/agentfile",
+        commit: "abc1234",
         fixture: fixture.fixturePath
       },
       results: {
@@ -656,6 +725,7 @@ describe("benchmark receipt scoring", () => {
       inputs: {
         promptOrContract: fixture.promptPath,
         repository: "Atomics-hub/agentfile",
+        commit: "abc1234",
         fixture: fixture.fixturePath
       },
       results: {
