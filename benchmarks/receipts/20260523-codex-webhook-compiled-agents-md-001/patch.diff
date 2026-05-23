@@ -1,0 +1,54 @@
+diff --git a/benchmarks/fixtures/webhook-signature/src/webhooks/verify.js b/benchmarks/runs/20260523-codex-webhook-compiled-agents-md-001/workspace/src/webhooks/verify.js
+index 62c869f..e4ce2d2 100644
+--- a/benchmarks/fixtures/webhook-signature/src/webhooks/verify.js
++++ b/benchmarks/runs/20260523-codex-webhook-compiled-agents-md-001/workspace/src/webhooks/verify.js
+@@ -1,9 +1,21 @@
+-import { createHmac } from "node:crypto";
++import { createHmac, timingSafeEqual } from "node:crypto";
+ 
+ export function verifyWebhookSignature(rawBody, signatureHeader, secret) {
+-  const parsedBody = JSON.parse(rawBody);
+-  const normalizedBody = JSON.stringify(parsedBody);
+-  const expected = `sha256=${createHmac("sha256", secret).update(normalizedBody, "utf8").digest("hex")}`;
++  const prefix = "sha256=";
+ 
+-  return signatureHeader === expected;
++  if (typeof signatureHeader !== "string" || !signatureHeader.startsWith(prefix)) {
++    return false;
++  }
++
++  const signatureHex = signatureHeader.slice(prefix.length);
++
++  if (!/^[\da-f]{64}$/i.test(signatureHex)) {
++    return false;
++  }
++
++  const bodyBytes = typeof rawBody === "string" ? Buffer.from(rawBody, "utf8") : Buffer.from(rawBody);
++  const expected = createHmac("sha256", secret).update(bodyBytes).digest();
++  const received = Buffer.from(signatureHex, "hex");
++
++  return received.length === expected.length && timingSafeEqual(received, expected);
+ }
+diff --git a/benchmarks/fixtures/webhook-signature/tests/webhooks/verify.test.js b/benchmarks/runs/20260523-codex-webhook-compiled-agents-md-001/workspace/tests/webhooks/verify.test.js
+index 9d29ec1..244eb2c 100644
+--- a/benchmarks/fixtures/webhook-signature/tests/webhooks/verify.test.js
++++ b/benchmarks/runs/20260523-codex-webhook-compiled-agents-md-001/workspace/tests/webhooks/verify.test.js
+@@ -21,3 +21,18 @@ test("rejects a tampered compact webhook body", () => {
+ 
+   assert.equal(verifyWebhookSignature(tampered, signRaw(body), secret), false);
+ });
++
++test("accepts equivalent JSON only when signed against its exact raw body", () => {
++  const compact = "{\"id\":\"evt_1\",\"type\":\"invoice.paid\",\"amount\":4200}";
++  const spaced = "{\n  \"id\": \"evt_1\",\n  \"type\": \"invoice.paid\",\n  \"amount\": 4200\n}";
++
++  assert.equal(verifyWebhookSignature(spaced, signRaw(spaced), secret), true);
++  assert.equal(verifyWebhookSignature(spaced, signRaw(compact), secret), false);
++});
++
++test("rejects raw body changes even when parsed JSON would be equivalent", () => {
++  const body = "{\n  \"id\": \"evt_1\",\n  \"type\": \"invoice.paid\",\n  \"amount\": 4200\n}";
++  const tampered = `${body}\n`;
++
++  assert.equal(verifyWebhookSignature(tampered, signRaw(body), secret), false);
++});

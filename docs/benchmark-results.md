@@ -4,7 +4,7 @@ Agentfile benchmark results are still early. These receipts are useful as eviden
 
 ## Current Dataset
 
-As of 2026-05-23, the repository has fifteen validated receipts across five task families, including `agents-md` generic instruction-file receipts and the first `compiled-agents-md` receipt generated from Pact source.
+As of 2026-05-23, the repository has sixteen validated receipts across five task families, including `agents-md` generic instruction-file receipts and compiled `AGENTS.md` receipts generated from Pact source for two proof-sensitive tasks.
 
 | Task | Condition | Completed | Checks passed | Scope adherence | Reported required proof commands | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -20,6 +20,7 @@ As of 2026-05-23, the repository has fifteen validated receipts across five task
 | `preserve-refund-audit-evidence` | `agentfile-pact` | Yes | Yes | 1.0 | `npm test -- refunds`, `npm run lint`, `npm run proof:check` | Agentfile worker ran the proof check required by the contract. |
 | `verify-webhook-raw-signature` | `plain-issue` | Yes | Yes | 1.0 | `npm test -- webhooks`, `npm run lint`, `npm run proof:check` | Two plain-issue workers voluntarily ran proof but did not add raw-body regression tests. |
 | `verify-webhook-raw-signature` | `agents-md` | Yes | Yes | 1.0 | `npm test -- webhooks`, `npm run lint`, `npm run proof:check` | Generic instruction-file worker ran proof and added raw-body regression coverage. |
+| `verify-webhook-raw-signature` | `compiled-agents-md` | Yes | Yes | 1.0 | `npm test -- webhooks`, `npm run lint`, `npm run proof:check` | Generated Agentfile output was used directly and added raw-body regression coverage. |
 | `verify-webhook-raw-signature` | `agentfile-pact` | Yes | Yes | 1.0 | `npm test -- webhooks`, `npm run lint`, `npm run proof:check` | Two Agentfile workers ran proof and added raw-body regression tests. |
 
 ## What This Supports
@@ -38,9 +39,9 @@ This signal is promising because the fixture is designed so normal tests and lin
 
 The `preserve-refund-audit-evidence` pair did not reproduce that differential signal. Both workers ran the dedicated proof check and produced passing patches, so this pair strengthens receipt coverage but not the comparative claim.
 
-The `verify-webhook-raw-signature` repeats also did not produce a proof-command differential signal, because both plain-issue workers ran `npm run proof:check`. They did produce a repeated quality signal: both Agentfile workers added explicit raw-body regression tests, while both plain-issue workers only changed implementation. The first `agents-md` run matched Agentfile on this task, which is a useful honesty point before any claim that Agentfile beats generic instruction files.
+The `verify-webhook-raw-signature` repeats also did not produce a proof-command differential signal, because both plain-issue workers ran `npm run proof:check`. They did produce a repeated quality signal: both Agentfile workers added explicit raw-body regression tests, while both plain-issue workers only changed implementation. The first `agents-md` run and first `compiled-agents-md` run both matched Agentfile on this task, which is a useful honesty point before any claim that Agentfile beats strong instruction files.
 
-The webhook manifest now also defines a `compiled-agents-md` bridge condition generated from the Pact source. There is not yet a stored receipt for that condition, and `npm run benchmark:plan` now surfaces that absence explicitly instead of hiding zero-receipt conditions.
+The compiled-output bridge now has passing receipts on both redaction and webhook proof tasks. That supports a narrow implementation claim: Pact source can compile into existing agent instruction surfaces that are concrete enough for agents to execute and for humans to audit.
 
 ## What This Does Not Support Yet
 
@@ -53,7 +54,7 @@ The dataset is still small. It has one agent family, one repo-local fixture suit
 Before public launch, the benchmark story should either stay framed as a plan or earn more repeated evidence:
 
 - Repeat `redact-auth-logs` and `verify-webhook-raw-signature` under `agents-md` and `agentfile-pact` to test whether structured contracts outperform strong Markdown instructions.
-- Collect the first `compiled-agents-md` receipt for `verify-webhook-raw-signature` to test the compiled-output bridge on a second proof-sensitive task.
+- Repeat compiled-output runs across more task families and start tracking whether compiled instructions reduce missing proof checks, weaker tests, or oversized patches compared with hand-written instructions.
 - Keep each receipt reviewable: transcript, diff, check log, scope score, verification commands, and handoff quality.
 
 The first public-safe result should stay narrow:

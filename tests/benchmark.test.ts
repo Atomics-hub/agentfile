@@ -43,8 +43,9 @@ describe("benchmark receipt scoring", () => {
     expect(webhookTask.conditions).toEqual(expect.arrayContaining([
       expect.objectContaining({
         conditionId: "compiled-agents-md",
-        receiptCount: 0,
-        evidenceQuality: "missing"
+        receiptCount: 1,
+        regressionTestRate: 1,
+        evidenceQuality: "strong"
       }),
       expect.objectContaining({
         conditionId: "agentfile-pact",

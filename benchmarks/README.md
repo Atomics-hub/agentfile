@@ -51,7 +51,7 @@ The `verify-webhook-raw-signature` task now also includes an `agents-md` conditi
 
 The first `agents-md` webhook receipt passed and matched the Agentfile webhook runs on proof reporting and raw-body regression coverage. That makes generic instruction files a real comparator, not a strawman.
 
-The webhook task now also includes a `compiled-agents-md` condition generated from the Pact source. `npm run benchmark:plan` will show that bridge condition even before the first receipt exists, so missing benchmark evidence is visible in the plan instead of hidden by receipt-only summaries.
+The first `compiled-agents-md` webhook receipt also passed and added raw-body regression coverage, giving a second proof-sensitive bridge receipt for compiled Agentfile output.
 
 ## First Claim To Test
 

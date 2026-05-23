@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added the first compiled AGENTS.md webhook benchmark receipt generated from Pact source.
 - Added a compiled AGENTS.md webhook benchmark condition generated from Pact source.
 - `npm run benchmark:plan` now surfaces zero-receipt manifest conditions, making planned-but-unrun benchmark gaps explicit.
 - Added the first compiled AGENTS.md redaction benchmark receipt generated from Pact source.
