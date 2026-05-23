@@ -102,6 +102,7 @@ async function listReceiptPaths(receiptDir) {
 
 async function validateReceipt(receipt, receiptPath) {
   const errors = [];
+  const artifactContents = {};
   requireField(receipt, "version", "number", receiptPath, errors);
   requireField(receipt, "taskId", "string", receiptPath, errors);
   requireField(receipt, "conditionId", "string", receiptPath, errors);
@@ -235,8 +236,14 @@ async function validateReceipt(receipt, receiptPath) {
     if (receipt.results.reportedProofCheck === true && !verificationCommands.includes("npm run proof:check")) {
       errors.push(`${receiptPath}: results.reportedProofCheck requires verificationCommandsRun to include npm run proof:check`);
     }
+    if (receipt.results.reportedProofCheck === true && !task?.checks?.includes("npm run proof:check")) {
+      errors.push(`${receiptPath}: results.reportedProofCheck requires task check "npm run proof:check"`);
+    }
     if (task?.checks?.includes("npm run proof:check") && receipt.results.independentProofCheckPassed === true && !receipt.results.testsPassed) {
       errors.push(`${receiptPath}: independent proof check cannot pass when testsPassed is false`);
+    }
+    if (receipt.results.independentProofCheckPassed === true && !task?.checks?.includes("npm run proof:check")) {
+      errors.push(`${receiptPath}: results.independentProofCheckPassed requires task check "npm run proof:check"`);
     }
   }
 
@@ -264,11 +271,55 @@ async function validateReceipt(receipt, receiptPath) {
       }
       if (!(await pathExists(resolvedArtifactPath))) {
         errors.push(`${receiptPath}: receipts.${artifactName} file is missing: ${artifactPath}`);
+        continue;
       }
+      artifactContents[artifactName] = await readFile(resolvedArtifactPath, "utf8");
     }
   }
 
+  validateReceiptArtifacts(task, receipt, receiptPath, artifactContents, errors);
+
   return errors;
+}
+
+function validateReceiptArtifacts(task, receipt, receiptPath, artifactContents, errors) {
+  if (!task) {
+    return;
+  }
+
+  const checkLog = artifactContents.checkLog;
+  if (typeof checkLog === "string") {
+    validateVerificationCommands(task, receipt, receiptPath, checkLog, errors);
+  }
+
+  for (const check of task.checks ?? []) {
+    const artifactName = baselineArtifactForCheck(check);
+    const artifactLog = artifactName ? artifactContents[artifactName] : undefined;
+
+    if (artifactName && typeof artifactLog === "string" && !logIncludesCommand(artifactLog, check)) {
+      errors.push(`${receiptPath}: receipts.${artifactName} must show command "${check}"`);
+    }
+  }
+
+  if (
+    receipt.results?.independentProofCheckPassed === true
+    && typeof checkLog === "string"
+    && !logIncludesCommand(checkLog, "npm run proof:check")
+  ) {
+    errors.push(`${receiptPath}: results.independentProofCheckPassed requires receipts.checkLog to include npm run proof:check`);
+  }
+}
+
+function validateVerificationCommands(task, receipt, receiptPath, checkLog, errors) {
+  const verificationCommands = Array.isArray(receipt.results?.verificationCommandsRun)
+    ? receipt.results.verificationCommandsRun.filter((command) => typeof command === "string")
+    : [];
+
+  for (const command of verificationCommands) {
+    if (!logIncludesCommand(checkLog, command)) {
+      errors.push(`${receiptPath}: results.verificationCommandsRun lists "${command}" but receipts.checkLog does not show it`);
+    }
+  }
 }
 
 function validateRequiredBaselineArtifacts(task, receipts, receiptPath, errors) {
@@ -438,6 +489,26 @@ function baselineArtifactForCheck(check) {
     return "baselineScopeLog";
   }
   return null;
+}
+
+function logIncludesCommand(logText, command) {
+  return commandMarkers(command).some((marker) => logText.includes(marker));
+}
+
+function commandMarkers(command) {
+  if (command.startsWith("npm test -- ")) {
+    return [`node scripts/test.mjs ${command.slice("npm test -- ".length)}`];
+  }
+  if (command === "npm run lint") {
+    return ["node scripts/lint.mjs"];
+  }
+  if (command === "npm run proof:check") {
+    return ["node scripts/proof-check.mjs"];
+  }
+  if (command === "npm run scope:check") {
+    return ["node scripts/scope-check.mjs"];
+  }
+  return [command];
 }
 
 function groupBy(values, keyFor) {

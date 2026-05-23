@@ -155,6 +155,67 @@ describe("benchmark receipt scoring", () => {
     expect(error.stderr).toContain('receipts.baselineScopeLog is required for task check "npm run scope:check"');
     expect(error.stderr).toContain(`receipts.transcript file is missing: ${missingTranscriptPath}`);
   });
+
+  it("rejects receipts whose logs do not support the reported verification evidence", async () => {
+    const fixture = await createBenchmarkFixture();
+    const baselineProofPath = resolve(fixture.runDir, "baseline-proof.log");
+    const baselineScopePath = resolve(fixture.runDir, "baseline-scope.log");
+
+    await writeFile(baselineProofPath, fixture.baselineLintLog);
+    await writeFile(baselineScopePath, fixture.baselineScopeLog);
+    await writeFile(fixture.receiptPath, JSON.stringify({
+      version: 1,
+      runId: fixture.runId,
+      taskId: "receipt-integrity",
+      conditionId: "agentfile-pact",
+      claimStatus: "candidate",
+      startedAt: "2026-05-22T02:00:00.000Z",
+      endedAt: "2026-05-22T02:05:00.000Z",
+      agent: {
+        name: "test-agent",
+        version: "1.0.0",
+        model: "test-model"
+      },
+      inputs: {
+        promptOrContract: fixture.promptPath,
+        repository: "Atomics-hub/agentfile",
+        fixture: fixture.fixturePath
+      },
+      results: {
+        taskCompleted: true,
+        testsPassed: true,
+        scopeAdherence: 1,
+        verificationCommandsRun: ["npm test -- receipt-integrity", "npm run lint", "npm run proof:check"],
+        unauthorizedToolUseAttempts: 0,
+        patchFilesChanged: 1,
+        correctionTurns: 0,
+        finalHandoffQuality: "strong",
+        reportedProofCheck: true,
+        independentProofCheckPassed: true,
+        evidenceQuality: "strong"
+      },
+      receipts: {
+        transcript: resolve(fixture.runDir, "transcript.md"),
+        diff: resolve(fixture.runDir, "patch.diff"),
+        checkLog: resolve(fixture.runDir, "check.log"),
+        notes: resolve(fixture.runDir, "notes.md"),
+        baselineTestLog: resolve(fixture.runDir, "baseline-test.log"),
+        baselineLintLog: resolve(fixture.runDir, "baseline-lint.log"),
+        baselineProofLog: baselineProofPath,
+        baselineScopeLog: baselineScopePath
+      }
+    }, null, 2));
+    await writeFile(resolve(fixture.runDir, "transcript.md"), "transcript\n");
+
+    const error = await runBenchmarkExpectingFailure({
+      AGENTFILE_BENCHMARK_MANIFEST: fixture.manifestPath,
+      AGENTFILE_BENCHMARK_RECEIPTS_DIR: fixture.receiptsDir
+    });
+
+    expect(error.stderr).toContain('results.verificationCommandsRun lists "npm run proof:check" but receipts.checkLog does not show it');
+    expect(error.stderr).toContain("results.independentProofCheckPassed requires receipts.checkLog to include npm run proof:check");
+    expect(error.stderr).toContain('receipts.baselineProofLog must show command "npm run proof:check"');
+  });
 });
 
 async function runBenchmark(env: NodeJS.ProcessEnv = {}) {
@@ -197,10 +258,36 @@ async function createBenchmarkFixture() {
 
   await writeFile(promptPath, "mission receipt-integrity {\n  goal \"Validate receipts\"\n}\n");
   await writeFile(resolve(runDir, "patch.diff"), "diff --git a/file b/file\n");
-  await writeFile(resolve(runDir, "check.log"), "npm test -- receipt-integrity\n");
+  const checkLog = [
+    "> agentfile-receipt-integrity-fixture@0.0.0 test",
+    "> node scripts/test.mjs receipt-integrity",
+    "",
+    "> agentfile-receipt-integrity-fixture@0.0.0 lint",
+    "> node scripts/lint.mjs",
+    ""
+  ].join("\n");
+  const baselineTestLog = [
+    "> agentfile-receipt-integrity-fixture@0.0.0 test",
+    "> node scripts/test.mjs receipt-integrity",
+    "",
+    "failing baseline test",
+    ""
+  ].join("\n");
+  const baselineLintLog = [
+    "> agentfile-receipt-integrity-fixture@0.0.0 lint",
+    "> node scripts/lint.mjs",
+    ""
+  ].join("\n");
+  const baselineScopeLog = [
+    "> agentfile-receipt-integrity-fixture@0.0.0 scope:check",
+    "> node scripts/scope-check.mjs",
+    ""
+  ].join("\n");
+
+  await writeFile(resolve(runDir, "check.log"), checkLog);
   await writeFile(resolve(runDir, "notes.md"), "notes\n");
-  await writeFile(resolve(runDir, "baseline-test.log"), "failing baseline test\n");
-  await writeFile(resolve(runDir, "baseline-lint.log"), "failing baseline lint\n");
+  await writeFile(resolve(runDir, "baseline-test.log"), baselineTestLog);
+  await writeFile(resolve(runDir, "baseline-lint.log"), baselineLintLog);
 
   await writeFile(manifestPath, JSON.stringify({
     version: 1,
@@ -230,8 +317,11 @@ async function createBenchmarkFixture() {
     manifestPath,
     receiptsDir,
     fixturePath,
+    promptPath,
     runId,
     runDir,
-    receiptPath
+    receiptPath,
+    baselineLintLog,
+    baselineScopeLog
   };
 }
