@@ -39,6 +39,8 @@ The first `verify-webhook-raw-signature` receipt pair passed in both conditions.
 
 The second `verify-webhook-raw-signature` receipt pair repeated the useful quality signal: both conditions ran proof, but the Agentfile worker again added a raw-body regression test while the plain-issue worker only changed implementation.
 
+The `verify-webhook-raw-signature` task now also includes an `agents-md` condition so Agentfile can be compared against generic Markdown instruction-file guidance, not only plain issue text.
+
 ## First Claim To Test
 
 > On repo-local software delegation tasks, Agentfile contracts improve scope adherence and verification rate compared with plain issue prompts.

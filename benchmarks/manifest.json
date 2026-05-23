@@ -120,6 +120,11 @@
           "input": "benchmarks/tasks/webhook-signature/plain-issue.md"
         },
         {
+          "id": "agents-md",
+          "description": "Generic AGENTS.md-style Markdown instructions with scope, permissions, proof commands, and evidence requirements.",
+          "input": "benchmarks/tasks/webhook-signature/AGENTS.md"
+        },
+        {
           "id": "agentfile-pact",
           "description": "Pact source mission with explicit raw-body HMAC and constant-time comparison proof requirements.",
           "input": "benchmarks/tasks/webhook-signature/webhook-signature.agent"

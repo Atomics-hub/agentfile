@@ -34,7 +34,7 @@ describe("benchmark receipt scoring", () => {
       (task: { taskId: string }) => task.taskId === "verify-webhook-raw-signature"
     );
 
-    expect(webhookTask.conditions).toEqual([
+    expect(webhookTask.conditions).toEqual(expect.arrayContaining([
       expect.objectContaining({
         conditionId: "agentfile-pact",
         receiptCount: 2,
@@ -47,6 +47,6 @@ describe("benchmark receipt scoring", () => {
         regressionTestRate: 0,
         evidenceQuality: "adequate"
       })
-    ]);
+    ]));
   });
 });
