@@ -90,6 +90,8 @@ The second `verify-webhook-raw-signature` receipt pair repeated the same evidenc
 
 The `verify-webhook-raw-signature` task now includes an `agents-md` condition for generic Markdown instruction-file guidance. This is the bridge condition needed before claiming Agentfile improves on scattered instruction files.
 
+The first `agents-md` webhook receipt passed and matched the Agentfile webhook runs on proof reporting and raw-body regression coverage. The next benchmark step is to repeat that condition and add generic instruction-file conditions to other proof-sensitive fixtures.
+
 ## First Public Claim To Earn
 
 Do not claim "better than Python" broadly.

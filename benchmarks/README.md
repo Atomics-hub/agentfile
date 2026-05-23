@@ -41,6 +41,8 @@ The second `verify-webhook-raw-signature` receipt pair repeated the useful quali
 
 The `verify-webhook-raw-signature` task now also includes an `agents-md` condition so Agentfile can be compared against generic Markdown instruction-file guidance, not only plain issue text.
 
+The first `agents-md` webhook receipt passed and matched the Agentfile webhook runs on proof reporting and raw-body regression coverage. That makes generic instruction files a real comparator, not a strawman.
+
 ## First Claim To Test
 
 > On repo-local software delegation tasks, Agentfile contracts improve scope adherence and verification rate compared with plain issue prompts.

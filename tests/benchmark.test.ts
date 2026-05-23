@@ -46,6 +46,12 @@ describe("benchmark receipt scoring", () => {
         receiptCount: 2,
         regressionTestRate: 0,
         evidenceQuality: "adequate"
+      }),
+      expect.objectContaining({
+        conditionId: "agents-md",
+        receiptCount: 1,
+        regressionTestRate: 1,
+        evidenceQuality: "strong"
       })
     ]));
   });
