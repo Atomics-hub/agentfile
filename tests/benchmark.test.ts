@@ -60,6 +60,28 @@ describe("benchmark receipt scoring", () => {
         evidenceQuality: "strong"
       })
     ]));
+
+    const redactTask = plan.scoreSummary.byTask.find(
+      (task: { taskId: string }) => task.taskId === "redact-auth-logs"
+    );
+
+    expect(redactTask.conditions).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        conditionId: "agentfile-pact",
+        proofCommandReportRate: 1,
+        evidenceQuality: "strong"
+      }),
+      expect.objectContaining({
+        conditionId: "plain-issue",
+        proofCommandReportRate: 0,
+        evidenceQuality: "weak"
+      }),
+      expect.objectContaining({
+        conditionId: "agents-md",
+        proofCommandReportRate: 1,
+        evidenceQuality: "strong"
+      })
+    ]));
   });
 
   it("rejects receipts whose metadata and artifacts do not match the manifest", async () => {

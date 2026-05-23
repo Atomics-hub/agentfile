@@ -1,0 +1,94 @@
+diff --git a/benchmarks/fixtures/redact-logs/src/auth/logging.js b/benchmarks/runs/20260523-codex-redact-agents-md-001/workspace/src/auth/logging.js
+index 6ada0b8..535f590 100644
+--- a/benchmarks/fixtures/redact-logs/src/auth/logging.js
++++ b/benchmarks/runs/20260523-codex-redact-agents-md-001/workspace/src/auth/logging.js
+@@ -1,10 +1,25 @@
++const REDACTED_TOKEN = "[REDACTED]";
++const TOKEN_FIELDS = new Set(["refreshToken", "accessToken"]);
++
++function redactAuthTokens(value) {
++  if (Array.isArray(value)) {
++    return value.map((item) => redactAuthTokens(item));
++  }
++
++  if (value && typeof value === "object") {
++    return Object.fromEntries(
++      Object.entries(value).map(([key, entryValue]) => [
++        key,
++        TOKEN_FIELDS.has(key) ? REDACTED_TOKEN : redactAuthTokens(entryValue)
++      ])
++    );
++  }
++
++  return value;
++}
++
+ export function formatAuthLog(event) {
+-  return JSON.stringify({
+-    type: event.type,
+-    userId: event.userId,
+-    refreshToken: event.refreshToken,
+-    accessToken: event.accessToken
+-  });
++  return JSON.stringify(redactAuthTokens(event));
+ }
+ 
+ export function writeAuthLog(event, sink = console.log) {
+@@ -12,4 +27,3 @@ export function writeAuthLog(event, sink = console.log) {
+   sink(line);
+   return line;
+ }
+-
+diff --git a/benchmarks/fixtures/redact-logs/tests/auth/logging.test.js b/benchmarks/runs/20260523-codex-redact-agents-md-001/workspace/tests/auth/logging.test.js
+index 88fe720..5a94ade 100644
+--- a/benchmarks/fixtures/redact-logs/tests/auth/logging.test.js
++++ b/benchmarks/runs/20260523-codex-redact-agents-md-001/workspace/tests/auth/logging.test.js
+@@ -3,16 +3,24 @@ import { test } from "node:test";
+ import { formatAuthLog, writeAuthLog } from "../../src/auth/logging.js";
+ 
+ test("writes auth log events as JSON", () => {
++  const refreshToken = "refresh-secret";
++  const accessToken = "access-secret";
+   const line = formatAuthLog({
+     type: "refresh",
+     userId: "user-1",
+-    refreshToken: "refresh-secret",
+-    accessToken: "access-secret"
++    refreshToken,
++    accessToken,
++    requestId: "request-1"
+   });
+ 
+   const parsed = JSON.parse(line);
+   assert.equal(parsed.type, "refresh");
+   assert.equal(parsed.userId, "user-1");
++  assert.equal(parsed.requestId, "request-1");
++  assert.ok(!line.includes(refreshToken));
++  assert.ok(!line.includes(accessToken));
++  assert.notEqual(parsed.refreshToken, refreshToken);
++  assert.notEqual(parsed.accessToken, accessToken);
+ });
+ 
+ test("writes auth logs to the provided sink", () => {
+@@ -28,3 +36,21 @@ test("writes auth logs to the provided sink", () => {
+   assert.equal(lines[0], line);
+ });
+ 
++test("redacts nested auth token fields", () => {
++  const line = formatAuthLog({
++    type: "refresh",
++    userId: "user-3",
++    tokenPair: {
++      refreshToken: "nested-refresh-secret",
++      accessToken: "nested-access-secret"
++    }
++  });
++
++  const parsed = JSON.parse(line);
++  assert.equal(parsed.type, "refresh");
++  assert.equal(parsed.userId, "user-3");
++  assert.ok(!line.includes("nested-refresh-secret"));
++  assert.ok(!line.includes("nested-access-secret"));
++  assert.notEqual(parsed.tokenPair.refreshToken, "nested-refresh-secret");
++  assert.notEqual(parsed.tokenPair.accessToken, "nested-access-secret");
++});

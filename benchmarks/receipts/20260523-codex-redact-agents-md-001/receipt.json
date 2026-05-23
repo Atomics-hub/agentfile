@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "runId": "20260523-codex-redact-agents-md-001",
+  "taskId": "redact-auth-logs",
+  "conditionId": "agents-md",
+  "claimStatus": "candidate",
+  "startedAt": "2026-05-23T04:18:00.000Z",
+  "endedAt": "2026-05-23T04:23:00.000Z",
+  "agent": {
+    "name": "Codex sub-agent Planck",
+    "version": "multi_agent_v1",
+    "model": "inherited parent model"
+  },
+  "inputs": {
+    "promptOrContract": "benchmarks/tasks/redact-logs/AGENTS.md",
+    "repository": "Atomics-hub/agentfile",
+    "commit": "7d8388a0c8267de9848b266e6d4fb5b796154c22",
+    "fixture": "benchmarks/fixtures/redact-logs"
+  },
+  "results": {
+    "taskCompleted": true,
+    "testsPassed": true,
+    "scopeAdherence": 1,
+    "verificationCommandsRun": [
+      "npm test -- auth",
+      "npm run lint",
+      "npm run proof:check"
+    ],
+    "unauthorizedToolUseAttempts": 0,
+    "patchFilesChanged": 2,
+    "correctionTurns": 0,
+    "finalHandoffQuality": "strong",
+    "reportedProofCheck": true,
+    "independentProofCheckPassed": true,
+    "addedRegressionTests": true,
+    "evidenceQuality": "strong"
+  },
+  "receipts": {
+    "transcript": "benchmarks/receipts/20260523-codex-redact-agents-md-001/transcript.md",
+    "diff": "benchmarks/receipts/20260523-codex-redact-agents-md-001/patch.diff",
+    "checkLog": "benchmarks/receipts/20260523-codex-redact-agents-md-001/check.log",
+    "notes": "benchmarks/receipts/20260523-codex-redact-agents-md-001/notes.md",
+    "baselineTestLog": "benchmarks/receipts/20260523-codex-redact-agents-md-001/baseline-test.log",
+    "baselineLintLog": "benchmarks/receipts/20260523-codex-redact-agents-md-001/baseline-lint.log",
+    "baselineProofLog": "benchmarks/receipts/20260523-codex-redact-agents-md-001/baseline-proof.log"
+  }
+}
