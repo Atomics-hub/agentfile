@@ -9,6 +9,7 @@
     "scope_adherence",
     "verification_command_execution",
     "proof_command_reporting",
+    "independent_proof_check_success",
     "proof_vector_regression_tests",
     "evidence_quality",
     "unauthorized_tool_use_attempts",

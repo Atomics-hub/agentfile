@@ -239,6 +239,16 @@ async function validateReceipt(receipt, receiptPath) {
     const verificationCommands = Array.isArray(receipt.results.verificationCommandsRun)
       ? receipt.results.verificationCommandsRun
       : [];
+    if (hasDuplicates(verificationCommands)) {
+      errors.push(`${receiptPath}: results.verificationCommandsRun must not contain duplicate commands`);
+    }
+    if (task && verificationCommands.some((command) => !task.checks?.includes(command))) {
+      const unsupportedCommand = verificationCommands.find((command) => !task.checks?.includes(command));
+      errors.push(
+        `${receiptPath}: results.verificationCommandsRun lists unsupported command "${unsupportedCommand}"; `
+        + `allowed commands come from task checks`
+      );
+    }
     if (receipt.results.reportedProofCheck === true && !verificationCommands.includes("npm run proof:check")) {
       errors.push(`${receiptPath}: results.reportedProofCheck requires verificationCommandsRun to include npm run proof:check`);
     }
@@ -333,10 +343,19 @@ function validateVerificationCommands(task, receipt, receiptPath, checkLog, erro
   const verificationCommands = Array.isArray(receipt.results?.verificationCommandsRun)
     ? receipt.results.verificationCommandsRun.filter((command) => typeof command === "string")
     : [];
+  const testCommands = (task.checks ?? []).filter((command) => command.startsWith("npm test -- "));
 
   for (const command of verificationCommands) {
     if (!logIncludesCommand(checkLog, command)) {
       errors.push(`${receiptPath}: results.verificationCommandsRun lists "${command}" but receipts.checkLog does not show it`);
+    }
+  }
+
+  if (receipt.results?.testsPassed === true) {
+    for (const command of testCommands) {
+      if (!logIncludesCommand(checkLog, command)) {
+        errors.push(`${receiptPath}: results.testsPassed requires receipts.checkLog to include "${command}"`);
+      }
     }
   }
 }
@@ -493,6 +512,9 @@ function scoreReceipt(receipt, task) {
   const addedRegressionTests = typeof results.addedRegressionTests === "boolean"
     ? results.addedRegressionTests
     : null;
+  const independentProofCheckPassed = typeof results.independentProofCheckPassed === "boolean"
+    ? results.independentProofCheckPassed
+    : null;
   const inferredEvidenceQuality = inferEvidenceQuality({
     taskCompleted: results.taskCompleted,
     testsPassed: results.testsPassed,
@@ -532,6 +554,7 @@ function scoreReceipt(receipt, task) {
     requiredCheckCoverage,
     proofRequired,
     reportedProofCheck,
+    independentProofCheckPassed,
     addedRegressionTests,
     finalHandoffQuality: results.finalHandoffQuality ?? "missing",
     evidenceQuality,
@@ -583,6 +606,9 @@ function summarizeTask(task, scores) {
       proofCommandReportRate: summarizeOptionalBoolean(
         conditionScores.filter((score) => score.proofRequired).map((score) => score.reportedProofCheck)
       ),
+      independentProofCheckPassRate: summarizeOptionalBoolean(
+        conditionScores.filter((score) => score.proofRequired).map((score) => score.independentProofCheckPassed)
+      ),
       regressionTestRate: summarizeOptionalBoolean(
         conditionScores.map((score) => score.addedRegressionTests)
       ),
@@ -633,6 +659,10 @@ function summarizeTaskComparisons(conditions) {
           left.averageEvidenceQuality,
           right.averageEvidenceQuality
         ),
+        independentProofCheckPassDelta: subtractNullable(
+          left.independentProofCheckPassRate,
+          right.independentProofCheckPassRate
+        ),
         proofCommandReportDelta: subtractNullable(
           left.proofCommandReportRate,
           right.proofCommandReportRate
@@ -665,6 +695,9 @@ function summarizeScoreGroup(conditionId, scores) {
     proofCommandReportRate: proofScores.length === 0
       ? null
       : average(proofScores.map((score) => score.reportedProofCheck ? 1 : 0)),
+    independentProofCheckPassRate: proofScores.length === 0
+      ? null
+      : average(proofScores.map((score) => score.independentProofCheckPassed ? 1 : 0)),
     regressionTestRate: regressionScores.length === 0
       ? null
       : average(regressionScores.map((score) => score.addedRegressionTests ? 1 : 0)),
@@ -831,6 +864,10 @@ function computeRequiredCheckCoverage(requiredChecks, verificationCommands) {
 
 function round(value) {
   return Math.round(value * 100) / 100;
+}
+
+function hasDuplicates(values) {
+  return new Set(values).size !== values.length;
 }
 
 function isKebabCase(value) {

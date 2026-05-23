@@ -34,12 +34,13 @@ function renderReport(plan) {
     "## Condition Summary",
     "",
     table(
-      ["Condition", "Receipts", "Checks", "Proof", "Regression", "Files", "Lines", "Quality", "Evidence"],
+      ["Condition", "Receipts", "Checks", "Proof", "Proof Pass", "Regression", "Files", "Lines", "Quality", "Evidence"],
       (plan.scoreSummary?.byCondition ?? []).map((condition) => [
         code(condition.conditionId),
         number(condition.receiptCount),
         percent(condition.requiredCheckCoverageRate),
         nullablePercent(condition.proofCommandReportRate),
+        nullablePercent(condition.independentProofCheckPassRate),
         nullablePercent(condition.regressionTestRate),
         nullableNumber(condition.averagePatchFilesChanged),
         nullableNumber(condition.averagePatchLinesChanged),
@@ -56,12 +57,13 @@ function renderReport(plan) {
     lines.push(`### ${code(task.taskId)}`);
     lines.push("");
     lines.push(table(
-      ["Condition", "Receipts", "Checks", "Proof", "Regression", "Lines", "Evidence"],
+      ["Condition", "Receipts", "Checks", "Proof", "Proof Pass", "Regression", "Lines", "Evidence"],
       task.conditions.map((condition) => [
         code(condition.conditionId),
         number(condition.receiptCount),
         nullablePercent(condition.requiredCheckCoverage),
         nullablePercent(condition.proofCommandReportRate),
+        nullablePercent(condition.independentProofCheckPassRate),
         nullablePercent(condition.regressionTestRate),
         nullableNumber(condition.averagePatchLinesChanged),
         code(condition.evidenceQuality)
@@ -70,13 +72,14 @@ function renderReport(plan) {
     lines.push("");
     if ((task.comparisons ?? []).length > 0) {
       lines.push(table(
-        ["Pair", "Matched", "Repeated", "Delta Quality", "Delta Proof", "Delta Regression", "Delta Evidence"],
+        ["Pair", "Matched", "Repeated", "Delta Quality", "Delta Proof", "Delta Proof Pass", "Delta Regression", "Delta Evidence"],
         task.comparisons.map((comparison) => [
           `${code(comparison.leftConditionId)} vs ${code(comparison.rightConditionId)}`,
           number(comparison.comparableReceiptCount),
           comparison.isRepeated ? "yes" : "no",
           nullableNumber(comparison.normalizedQualityDelta),
           nullableNumber(comparison.proofCommandReportDelta),
+          nullableNumber(comparison.independentProofCheckPassDelta),
           nullableNumber(comparison.regressionTestDelta),
           nullableNumber(comparison.evidenceQualityDelta)
         ])

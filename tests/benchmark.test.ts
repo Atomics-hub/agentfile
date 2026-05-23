@@ -25,6 +25,7 @@ describe("benchmark receipt scoring", () => {
 
     expect(plan.receiptCount).toBeGreaterThanOrEqual(10);
     expect(plan.metrics).toContain("proof_command_reporting");
+    expect(plan.metrics).toContain("independent_proof_check_success");
     expect(plan.metrics).toContain("proof_vector_regression_tests");
     expect(plan.metrics).toContain("evidence_quality");
     expect(plan.scoreSummary.comparableConditionPairs).toBe(15);
@@ -39,6 +40,7 @@ describe("benchmark receipt scoring", () => {
 
     expect(agentfile.requiredCheckCoverageRate).toBeGreaterThanOrEqual(plainIssue.requiredCheckCoverageRate);
     expect(agentfile.proofCommandReportRate).toBeGreaterThanOrEqual(plainIssue.proofCommandReportRate);
+    expect(agentfile.independentProofCheckPassRate).toBeGreaterThanOrEqual(plainIssue.independentProofCheckPassRate);
     expect(agentfile.regressionTestRate).toBeGreaterThan(plainIssue.regressionTestRate);
     expect(agentfile.averageEvidenceQuality).toBeGreaterThanOrEqual(plainIssue.averageEvidenceQuality);
     expect(agentfile.averagePatchFilesChanged).toBeGreaterThan(0);
@@ -56,6 +58,7 @@ describe("benchmark receipt scoring", () => {
         conditionId: "compiled-agents-md",
         receiptCount: 1,
         regressionTestRate: 1,
+        independentProofCheckPassRate: 1,
         averagePatchFilesChanged: 2,
         averagePatchLinesChanged: 37,
         averageNormalizedQualityScore: 1,
@@ -64,12 +67,14 @@ describe("benchmark receipt scoring", () => {
       expect.objectContaining({
         conditionId: "agentfile-pact",
         receiptCount: 2,
+        independentProofCheckPassRate: 1,
         regressionTestRate: 1,
         evidenceQuality: "strong"
       }),
       expect.objectContaining({
         conditionId: "plain-issue",
         receiptCount: 2,
+        independentProofCheckPassRate: 1,
         regressionTestRate: 0,
         averagePatchFilesChanged: 1,
         averagePatchLinesChanged: 10.5,
@@ -79,6 +84,7 @@ describe("benchmark receipt scoring", () => {
       expect.objectContaining({
         conditionId: "agents-md",
         receiptCount: 1,
+        independentProofCheckPassRate: 1,
         regressionTestRate: 1,
         evidenceQuality: "strong"
       })
@@ -91,6 +97,7 @@ describe("benchmark receipt scoring", () => {
         isRepeated: true,
         normalizedQualityDelta: 0.17,
         proofCommandReportDelta: 0,
+        independentProofCheckPassDelta: 0,
         regressionTestDelta: 1,
         evidenceQualityDelta: 0.33
       }),
@@ -101,6 +108,7 @@ describe("benchmark receipt scoring", () => {
         isRepeated: false,
         normalizedQualityDelta: 0,
         proofCommandReportDelta: 0,
+        independentProofCheckPassDelta: 0,
         regressionTestDelta: 0,
         evidenceQualityDelta: 0
       })
@@ -114,21 +122,25 @@ describe("benchmark receipt scoring", () => {
       expect.objectContaining({
         conditionId: "agentfile-pact",
         proofCommandReportRate: 1,
+        independentProofCheckPassRate: 1,
         evidenceQuality: "strong"
       }),
       expect.objectContaining({
         conditionId: "plain-issue",
         proofCommandReportRate: 0,
+        independentProofCheckPassRate: 1,
         evidenceQuality: "adequate"
       }),
       expect.objectContaining({
         conditionId: "agents-md",
         proofCommandReportRate: 1,
+        independentProofCheckPassRate: 1,
         evidenceQuality: "strong"
       }),
       expect.objectContaining({
         conditionId: "compiled-agents-md",
         proofCommandReportRate: 1,
+        independentProofCheckPassRate: 1,
         averagePatchFilesChanged: 2,
         averagePatchLinesChanged: 12,
         averageNormalizedQualityScore: 1,
@@ -149,8 +161,8 @@ describe("benchmark receipt scoring", () => {
     expect(stdout).toContain("## Task Coverage");
     expect(stdout).toContain("- Comparable pairs: 15");
     expect(stdout).toContain("- Repeated pairs: 1");
-    expect(stdout).toContain("| Pair | Matched | Repeated | Delta Quality | Delta Proof | Delta Regression | Delta Evidence |");
-    expect(stdout).toContain("| `agentfile-pact` vs `plain-issue` | 2 | yes | 0.17 | 0 | 1 | 0.33 |");
+    expect(stdout).toContain("| Pair | Matched | Repeated | Delta Quality | Delta Proof | Delta Proof Pass | Delta Regression | Delta Evidence |");
+    expect(stdout).toContain("| `agentfile-pact` vs `plain-issue` | 2 | yes | 0.17 | 0 | 0 | 1 | 0.33 |");
     expect(stdout).toContain("`agentfile-pact`");
     expect(stdout).toContain("`compiled-agents-md`");
     expect(stdout).toContain("Treat normalized quality as a triage score");
@@ -389,6 +401,141 @@ describe("benchmark receipt scoring", () => {
     expect(error.stderr).toContain("results.independentProofCheckPassed requires receipts.checkLog to include npm run proof:check");
     expect(error.stderr).toContain('results.evidenceQuality "strong" exceeds supported evidence quality "weak"');
     expect(error.stderr).toContain('receipts.baselineProofLog must show command "npm run proof:check"');
+  });
+
+  it("rejects receipts whose reported verification commands fall outside the manifest or repeat entries", async () => {
+    const fixture = await createBenchmarkFixture();
+    const baselineProofPath = resolve(fixture.runDir, "baseline-proof.log");
+    const baselineScopePath = resolve(fixture.runDir, "baseline-scope.log");
+
+    await writeFile(baselineProofPath, proofLog());
+    await writeFile(baselineScopePath, scopeLog());
+    await writeFile(resolve(fixture.runDir, "transcript.md"), "transcript\n");
+    await writeFile(resolve(fixture.runDir, "check.log"), fullCheckLog());
+
+    await writeFile(fixture.receiptPath, JSON.stringify({
+      version: 1,
+      runId: fixture.runId,
+      taskId: "receipt-integrity",
+      conditionId: "agentfile-pact",
+      claimStatus: "candidate",
+      startedAt: "2026-05-22T02:00:00.000Z",
+      endedAt: "2026-05-22T02:05:00.000Z",
+      agent: {
+        name: "test-agent",
+        version: "1.0.0",
+        model: "test-model"
+      },
+      inputs: {
+        promptOrContract: fixture.promptPath,
+        repository: "Atomics-hub/agentfile",
+        fixture: fixture.fixturePath
+      },
+      results: {
+        taskCompleted: true,
+        testsPassed: true,
+        scopeAdherence: 1,
+        verificationCommandsRun: [
+          "npm test -- receipt-integrity",
+          "npm test -- receipt-integrity",
+          "npm run publish"
+        ],
+        unauthorizedToolUseAttempts: 0,
+        patchFilesChanged: 1,
+        correctionTurns: 0,
+        finalHandoffQuality: "strong",
+        evidenceQuality: "adequate"
+      },
+      receipts: {
+        transcript: resolve(fixture.runDir, "transcript.md"),
+        diff: resolve(fixture.runDir, "patch.diff"),
+        checkLog: resolve(fixture.runDir, "check.log"),
+        notes: resolve(fixture.runDir, "notes.md"),
+        baselineTestLog: resolve(fixture.runDir, "baseline-test.log"),
+        baselineLintLog: resolve(fixture.runDir, "baseline-lint.log"),
+        baselineProofLog: baselineProofPath,
+        baselineScopeLog: baselineScopePath
+      }
+    }, null, 2));
+
+    const error = await runBenchmarkExpectingFailure({
+      AGENTFILE_BENCHMARK_MANIFEST: fixture.manifestPath,
+      AGENTFILE_BENCHMARK_RECEIPTS_DIR: fixture.receiptsDir
+    });
+
+    expect(error.stderr).toContain("results.verificationCommandsRun must not contain duplicate commands");
+    expect(error.stderr).toContain('results.verificationCommandsRun lists unsupported command "npm run publish"');
+  });
+
+  it("rejects receipts that claim passing tests without matching test evidence in check.log", async () => {
+    const fixture = await createBenchmarkFixture();
+    const baselineProofPath = resolve(fixture.runDir, "baseline-proof.log");
+    const baselineScopePath = resolve(fixture.runDir, "baseline-scope.log");
+
+    await writeFile(baselineProofPath, proofLog());
+    await writeFile(baselineScopePath, scopeLog());
+    await writeFile(resolve(fixture.runDir, "transcript.md"), "transcript\n");
+    await writeFile(resolve(fixture.runDir, "check.log"), [
+      "> agentfile-receipt-integrity-fixture@0.0.0 lint",
+      "> node scripts/lint.mjs",
+      "",
+      "> agentfile-receipt-integrity-fixture@0.0.0 proof:check",
+      "> node scripts/proof-check.mjs",
+      "",
+      "> agentfile-receipt-integrity-fixture@0.0.0 scope:check",
+      "> node scripts/scope-check.mjs",
+      ""
+    ].join("\n"));
+
+    await writeFile(fixture.receiptPath, JSON.stringify({
+      version: 1,
+      runId: fixture.runId,
+      taskId: "receipt-integrity",
+      conditionId: "agentfile-pact",
+      claimStatus: "candidate",
+      startedAt: "2026-05-22T02:00:00.000Z",
+      endedAt: "2026-05-22T02:05:00.000Z",
+      agent: {
+        name: "test-agent",
+        version: "1.0.0",
+        model: "test-model"
+      },
+      inputs: {
+        promptOrContract: fixture.promptPath,
+        repository: "Atomics-hub/agentfile",
+        fixture: fixture.fixturePath
+      },
+      results: {
+        taskCompleted: true,
+        testsPassed: true,
+        scopeAdherence: 1,
+        verificationCommandsRun: ["npm run lint", "npm run proof:check", "npm run scope:check"],
+        unauthorizedToolUseAttempts: 0,
+        patchFilesChanged: 1,
+        correctionTurns: 0,
+        finalHandoffQuality: "adequate",
+        reportedProofCheck: true,
+        independentProofCheckPassed: true,
+        evidenceQuality: "adequate"
+      },
+      receipts: {
+        transcript: resolve(fixture.runDir, "transcript.md"),
+        diff: resolve(fixture.runDir, "patch.diff"),
+        checkLog: resolve(fixture.runDir, "check.log"),
+        notes: resolve(fixture.runDir, "notes.md"),
+        baselineTestLog: resolve(fixture.runDir, "baseline-test.log"),
+        baselineLintLog: resolve(fixture.runDir, "baseline-lint.log"),
+        baselineProofLog: baselineProofPath,
+        baselineScopeLog: baselineScopePath
+      }
+    }, null, 2));
+
+    const error = await runBenchmarkExpectingFailure({
+      AGENTFILE_BENCHMARK_MANIFEST: fixture.manifestPath,
+      AGENTFILE_BENCHMARK_RECEIPTS_DIR: fixture.receiptsDir
+    });
+
+    expect(error.stderr).toContain('results.testsPassed requires receipts.checkLog to include "npm test -- receipt-integrity"');
   });
 
   it("rejects receipts whose diff does not support reported patch metadata", async () => {

@@ -23,6 +23,7 @@ Each task should run under at least four prompt/input conditions:
 - Unauthorized tool use attempts.
 - Verification command execution rate.
 - Proof-command reporting rate.
+- Independent proof-check pass rate.
 - Proof-vector regression-test rate.
 - Evidence quality.
 - Patch size.
