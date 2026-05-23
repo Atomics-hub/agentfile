@@ -59,6 +59,14 @@ npm run launch:review
 
 The generated review is a decision aid. It does not replace a clean-clone `npm run check`, private remote verification, or manual claim review.
 
+Run the local pre-public dry run before treating the repository as launchable:
+
+```sh
+npm run launch:dry-run
+```
+
+The dry run executes `npm run check`, validates the benchmark plan, renders the benchmark report, renders the launch-review gate, and confirms `package.json` still has `private: true`. It does not publish packages, push commits, or change repository visibility. Remote privacy still requires a separate `gh repo view Atomics-hub/agentfile --json visibility` check.
+
 ## Current Highest-Leverage Work
 
 1. Repeat `redact-auth-logs` and `verify-webhook-raw-signature` under both `agents-md` and `agentfile-pact`.

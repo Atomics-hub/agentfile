@@ -44,6 +44,7 @@
     "benchmark:plan": "node benchmarks/run.mjs",
     "benchmark:report": "node benchmarks/report.mjs",
     "launch:review": "node scripts/launch-review.mjs",
+    "launch:dry-run": "node scripts/prepublic-dry-run.mjs",
     "audit": "npm audit --audit-level=moderate",
     "check": "npm run lint && npm test && npm run audit"
   },

@@ -180,6 +180,7 @@ Review current benchmark and launch readiness evidence:
 ```sh
 npm run benchmark:report
 npm run launch:review
+npm run launch:dry-run
 ```
 
 Run the end-to-end demo:
