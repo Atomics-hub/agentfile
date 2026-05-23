@@ -745,6 +745,13 @@ mission scoped-prompt {
     expect(markdown).toContain("# fix-login-refresh-race");
   });
 
+  it("keeps compiled webhook benchmark instructions in sync with Pact source", async () => {
+    const source = await readFile("benchmarks/tasks/webhook-signature/webhook-signature.agent", "utf8");
+    const expected = await readFile("benchmarks/tasks/webhook-signature/compiled-agentfile.AGENTS.md", "utf8");
+
+    expect(compileAgentfile(parsePactSource(source), "agents-md")).toBe(expected);
+  });
+
   it("compiles additional instruction-file targets", async () => {
     const source = await readFile("examples/fix-login-race.agentfile", "utf8");
     const agentfile = parseAgentfile(source);

@@ -303,10 +303,11 @@ function validateUniqueRunIds(receipts) {
 function summarizeReceipts(receipts, tasks) {
   const taskMap = new Map(tasks.map((task) => [task.id, task]));
   const scoredReceipts = receipts.map((receipt) => scoreReceipt(receipt, taskMap.get(receipt.taskId)));
-  const byCondition = [...groupBy(scoredReceipts, (score) => score.conditionId).entries()]
-    .map(([conditionId, scores]) => summarizeScoreGroup(conditionId, scores));
-  const byTask = [...groupBy(scoredReceipts, (score) => score.taskId).entries()]
-    .map(([taskId, scores]) => summarizeTask(taskId, scores));
+  const byConditionScores = groupBy(scoredReceipts, (score) => score.conditionId);
+  const byTaskScores = groupBy(scoredReceipts, (score) => score.taskId);
+  const allConditionIds = [...new Set(tasks.flatMap((task) => task.conditions.map((condition) => condition.id)))].sort();
+  const byCondition = allConditionIds.map((conditionId) => summarizeScoreGroup(conditionId, byConditionScores.get(conditionId) ?? []));
+  const byTask = tasks.map((task) => summarizeTask(task, byTaskScores.get(task.id) ?? []));
 
   return {
     receiptsScored: scoredReceipts.length,
@@ -376,26 +377,28 @@ function inferEvidenceQuality({
   return "adequate";
 }
 
-function summarizeTask(taskId, scores) {
+function summarizeTask(task, scores) {
   const byCondition = [...groupBy(scores, (score) => score.conditionId).entries()];
+  const conditions = task.conditions
+    .map((condition) => [condition.id, byCondition.find(([conditionId]) => conditionId === condition.id)?.[1] ?? []])
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([conditionId, conditionScores]) => ({
+      conditionId,
+      receiptCount: conditionScores.length,
+      requiredCheckCoverage: average(conditionScores.map((score) => score.requiredCheckCoverage)),
+      proofCommandReportRate: summarizeOptionalBoolean(
+        conditionScores.filter((score) => score.proofRequired).map((score) => score.reportedProofCheck)
+      ),
+      regressionTestRate: summarizeOptionalBoolean(
+        conditionScores.map((score) => score.addedRegressionTests)
+      ),
+      averageEvidenceQuality: average(conditionScores.map((score) => score.evidenceQualityScore)),
+      evidenceQuality: bestQuality(conditionScores.map((score) => score.evidenceQuality))
+    }));
 
   return {
-    taskId,
-    conditions: byCondition
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([conditionId, conditionScores]) => ({
-        conditionId,
-        receiptCount: conditionScores.length,
-        requiredCheckCoverage: average(conditionScores.map((score) => score.requiredCheckCoverage)),
-        proofCommandReportRate: summarizeOptionalBoolean(
-          conditionScores.filter((score) => score.proofRequired).map((score) => score.reportedProofCheck)
-        ),
-        regressionTestRate: summarizeOptionalBoolean(
-          conditionScores.map((score) => score.addedRegressionTests)
-        ),
-        averageEvidenceQuality: average(conditionScores.map((score) => score.evidenceQualityScore)),
-        evidenceQuality: bestQuality(conditionScores.map((score) => score.evidenceQuality))
-      }))
+    taskId: task.id,
+    conditions
   };
 }
 

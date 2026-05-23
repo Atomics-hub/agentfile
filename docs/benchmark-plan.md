@@ -101,6 +101,8 @@ The `verify-webhook-raw-signature` task now includes an `agents-md` condition fo
 
 The first `agents-md` webhook receipt passed and matched the Agentfile webhook runs on proof reporting and raw-body regression coverage. The next benchmark step is to repeat that condition and add generic instruction-file conditions to other proof-sensitive fixtures.
 
+The webhook task now also includes a `compiled-agents-md` condition generated from the Pact source. `npm run benchmark:plan` now surfaces zero-receipt manifest conditions, so this bridge condition is visible as planned-but-unrun evidence until the first compiled webhook receipt is collected.
+
 ## First Public Claim To Earn
 
 Do not claim "better than Python" broadly.

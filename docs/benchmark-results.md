@@ -40,6 +40,8 @@ The `preserve-refund-audit-evidence` pair did not reproduce that differential si
 
 The `verify-webhook-raw-signature` repeats also did not produce a proof-command differential signal, because both plain-issue workers ran `npm run proof:check`. They did produce a repeated quality signal: both Agentfile workers added explicit raw-body regression tests, while both plain-issue workers only changed implementation. The first `agents-md` run matched Agentfile on this task, which is a useful honesty point before any claim that Agentfile beats generic instruction files.
 
+The webhook manifest now also defines a `compiled-agents-md` bridge condition generated from the Pact source. There is not yet a stored receipt for that condition, and `npm run benchmark:plan` now surfaces that absence explicitly instead of hiding zero-receipt conditions.
+
 ## What This Does Not Support Yet
 
 Do not use these receipts to claim that Agentfile is broadly better than plain issues, agent instruction files, or programming languages.
@@ -51,7 +53,7 @@ The dataset is still small. It has one agent family, one repo-local fixture suit
 Before public launch, the benchmark story should either stay framed as a plan or earn more repeated evidence:
 
 - Repeat `redact-auth-logs` and `verify-webhook-raw-signature` under `agents-md` and `agentfile-pact` to test whether structured contracts outperform strong Markdown instructions.
-- Add a `compiled-agents-md` condition for `verify-webhook-raw-signature` to test the compiled-output bridge on a second proof-sensitive task.
+- Collect the first `compiled-agents-md` receipt for `verify-webhook-raw-signature` to test the compiled-output bridge on a second proof-sensitive task.
 - Keep each receipt reviewable: transcript, diff, check log, scope score, verification commands, and handoff quality.
 
 The first public-safe result should stay narrow:
