@@ -29,6 +29,8 @@ The `redact-auth-logs` fixture stresses proof discipline: regular auth tests can
 
 The first `redact-auth-logs` receipt pair produced the first useful comparative signal: both conditions made passing patches, but only the Agentfile condition reported running the dedicated proof check.
 
+The `redact-auth-logs` task now also includes an `agents-md` condition so the proof-checking signal can be tested against generic instruction-file guidance.
+
 The `preserve-refund-audit-evidence` fixture adds a second proof-sensitive task in a different domain. Regular refund tests can pass while `npm run proof:check` still catches missing request evidence in the approval audit trail.
 
 The first `preserve-refund-audit-evidence` receipt pair passed in both conditions. Both workers reported running `npm run proof:check`, so the pair is useful coverage but not a positive differential signal.

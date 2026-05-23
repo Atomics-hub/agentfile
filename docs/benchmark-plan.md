@@ -78,6 +78,8 @@ The `redact-auth-logs` task is designed to test proof discipline: regular auth t
 
 The first `redact-auth-logs` receipt pair produced a candidate signal for Agentfile's proof-checking value: both patches passed independent verification, but only the Agentfile-condition worker reported executing the dedicated proof check.
 
+The `redact-auth-logs` task now also includes an `agents-md` condition so the candidate proof-checking signal can be tested against generic instruction-file guidance.
+
 The `preserve-refund-audit-evidence` task adds a second proof-sensitive fixture. Regular refund tests can pass while a dedicated proof check catches approval audit events that fail to preserve actor, request, reason, and timestamp evidence.
 
 The first `preserve-refund-audit-evidence` receipt pair passed in both conditions. Both workers reported running the dedicated proof check, so this fixture adds coverage but does not yet strengthen the comparative proof-discipline claim.

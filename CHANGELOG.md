@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added a generic AGENTS.md-style benchmark condition for auth-log redaction proof checking.
 - Added the first generic AGENTS.md-style webhook benchmark receipt, matching Agentfile's proof and regression-test behavior on that task.
 - Added a generic AGENTS.md-style benchmark condition for webhook signature verification.
 - Added a repeated webhook-signature benchmark receipt pair that reproduced the Agentfile regression-test quality signal.

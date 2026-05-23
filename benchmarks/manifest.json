@@ -76,6 +76,11 @@
           "input": "benchmarks/tasks/redact-logs/plain-issue.md"
         },
         {
+          "id": "agents-md",
+          "description": "Generic AGENTS.md-style Markdown instructions with scope, permissions, proof commands, and evidence requirements.",
+          "input": "benchmarks/tasks/redact-logs/AGENTS.md"
+        },
+        {
           "id": "agentfile-pact",
           "description": "Pact source mission with explicit no-token-leak policies and proof check.",
           "input": "benchmarks/tasks/redact-logs/redact-logs.agent"
