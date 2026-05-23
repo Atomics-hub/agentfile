@@ -35,6 +35,8 @@ describe("benchmark receipt scoring", () => {
     expect(agentfile.proofCommandReportRate).toBeGreaterThanOrEqual(plainIssue.proofCommandReportRate);
     expect(agentfile.regressionTestRate).toBeGreaterThan(plainIssue.regressionTestRate);
     expect(agentfile.averageEvidenceQuality).toBeGreaterThanOrEqual(plainIssue.averageEvidenceQuality);
+    expect(agentfile.averagePatchFilesChanged).toBeGreaterThan(0);
+    expect(plainIssue.averagePatchFilesChanged).toBeGreaterThan(0);
 
     const webhookTask = plan.scoreSummary.byTask.find(
       (task: { taskId: string }) => task.taskId === "verify-webhook-raw-signature"
@@ -45,6 +47,7 @@ describe("benchmark receipt scoring", () => {
         conditionId: "compiled-agents-md",
         receiptCount: 1,
         regressionTestRate: 1,
+        averagePatchFilesChanged: 2,
         evidenceQuality: "strong"
       }),
       expect.objectContaining({
@@ -57,6 +60,7 @@ describe("benchmark receipt scoring", () => {
         conditionId: "plain-issue",
         receiptCount: 2,
         regressionTestRate: 0,
+        averagePatchFilesChanged: 1,
         evidenceQuality: "adequate"
       }),
       expect.objectContaining({
@@ -90,6 +94,7 @@ describe("benchmark receipt scoring", () => {
       expect.objectContaining({
         conditionId: "compiled-agents-md",
         proofCommandReportRate: 1,
+        averagePatchFilesChanged: 2,
         evidenceQuality: "strong"
       })
     ]));

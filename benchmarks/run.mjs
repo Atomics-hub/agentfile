@@ -397,6 +397,7 @@ function scoreReceipt(receipt, task) {
     taskCompleted: results.taskCompleted === true,
     testsPassed: results.testsPassed === true,
     scopeAdherence: typeof results.scopeAdherence === "number" ? results.scopeAdherence : 0,
+    patchFilesChanged: typeof results.patchFilesChanged === "number" ? results.patchFilesChanged : null,
     requiredCheckCoverage,
     proofRequired,
     reportedProofCheck,
@@ -443,6 +444,9 @@ function summarizeTask(task, scores) {
       regressionTestRate: summarizeOptionalBoolean(
         conditionScores.map((score) => score.addedRegressionTests)
       ),
+      averagePatchFilesChanged: summarizeOptionalNumber(
+        conditionScores.map((score) => score.patchFilesChanged)
+      ),
       averageEvidenceQuality: average(conditionScores.map((score) => score.evidenceQualityScore)),
       evidenceQuality: bestQuality(conditionScores.map((score) => score.evidenceQuality))
     }));
@@ -464,6 +468,7 @@ function summarizeScoreGroup(conditionId, scores) {
     testPassRate: average(scores.map((score) => score.testsPassed ? 1 : 0)),
     averageScopeAdherence: average(scores.map((score) => score.scopeAdherence)),
     requiredCheckCoverageRate: average(scores.map((score) => score.requiredCheckCoverage)),
+    averagePatchFilesChanged: summarizeOptionalNumber(scores.map((score) => score.patchFilesChanged)),
     proofCommandReportRate: proofScores.length === 0
       ? null
       : average(proofScores.map((score) => score.reportedProofCheck ? 1 : 0)),
@@ -543,6 +548,16 @@ function summarizeOptionalBoolean(values) {
   }
 
   return average(concreteValues.map((value) => value ? 1 : 0));
+}
+
+function summarizeOptionalNumber(values) {
+  const concreteValues = values.filter((value) => typeof value === "number");
+
+  if (concreteValues.length === 0) {
+    return null;
+  }
+
+  return average(concreteValues);
 }
 
 function average(values) {
