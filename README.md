@@ -158,6 +158,19 @@ Agentfile is not an agent framework, orchestration graph, or MCP replacement. It
 
 The long-term bet is bigger: Agentfile should become the language of delegation, effects, evidence, and patches for coding agents.
 
+## Why Not Just AGENTS.md?
+
+Use `AGENTS.md` when one hand-written instruction file is enough. Agentfile is for teams that need the same delegation contract to be reviewed, validated, compiled, and audited across multiple agent surfaces.
+
+The difference is source versus projection:
+
+- `AGENTS.md` is an instruction surface for an agent.
+- `.agent` source is the reviewable authority for task goal, file scope, tool permissions, proof obligations, and handoff requirements.
+- The strict YAML/JSON IR is the machine-checkable contract that tools can validate before work starts.
+- Generated instruction files are projections of that contract into the places agents already read today.
+
+Current benchmark receipts are intentionally modest: strong `AGENTS.md` instructions can match Agentfile on some proof-sensitive tasks. That is good pressure on the project. The public claim Agentfile is earning is narrower and more useful: one typed contract can preserve the same scope, authority, proof, and handoff requirements across instruction files, policy JSON, and audit receipts without making humans reconcile scattered Markdown by hand.
+
 ## Install
 
 Agentfile is pre-public and not published to npm yet. For now, run it from source:
