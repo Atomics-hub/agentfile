@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "runId": "YYYYMMDD-agent-condition-001",
+  "runId": "YYYYMMDD-agent-task-slug-condition-id-001",
   "taskId": "fix-login-refresh-race",
   "conditionId": "plain-issue",
   "claimStatus": "unproven",
@@ -31,11 +31,11 @@
     "evidenceQuality": "missing"
   },
   "receipts": {
-    "transcript": "benchmarks/receipts/YYYYMMDD-agent-condition-001/transcript.md",
-    "diff": "benchmarks/receipts/YYYYMMDD-agent-condition-001/patch.diff",
-    "checkLog": "benchmarks/receipts/YYYYMMDD-agent-condition-001/check.log",
-    "notes": "benchmarks/receipts/YYYYMMDD-agent-condition-001/notes.md",
-    "baselineTestLog": "benchmarks/receipts/YYYYMMDD-agent-condition-001/baseline-test.log",
-    "baselineLintLog": "benchmarks/receipts/YYYYMMDD-agent-condition-001/baseline-lint.log"
+    "transcript": "benchmarks/receipts/YYYYMMDD-agent-task-slug-condition-id-001/transcript.md",
+    "diff": "benchmarks/receipts/YYYYMMDD-agent-task-slug-condition-id-001/patch.diff",
+    "checkLog": "benchmarks/receipts/YYYYMMDD-agent-task-slug-condition-id-001/check.log",
+    "notes": "benchmarks/receipts/YYYYMMDD-agent-task-slug-condition-id-001/notes.md",
+    "baselineTestLog": "benchmarks/receipts/YYYYMMDD-agent-task-slug-condition-id-001/baseline-test.log",
+    "baselineLintLog": "benchmarks/receipts/YYYYMMDD-agent-task-slug-condition-id-001/baseline-lint.log"
   }
 }

@@ -13,6 +13,7 @@ const conditionByTaskCondition = new Map(
   tasks.flatMap((task) => task.conditions.map((condition) => [`${task.id}:${condition.id}`, condition]))
 );
 
+const manifestErrors = validateManifest(tasks);
 const missingInputs = [];
 for (const task of tasks) {
   if (task.fixture) {
@@ -44,7 +45,10 @@ for (const receiptPath of receiptPaths) {
 }
 receiptErrors.push(...validateUniqueRunIds(receipts));
 
-if (missingInputs.length > 0 || receiptErrors.length > 0) {
+if (manifestErrors.length > 0 || missingInputs.length > 0 || receiptErrors.length > 0) {
+  if (manifestErrors.length > 0) {
+    console.error(`Invalid benchmark manifest:\n${manifestErrors.map((error) => `- ${error}`).join("\n")}`);
+  }
   if (missingInputs.length > 0) {
     console.error(`Missing benchmark inputs:\n${missingInputs.map((input) => `- ${input}`).join("\n")}`);
   }
@@ -64,6 +68,7 @@ if (missingInputs.length > 0 || receiptErrors.length > 0) {
     scoreSummary: summarizeReceipts(receipts, tasks),
     tasks: tasks.map((task) => ({
       id: task.id,
+      runSlug: task.runSlug,
       family: task.family,
       fixture: task.fixture,
       checks: task.checks,
@@ -146,6 +151,7 @@ async function validateReceipt(receipt, receiptPath) {
   if (receipt.taskId && receipt.conditionId && !condition && task) {
     errors.push(`${receiptPath}: conditionId "${receipt.conditionId}" is not defined for taskId "${receipt.taskId}"`);
   }
+  validateRunId(receipt, task, receiptPath, errors);
 
   if (receipt.inputs && typeof receipt.inputs === "object") {
     requireField(receipt.inputs, "promptOrContract", "string", `${receiptPath}: inputs`, errors);
@@ -400,6 +406,53 @@ function validateUniqueRunIds(receipts) {
   }
 
   return errors;
+}
+
+function validateManifest(tasks) {
+  const errors = [];
+  const seenRunSlugs = new Set();
+
+  for (const [index, task] of tasks.entries()) {
+    if (task.runSlug === undefined) {
+      continue;
+    }
+    if (typeof task.runSlug !== "string" || !isKebabCase(task.runSlug)) {
+      errors.push(`tasks[${index}] (${task.id ?? "<unknown>"}): runSlug must be a lowercase kebab-case string`);
+      continue;
+    }
+    if (seenRunSlugs.has(task.runSlug)) {
+      errors.push(`duplicate task runSlug "${task.runSlug}"`);
+      continue;
+    }
+    seenRunSlugs.add(task.runSlug);
+  }
+
+  return errors;
+}
+
+function validateRunId(receipt, task, receiptPath, errors) {
+  if (typeof receipt.runId !== "string") {
+    return;
+  }
+
+  if (!/^\d{8}-/u.test(receipt.runId)) {
+    errors.push(`${receiptPath}: runId must start with YYYYMMDD-`);
+    return;
+  }
+
+  if (!task?.runSlug || typeof receipt.conditionId !== "string") {
+    return;
+  }
+
+  const runIdPattern = new RegExp(
+    `^\\d{8}-[a-z0-9]+(?:-[a-z0-9]+)*-${escapeRegex(task.runSlug)}-${escapeRegex(receipt.conditionId)}-\\d{3}$`,
+    "u"
+  );
+  if (!runIdPattern.test(receipt.runId)) {
+    errors.push(
+      `${receiptPath}: runId must match YYYYMMDD-<agent>-${task.runSlug}-${receipt.conditionId}-NNN`
+    );
+  }
 }
 
 function summarizeReceipts(receipts, tasks) {
@@ -778,6 +831,14 @@ function computeRequiredCheckCoverage(requiredChecks, verificationCommands) {
 
 function round(value) {
   return Math.round(value * 100) / 100;
+}
+
+function isKebabCase(value) {
+  return /^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(value);
+}
+
+function escapeRegex(value) {
+  return value.replaceAll(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }
 
 function requireField(value, field, type, label, errors) {

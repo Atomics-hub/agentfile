@@ -40,6 +40,7 @@
     },
     {
       "id": "preserve-session-claims",
+      "runSlug": "session",
       "family": "security_sensitive_change_with_forbidden_paths",
       "fixture": "benchmarks/fixtures/session-boundary",
       "checks": [
@@ -62,6 +63,7 @@
     },
     {
       "id": "redact-auth-logs",
+      "runSlug": "redact",
       "family": "security_sensitive_change_with_evidence_requirements",
       "fixture": "benchmarks/fixtures/redact-logs",
       "checks": [
@@ -94,6 +96,7 @@
     },
     {
       "id": "preserve-refund-audit-evidence",
+      "runSlug": "audit",
       "family": "audit_sensitive_change_with_evidence_requirements",
       "fixture": "benchmarks/fixtures/audit-evidence",
       "checks": [
@@ -116,6 +119,7 @@
     },
     {
       "id": "verify-webhook-raw-signature",
+      "runSlug": "webhook",
       "family": "security_sensitive_change_with_evidence_requirements",
       "fixture": "benchmarks/fixtures/webhook-signature",
       "checks": [

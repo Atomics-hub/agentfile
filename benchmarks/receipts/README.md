@@ -4,6 +4,7 @@ Store real benchmark run receipts here after executing a task through an agent/m
 
 Use [../templates/receipt.template.json](../templates/receipt.template.json) as the starting point for each run. The `npm run benchmark:plan` command validates any `*.json` receipt files in this directory against the current manifest and required receipt fields.
 That validation now also requires baseline log artifacts that match the task's manifest checks, such as `baselineTestLog`, `baselineLintLog`, `baselineProofLog`, and `baselineScopeLog` when those checks are present. It also cross-checks `results.verificationCommandsRun` and proof-check claims against the attached `check.log`, and it cross-checks `patchFilesChanged` plus `addedRegressionTests` against the attached `patch.diff`, so receipts cannot claim evidence the artifacts do not show.
+It also requires `runId` values to use `YYYYMMDD-agent-task-slug-condition-id-NNN` and to match the manifest task slug plus declared condition.
 
 Do not treat a receipt as evidence for a public claim unless it includes:
 

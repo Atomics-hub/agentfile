@@ -84,3 +84,4 @@ Each real benchmark run should store:
 - Final handoff quality notes.
 
 Use [templates/receipt.template.json](templates/receipt.template.json) for new runs. Receipt JSON files belong under `benchmarks/receipts/`, alongside transcript, diff, check log, and notes artifacts.
+The `runId` should use `YYYYMMDD-agent-task-slug-condition-id-NNN`; `npm run benchmark:plan` now cross-checks that suffix against the manifest task slug and condition so receipts stay sortable and auditable.

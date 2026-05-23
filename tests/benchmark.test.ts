@@ -244,6 +244,78 @@ describe("benchmark receipt scoring", () => {
     expect(error.stderr).toContain(`receipts.transcript file is missing: ${missingTranscriptPath}`);
   });
 
+  it("rejects receipts whose runId does not match the manifest task slug and condition", async () => {
+    const fixture = await createBenchmarkFixture();
+    const mismatchedRunId = "20260522-test-wrong-task-agentfile-pact-001";
+    const mismatchedRunDir = resolve(fixture.receiptsDir, mismatchedRunId);
+    const mismatchedReceiptPath = resolve(mismatchedRunDir, "receipt.json");
+
+    await mkdir(mismatchedRunDir, { recursive: true });
+    await writeFile(resolve(mismatchedRunDir, "transcript.md"), "transcript\n");
+    await writeFile(resolve(mismatchedRunDir, "patch.diff"), "diff --git a/file b/file\n");
+    await writeFile(resolve(mismatchedRunDir, "check.log"), fullCheckLog());
+    await writeFile(resolve(mismatchedRunDir, "notes.md"), "notes\n");
+    await writeFile(resolve(mismatchedRunDir, "baseline-test.log"), fixture.baselineTestLog);
+    await writeFile(resolve(mismatchedRunDir, "baseline-lint.log"), fixture.baselineLintLog);
+    await writeFile(resolve(mismatchedRunDir, "baseline-proof.log"), proofLog());
+    await writeFile(resolve(mismatchedRunDir, "baseline-scope.log"), scopeLog());
+
+    await writeFile(mismatchedReceiptPath, JSON.stringify({
+      version: 1,
+      runId: mismatchedRunId,
+      taskId: "receipt-integrity",
+      conditionId: "agentfile-pact",
+      claimStatus: "candidate",
+      startedAt: "2026-05-22T02:00:00.000Z",
+      endedAt: "2026-05-22T02:05:00.000Z",
+      agent: {
+        name: "test-agent",
+        version: "1.0.0",
+        model: "test-model"
+      },
+      inputs: {
+        promptOrContract: fixture.promptPath,
+        repository: "Atomics-hub/agentfile",
+        fixture: fixture.fixturePath
+      },
+      results: {
+        taskCompleted: true,
+        testsPassed: true,
+        scopeAdherence: 1,
+        verificationCommandsRun: [
+          "npm test -- receipt-integrity",
+          "npm run lint",
+          "npm run proof:check",
+          "npm run scope:check"
+        ],
+        unauthorizedToolUseAttempts: 0,
+        patchFilesChanged: 1,
+        correctionTurns: 0,
+        finalHandoffQuality: "strong",
+        reportedProofCheck: true,
+        independentProofCheckPassed: true,
+        evidenceQuality: "strong"
+      },
+      receipts: {
+        transcript: resolve(mismatchedRunDir, "transcript.md"),
+        diff: resolve(mismatchedRunDir, "patch.diff"),
+        checkLog: resolve(mismatchedRunDir, "check.log"),
+        notes: resolve(mismatchedRunDir, "notes.md"),
+        baselineTestLog: resolve(mismatchedRunDir, "baseline-test.log"),
+        baselineLintLog: resolve(mismatchedRunDir, "baseline-lint.log"),
+        baselineProofLog: resolve(mismatchedRunDir, "baseline-proof.log"),
+        baselineScopeLog: resolve(mismatchedRunDir, "baseline-scope.log")
+      }
+    }, null, 2));
+
+    const error = await runBenchmarkExpectingFailure({
+      AGENTFILE_BENCHMARK_MANIFEST: fixture.manifestPath,
+      AGENTFILE_BENCHMARK_RECEIPTS_DIR: fixture.receiptsDir
+    });
+
+    expect(error.stderr).toContain("runId must match YYYYMMDD-<agent>-receipt-integrity-agentfile-pact-NNN");
+  });
+
   it("rejects receipts whose logs do not support the reported verification evidence", async () => {
     const fixture = await createBenchmarkFixture();
     const baselineProofPath = resolve(fixture.runDir, "baseline-proof.log");
@@ -501,7 +573,7 @@ async function createBenchmarkFixture() {
   const fixturePath = resolve(fixturesDir, "receipt-integrity");
   const manifestPath = resolve(sandboxDir, "manifest.json");
   const promptPath = resolve(tasksDir, "receipt-integrity.agent");
-  const runId = "receipt-integrity-agentfile-pact-001";
+  const runId = "20260522-test-receipt-integrity-agentfile-pact-001";
   const runDir = resolve(receiptsDir, runId);
   const receiptPath = resolve(runDir, "receipt.json");
 
@@ -551,6 +623,7 @@ async function createBenchmarkFixture() {
     tasks: [
       {
         id: "receipt-integrity",
+        runSlug: "receipt-integrity",
         family: "evidence_validation",
         fixture: fixturePath,
         checks: ["npm test -- receipt-integrity", "npm run lint", "npm run proof:check", "npm run scope:check"],
@@ -574,6 +647,7 @@ async function createBenchmarkFixture() {
     runId,
     runDir,
     receiptPath,
+    baselineTestLog,
     baselineLintLog,
     baselineScopeLog
   };

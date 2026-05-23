@@ -19,7 +19,8 @@
       "const": 1
     },
     "runId": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^[0-9]{8}-[a-z0-9]+(?:-[a-z0-9]+)*-[a-z0-9]+(?:-[a-z0-9]+)*-[a-z0-9]+(?:-[a-z0-9]+)*-[0-9]{3}$"
     },
     "taskId": {
       "type": "string"
