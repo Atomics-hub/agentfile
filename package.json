@@ -43,6 +43,7 @@
     "test": "npm run build && vitest run",
     "benchmark:plan": "node benchmarks/run.mjs",
     "benchmark:report": "node benchmarks/report.mjs",
+    "claims:review": "node scripts/public-claim-review.mjs",
     "launch:review": "node scripts/launch-review.mjs",
     "launch:dry-run": "node scripts/prepublic-dry-run.mjs",
     "audit": "npm audit --audit-level=moderate",

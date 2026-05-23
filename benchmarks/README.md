@@ -39,7 +39,7 @@ The first `redact-auth-logs` receipt pair produced the first useful comparative 
 
 The `redact-auth-logs` task now also includes an `agents-md` condition so the proof-checking signal can be tested against generic instruction-file guidance.
 
-The first `agents-md` redaction receipt passed and reported the dedicated proof check, so the comparison is now more serious: Agentfile must beat strong instruction files through structure, validation, compilation, and auditability.
+The first `agents-md` redaction receipt passed and reported the dedicated proof check, so the comparison is now more serious: Agentfile must show measurable value over strong instruction files through structure, validation, compilation, and auditability.
 
 The task also includes a `compiled-agents-md` condition that uses `agentfile compile --target agents-md` output as the actual worker input. This tests the language-to-agent bridge directly instead of treating Pact source and hand-written Markdown as separate worlds.
 

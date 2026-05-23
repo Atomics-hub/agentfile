@@ -13,7 +13,7 @@ This checklist is the public gate. A release candidate should satisfy every requ
 | Stable CLI | Core commands have documented behavior, useful errors, and integration tests that exercise packaged output. | Mostly ready |
 | Fast reliable tests | `npm run check` passes locally, stays fast enough for frequent automation, and does not rely on stale generated files. | Mostly ready |
 | Private security posture | The remote remains private until launch, risky authority defaults are conservative, and broad permissions trigger diagnostics or lint warnings. | Mostly ready |
-| Benchmark/demo proof | At least one scripted or documented task shows why Agentfile beats plain issue text or scattered instruction files. | Mostly ready |
+| Benchmark/demo proof | At least one scripted or documented task shows where Agentfile improves reviewability, proof tracking, or generated instruction surfaces relative to plain issue text or scattered instruction files. | Mostly ready |
 | Launch risk | Public package metadata, repo URLs, examples, contribution docs, and claims are reviewed for accuracy and restraint. | Mostly ready |
 
 ## Minimum Public Demo
@@ -54,10 +54,11 @@ The repository is ready to go public when:
 Generate the current local launch-review gate summary:
 
 ```sh
+npm run claims:review
 npm run launch:review
 ```
 
-The generated review is a decision aid. It does not replace a clean-clone `npm run check`, private remote verification, or manual claim review.
+The generated review is a decision aid. It does not replace a clean-clone `npm run check`, private remote verification, or manual claim review against [Public Claims Policy](public-claims.md).
 
 Run the local pre-public dry run before treating the repository as launchable:
 

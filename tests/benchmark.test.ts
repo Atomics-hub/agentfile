@@ -11,6 +11,7 @@ const benchmarkRunnerPath = fileURLToPath(new URL("../benchmarks/run.mjs", impor
 const benchmarkReportPath = fileURLToPath(new URL("../benchmarks/report.mjs", import.meta.url));
 const launchReviewPath = fileURLToPath(new URL("../scripts/launch-review.mjs", import.meta.url));
 const prepublicDryRunPath = fileURLToPath(new URL("../scripts/prepublic-dry-run.mjs", import.meta.url));
+const publicClaimReviewPath = fileURLToPath(new URL("../scripts/public-claim-review.mjs", import.meta.url));
 const tempDirs: string[] = [];
 
 afterEach(async () => {
@@ -164,8 +165,20 @@ describe("benchmark receipt scoring", () => {
     expect(stdout).toContain("## Gate Summary");
     expect(stdout).toContain("| Clear README/demo | ready |");
     expect(stdout).toContain("| Fast reliable tests | manual-check |");
-    expect(stdout).toContain("| Launch risk | blocked |");
+    expect(stdout).toContain("| Launch risk | ready |");
+    expect(stdout).toContain("Automated public-claim review found 0 blocked claim pattern(s)");
     expect(stdout).toContain("Verify GitHub remote visibility is private");
+  });
+
+  it("keeps launch-facing public claims inside the approved claim policy", async () => {
+    const { stdout } = await execFileAsync("node", [publicClaimReviewPath, "--json"], {
+      maxBuffer: 1024 * 1024
+    });
+    const review = JSON.parse(stdout);
+
+    expect(review.surfaceCount).toBeGreaterThanOrEqual(8);
+    expect(review.blockedClaimCount).toBeGreaterThanOrEqual(6);
+    expect(review.violationCount).toBe(0);
   });
 
   it("renders a pre-public dry-run gate without recursively running full checks", async () => {

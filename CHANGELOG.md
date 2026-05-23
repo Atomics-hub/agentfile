@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added `npm run claims:review` and wired launch review to an automated public-claim scan for launch-facing surfaces.
 - Added `npm run launch:dry-run` as a non-publishing pre-public gate that runs checks, benchmark validation, benchmark report rendering, launch review, and the local package privacy check.
 - Added `npm run launch:review` to map local evidence to the public-readiness gate.
 - Benchmark score summaries and the Markdown report now surface task-local condition-pair counts and repeated comparisons, making one-off evidence gaps explicit.

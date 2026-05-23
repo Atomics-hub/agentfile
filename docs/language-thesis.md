@@ -158,9 +158,9 @@ The language should lower to:
 - Audit trace schema.
 - Future agent runtime plans.
 
-## What Would Make It Better
+## What Would Make It Worth Using
 
-The language is better than ad hoc instructions if it improves:
+The language earns its place over ad hoc instructions if it improves:
 
 - Task success rate.
 - Patch correctness.
@@ -171,4 +171,4 @@ The language is better than ad hoc instructions if it improves:
 - Human review speed.
 - Cross-agent portability.
 
-The language is better than Python/TypeScript for this layer if agents make fewer planning, authority, and verification mistakes when using it.
+For this delegation layer, the language earns its place over general-purpose runtime languages only if agents make fewer planning, authority, and verification mistakes when using it.

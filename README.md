@@ -2,7 +2,7 @@
 
 Agentfile is an experimental language for agentic software work.
 
-The goal is to build a language that coding agents can understand, write, verify, and execute more reliably than today's ad hoc prompts and scattered instruction files for delegation work.
+The goal is to build a language that helps coding agents understand, write, verify, and execute delegated software work through reviewable contracts instead of ad hoc prompts and scattered instruction files.
 
 The current YAML format is the strict contract IR. The next layer is a source language that feels more like this:
 
@@ -179,6 +179,7 @@ Review current benchmark and launch readiness evidence:
 
 ```sh
 npm run benchmark:report
+npm run claims:review
 npm run launch:review
 npm run launch:dry-run
 ```

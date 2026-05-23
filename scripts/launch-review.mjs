@@ -2,16 +2,19 @@ import { execFile } from "node:child_process";
 import { access, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { promisify } from "node:util";
+import { reviewPublicClaims } from "./public-claim-review.mjs";
 
 const execFileAsync = promisify(execFile);
 const root = resolve(new URL("..", import.meta.url).pathname);
 const benchmarkRunnerPath = resolve(root, "benchmarks/run.mjs");
 const packageJson = JSON.parse(await readFile(resolve(root, "package.json"), "utf8"));
 const benchmarkPlan = await loadBenchmarkPlan();
+const claimReview = await reviewPublicClaims();
 
 process.stdout.write(renderLaunchReview({
   packageJson,
   benchmarkPlan,
+  claimReview,
   files: await probeFiles([
     "README.md",
     "docs/demo.md",
@@ -19,6 +22,7 @@ process.stdout.write(renderLaunchReview({
     "docs/security-model.md",
     "docs/roadmap.md",
     "docs/benchmark-results.md",
+    "docs/public-claims.md",
     "examples/fix-login-race.agent",
     "src/cli.ts",
     "src/compiler.ts",
@@ -46,7 +50,7 @@ async function exists(path) {
   return access(path).then(() => true).catch(() => false);
 }
 
-function renderLaunchReview({ packageJson, benchmarkPlan, files }) {
+function renderLaunchReview({ packageJson, benchmarkPlan, claimReview, files }) {
   const gates = [
     gate("Clear README/demo", files["README.md"] && files["docs/demo.md"] && files["examples/fix-login-race.agent"], [
       "README, demo doc, and Pact example are present.",
@@ -72,8 +76,8 @@ function renderLaunchReview({ packageJson, benchmarkPlan, files }) {
       `${benchmarkPlan.receiptCount} receipts, ${benchmarkPlan.scoreSummary?.comparableConditionPairs ?? 0} comparable pairs, ${benchmarkPlan.scoreSummary?.repeatedConditionPairs ?? 0} repeated pairs.`,
       "Claims must cite receipt-level evidence, not just aggregate scores."
     ]),
-    gate("Launch risk", false, [
-      "Broad claims are still not supported.",
+    gate("Launch risk", claimReview.violationCount === 0 && files["docs/public-claims.md"], [
+      `Automated public-claim review found ${claimReview.violationCount} blocked claim pattern(s) across ${claimReview.surfaceCount} launch-facing surfaces.`,
       "Public copy must stay limited to reviewable contracts, compiled instruction surfaces, and auditable proof obligations."
     ])
   ];
@@ -101,7 +105,7 @@ function renderLaunchReview({ packageJson, benchmarkPlan, files }) {
     "",
     "- Run `npm run check` from a clean clone.",
     "- Verify GitHub remote visibility is private before any push or launch review.",
-    "- Review public README, package metadata, and docs for overbroad claims.",
+    "- Review public README, package metadata, and docs against `docs/public-claims.md`.",
     "- Keep package publishing disabled until an explicit release decision.",
     ""
   ].join("\n");
