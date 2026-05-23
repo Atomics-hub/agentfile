@@ -85,6 +85,8 @@ The first `agents-md` redaction receipt passed and reported the dedicated proof 
 
 The redaction task now includes a `compiled-agents-md` condition generated from the Pact source. This condition tests whether compiled Agentfile output can serve as the actual agent instruction surface.
 
+The first `compiled-agents-md` redaction receipt passed. The next useful bridge test is to add the same compiled-output condition to `verify-webhook-raw-signature`.
+
 The `preserve-refund-audit-evidence` task adds a second proof-sensitive fixture. Regular refund tests can pass while a dedicated proof check catches approval audit events that fail to preserve actor, request, reason, and timestamp evidence.
 
 The first `preserve-refund-audit-evidence` receipt pair passed in both conditions. Both workers reported running the dedicated proof check, so this fixture adds coverage but does not yet strengthen the comparative proof-discipline claim.

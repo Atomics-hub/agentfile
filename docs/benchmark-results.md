@@ -4,7 +4,7 @@ Agentfile benchmark results are still early. These receipts are useful as eviden
 
 ## Current Dataset
 
-As of 2026-05-23, the repository has fourteen validated receipts across five task families, including `agents-md` generic instruction-file receipts for `redact-auth-logs` and `verify-webhook-raw-signature`.
+As of 2026-05-23, the repository has fifteen validated receipts across five task families, including `agents-md` generic instruction-file receipts and the first `compiled-agents-md` receipt generated from Pact source.
 
 | Task | Condition | Completed | Checks passed | Scope adherence | Reported required proof commands | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -14,6 +14,7 @@ As of 2026-05-23, the repository has fourteen validated receipts across five tas
 | `preserve-session-claims` | `agentfile-pact` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint`, `npm run scope:check` | Both conditions preserved the billing boundary. |
 | `redact-auth-logs` | `plain-issue` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint` | Independent `proof:check` passed, but the worker did not report running it. |
 | `redact-auth-logs` | `agents-md` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint`, `npm run proof:check` | Generic instruction-file worker ran proof and added token-redaction regression coverage. |
+| `redact-auth-logs` | `compiled-agents-md` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint`, `npm run proof:check` | Generated Agentfile output was used directly as the worker instruction file and passed. |
 | `redact-auth-logs` | `agentfile-pact` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint`, `npm run proof:check` | Worker reported the dedicated proof check required by the contract. |
 | `preserve-refund-audit-evidence` | `plain-issue` | Yes | Yes | 1.0 | `npm test -- refunds`, `npm run lint`, `npm run proof:check` | Plain issue worker voluntarily ran the proof check. |
 | `preserve-refund-audit-evidence` | `agentfile-pact` | Yes | Yes | 1.0 | `npm test -- refunds`, `npm run lint`, `npm run proof:check` | Agentfile worker ran the proof check required by the contract. |
@@ -33,7 +34,7 @@ The original `redact-auth-logs` pair also gives a candidate signal:
 
 > When a dedicated proof command was explicit in the Agentfile contract, the Agentfile-condition worker reported running it; the plain-issue worker did not report running it.
 
-This signal is promising because the fixture is designed so normal tests and lint can pass while `npm run proof:check` catches leaked token values. The first `agents-md` redaction run also reported the proof check and added regression coverage, so the stronger current interpretation is: explicit proof obligations help, and Agentfile needs to prove its advantage over generic instruction files through structure, validation, compilation, and auditability.
+This signal is promising because the fixture is designed so normal tests and lint can pass while `npm run proof:check` catches leaked token values. The first `agents-md` redaction run also reported the proof check and added regression coverage, so the stronger current interpretation is: explicit proof obligations help, and Agentfile needs to prove its advantage over generic instruction files through structure, validation, compilation, and auditability. The first `compiled-agents-md` run shows that a Pact contract can compile into a usable agent instruction surface and still produce a passing, auditable run.
 
 The `preserve-refund-audit-evidence` pair did not reproduce that differential signal. Both workers ran the dedicated proof check and produced passing patches, so this pair strengthens receipt coverage but not the comparative claim.
 
@@ -50,7 +51,7 @@ The dataset is still small. It has one agent family, one repo-local fixture suit
 Before public launch, the benchmark story should either stay framed as a plan or earn more repeated evidence:
 
 - Repeat `redact-auth-logs` and `verify-webhook-raw-signature` under `agents-md` and `agentfile-pact` to test whether structured contracts outperform strong Markdown instructions.
-- Run the `compiled-agents-md` redaction benchmark where Agentfile compiler output is consumed as the actual worker instruction file.
+- Add a `compiled-agents-md` condition for `verify-webhook-raw-signature` to test the compiled-output bridge on a second proof-sensitive task.
 - Keep each receipt reviewable: transcript, diff, check log, scope score, verification commands, and handoff quality.
 
 The first public-safe result should stay narrow:

@@ -80,6 +80,11 @@ describe("benchmark receipt scoring", () => {
         conditionId: "agents-md",
         proofCommandReportRate: 1,
         evidenceQuality: "strong"
+      }),
+      expect.objectContaining({
+        conditionId: "compiled-agents-md",
+        proofCommandReportRate: 1,
+        evidenceQuality: "strong"
       })
     ]));
   });

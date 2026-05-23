@@ -35,6 +35,8 @@ The first `agents-md` redaction receipt passed and reported the dedicated proof 
 
 The task also includes a `compiled-agents-md` condition that uses `agentfile compile --target agents-md` output as the actual worker input. This tests the language-to-agent bridge directly instead of treating Pact source and hand-written Markdown as separate worlds.
 
+The first `compiled-agents-md` redaction receipt passed with all proof commands reported, showing generated Agentfile output can function as the actual agent instruction surface.
+
 The `preserve-refund-audit-evidence` fixture adds a second proof-sensitive task in a different domain. Regular refund tests can pass while `npm run proof:check` still catches missing request evidence in the approval audit trail.
 
 The first `preserve-refund-audit-evidence` receipt pair passed in both conditions. Both workers reported running `npm run proof:check`, so the pair is useful coverage but not a positive differential signal.

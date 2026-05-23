@@ -54,7 +54,7 @@ The repository is ready to go public when:
 ## Current Highest-Leverage Work
 
 1. Repeat `redact-auth-logs` and `verify-webhook-raw-signature` under both `agents-md` and `agentfile-pact`.
-2. Run the `compiled-agents-md` redaction benchmark where compiled Agentfile output is the actual agent input.
+2. Add and run `compiled-agents-md` for `verify-webhook-raw-signature` to prove the compiled-output bridge on a second proof-sensitive task.
 3. Keep broad benchmark claims out of public docs until comparative data exists.
 4. Add JSON Schema export or document why it is post-launch.
 5. Do a final public-readiness review from a clean clone.

@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added the first compiled AGENTS.md redaction benchmark receipt generated from Pact source.
 - Added a compiled AGENTS.md redaction benchmark condition generated from Pact source.
 - Tightened benchmark receipt validation so stored receipts must include baseline test/lint/proof/scope logs for the checks each task requires.
 - Added the first generic AGENTS.md-style auth-log redaction benchmark receipt.
