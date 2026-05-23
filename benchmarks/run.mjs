@@ -410,9 +410,12 @@ function summarizeReceipts(receipts, tasks) {
   const allConditionIds = [...new Set(tasks.flatMap((task) => task.conditions.map((condition) => condition.id)))].sort();
   const byCondition = allConditionIds.map((conditionId) => summarizeScoreGroup(conditionId, byConditionScores.get(conditionId) ?? []));
   const byTask = tasks.map((task) => summarizeTask(task, byTaskScores.get(task.id) ?? []));
+  const allComparisons = byTask.flatMap((task) => task.comparisons);
 
   return {
     receiptsScored: scoredReceipts.length,
+    comparableConditionPairs: allComparisons.length,
+    repeatedConditionPairs: allComparisons.filter((comparison) => comparison.isRepeated).length,
     byCondition,
     byTask
   };
@@ -542,11 +545,54 @@ function summarizeTask(task, scores) {
       averageEvidenceQuality: average(conditionScores.map((score) => score.evidenceQualityScore)),
       evidenceQuality: bestQuality(conditionScores.map((score) => score.evidenceQuality))
     }));
+  const comparisons = summarizeTaskComparisons(conditions);
 
   return {
     taskId: task.id,
-    conditions
+    conditions,
+    comparisons
   };
+}
+
+function summarizeTaskComparisons(conditions) {
+  const comparisons = [];
+
+  for (let index = 0; index < conditions.length; index += 1) {
+    for (let otherIndex = index + 1; otherIndex < conditions.length; otherIndex += 1) {
+      const left = conditions[index];
+      const right = conditions[otherIndex];
+      const comparableReceiptCount = Math.min(left.receiptCount, right.receiptCount);
+
+      if (comparableReceiptCount === 0) {
+        continue;
+      }
+
+      comparisons.push({
+        leftConditionId: left.conditionId,
+        rightConditionId: right.conditionId,
+        comparableReceiptCount,
+        isRepeated: comparableReceiptCount >= 2,
+        normalizedQualityDelta: subtractNullable(
+          left.averageNormalizedQualityScore,
+          right.averageNormalizedQualityScore
+        ),
+        evidenceQualityDelta: subtractNullable(
+          left.averageEvidenceQuality,
+          right.averageEvidenceQuality
+        ),
+        proofCommandReportDelta: subtractNullable(
+          left.proofCommandReportRate,
+          right.proofCommandReportRate
+        ),
+        regressionTestDelta: subtractNullable(
+          left.regressionTestRate,
+          right.regressionTestRate
+        )
+      });
+    }
+  }
+
+  return comparisons;
 }
 
 function summarizeScoreGroup(conditionId, scores) {
@@ -712,6 +758,14 @@ function average(values) {
     return null;
   }
   return round(values.reduce((sum, value) => sum + value, 0) / values.length);
+}
+
+function subtractNullable(left, right) {
+  if (typeof left !== "number" || typeof right !== "number") {
+    return null;
+  }
+
+  return round(left - right);
 }
 
 function computeRequiredCheckCoverage(requiredChecks, verificationCommands) {

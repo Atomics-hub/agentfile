@@ -21,7 +21,7 @@ npm run benchmark:report
 
 The current command validates that benchmark inputs exist, validates any JSON receipts in `benchmarks/receipts/`, cross-checks receipt command metadata against the attached logs and diffs, and prints the planned task, conditions, checks, metrics, receipt count, and score summary. It does not run agents and it does not claim results.
 
-The score summary is intentionally narrow. It tracks completion, test pass rate, scope adherence, required-check coverage, changed-file and changed-line counts, proof-command reporting, proof-vector regression tests, handoff quality, inferred evidence quality, and a normalized quality score from stored receipts.
+The score summary is intentionally narrow. It tracks completion, test pass rate, scope adherence, required-check coverage, changed-file and changed-line counts, proof-command reporting, proof-vector regression tests, handoff quality, inferred evidence quality, a normalized quality score from stored receipts, and task-local condition-pair comparison counts so one-off results are not mistaken for repeated evidence.
 
 The normalized quality score is only a triage aid. Use the raw receipt metrics for claims.
 

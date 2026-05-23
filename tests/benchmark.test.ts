@@ -24,6 +24,8 @@ describe("benchmark receipt scoring", () => {
     expect(plan.metrics).toContain("proof_command_reporting");
     expect(plan.metrics).toContain("proof_vector_regression_tests");
     expect(plan.metrics).toContain("evidence_quality");
+    expect(plan.scoreSummary.comparableConditionPairs).toBe(15);
+    expect(plan.scoreSummary.repeatedConditionPairs).toBe(1);
 
     const agentfile = plan.scoreSummary.byCondition.find(
       (condition: { conditionId: string }) => condition.conditionId === "agentfile-pact"
@@ -78,6 +80,28 @@ describe("benchmark receipt scoring", () => {
         evidenceQuality: "strong"
       })
     ]));
+    expect(webhookTask.comparisons).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        leftConditionId: "agentfile-pact",
+        rightConditionId: "plain-issue",
+        comparableReceiptCount: 2,
+        isRepeated: true,
+        normalizedQualityDelta: 0.17,
+        proofCommandReportDelta: 0,
+        regressionTestDelta: 1,
+        evidenceQualityDelta: 0.33
+      }),
+      expect.objectContaining({
+        leftConditionId: "agents-md",
+        rightConditionId: "compiled-agents-md",
+        comparableReceiptCount: 1,
+        isRepeated: false,
+        normalizedQualityDelta: 0,
+        proofCommandReportDelta: 0,
+        regressionTestDelta: 0,
+        evidenceQualityDelta: 0
+      })
+    ]));
 
     const redactTask = plan.scoreSummary.byTask.find(
       (task: { taskId: string }) => task.taskId === "redact-auth-logs"
@@ -108,6 +132,8 @@ describe("benchmark receipt scoring", () => {
         evidenceQuality: "strong"
       })
     ]));
+    expect(redactTask.comparisons).toHaveLength(6);
+    expect(redactTask.comparisons.every((comparison: { isRepeated: boolean }) => comparison.isRepeated === false)).toBe(true);
   });
 
   it("renders a compact Markdown benchmark report", async () => {
@@ -118,6 +144,10 @@ describe("benchmark receipt scoring", () => {
     expect(stdout).toContain("# Agentfile Benchmark Report");
     expect(stdout).toContain("## Condition Summary");
     expect(stdout).toContain("## Task Coverage");
+    expect(stdout).toContain("- Comparable pairs: 15");
+    expect(stdout).toContain("- Repeated pairs: 1");
+    expect(stdout).toContain("| Pair | Matched | Repeated | Delta Quality | Delta Proof | Delta Regression | Delta Evidence |");
+    expect(stdout).toContain("| `agentfile-pact` vs `plain-issue` | 2 | yes | 0.17 | 0 | 1 | 0.33 |");
     expect(stdout).toContain("`agentfile-pact`");
     expect(stdout).toContain("`compiled-agents-md`");
     expect(stdout).toContain("Treat normalized quality as a triage score");

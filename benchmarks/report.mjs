@@ -28,6 +28,8 @@ function renderReport(plan) {
     `- Conditions: ${plan.conditionCount}`,
     `- Receipts: ${plan.receiptCount}`,
     `- Receipts scored: ${plan.scoreSummary?.receiptsScored ?? 0}`,
+    `- Comparable pairs: ${plan.scoreSummary?.comparableConditionPairs ?? 0}`,
+    `- Repeated pairs: ${plan.scoreSummary?.repeatedConditionPairs ?? 0}`,
     "",
     "## Condition Summary",
     "",
@@ -66,6 +68,21 @@ function renderReport(plan) {
       ])
     ));
     lines.push("");
+    if ((task.comparisons ?? []).length > 0) {
+      lines.push(table(
+        ["Pair", "Matched", "Repeated", "Delta Quality", "Delta Proof", "Delta Regression", "Delta Evidence"],
+        task.comparisons.map((comparison) => [
+          `${code(comparison.leftConditionId)} vs ${code(comparison.rightConditionId)}`,
+          number(comparison.comparableReceiptCount),
+          comparison.isRepeated ? "yes" : "no",
+          nullableNumber(comparison.normalizedQualityDelta),
+          nullableNumber(comparison.proofCommandReportDelta),
+          nullableNumber(comparison.regressionTestDelta),
+          nullableNumber(comparison.evidenceQualityDelta)
+        ])
+      ));
+      lines.push("");
+    }
   }
 
   lines.push("## Interpretation Guardrails");
