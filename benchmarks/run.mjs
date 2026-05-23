@@ -289,6 +289,10 @@ function validateReceiptArtifacts(task, receipt, receiptPath, artifactContents, 
 
   const checkLog = artifactContents.checkLog;
   const diffText = artifactContents.diff;
+  const supportedVerificationCommands = typeof checkLog === "string"
+    ? supportedCommandsForLog(task.checks ?? [], checkLog)
+    : [];
+  receipt.__supportedVerificationCommands = supportedVerificationCommands;
   if (typeof checkLog === "string") {
     validateVerificationCommands(task, receipt, receiptPath, checkLog, errors);
   }
@@ -315,6 +319,8 @@ function validateReceiptArtifacts(task, receipt, receiptPath, artifactContents, 
   ) {
     errors.push(`${receiptPath}: results.independentProofCheckPassed requires receipts.checkLog to include npm run proof:check`);
   }
+
+  validateEvidenceQualityClaim(task, receipt, receiptPath, supportedVerificationCommands, errors);
 }
 
 function validateVerificationCommands(task, receipt, receiptPath, checkLog, errors) {
@@ -340,6 +346,29 @@ function validateDiffClaims(receipt, receiptPath, diffChangedFiles, errors) {
   if (receipt.results?.addedRegressionTests === true && !didChangeTestFiles(diffChangedFiles)) {
     errors.push(
       `${receiptPath}: results.addedRegressionTests requires receipts.diff to change at least one test file`
+    );
+  }
+}
+
+function validateEvidenceQualityClaim(task, receipt, receiptPath, supportedVerificationCommands, errors) {
+  const claimedEvidenceQuality = receipt.results?.evidenceQuality;
+  if (typeof claimedEvidenceQuality !== "string") {
+    return;
+  }
+
+  const supportedEvidenceQuality = inferEvidenceQuality({
+    taskCompleted: receipt.results?.taskCompleted === true,
+    testsPassed: receipt.results?.testsPassed === true,
+    requiredCheckCoverage: computeRequiredCheckCoverage(task?.checks ?? [], supportedVerificationCommands),
+    proofRequired: (task?.checks ?? []).includes("npm run proof:check"),
+    reportedProofCheck: supportedVerificationCommands.includes("npm run proof:check"),
+    addedRegressionTests: receipt.results?.addedRegressionTests === true,
+    finalHandoffQuality: receipt.results?.finalHandoffQuality
+  });
+
+  if (qualityScore(claimedEvidenceQuality) > qualityScore(supportedEvidenceQuality)) {
+    errors.push(
+      `${receiptPath}: results.evidenceQuality "${claimedEvidenceQuality}" exceeds supported evidence quality "${supportedEvidenceQuality}"`
     );
   }
 }
@@ -392,14 +421,15 @@ function summarizeReceipts(receipts, tasks) {
 function scoreReceipt(receipt, task) {
   const results = receipt.results ?? {};
   const requiredChecks = task?.checks ?? [];
-  const verificationCommands = results.verificationCommandsRun ?? [];
+  const verificationCommands = Array.isArray(results.verificationCommandsRun) ? results.verificationCommandsRun : [];
+  const supportedVerificationCommands = Array.isArray(receipt.__supportedVerificationCommands)
+    ? receipt.__supportedVerificationCommands.filter((command) => typeof command === "string")
+    : [];
   const diffChangedFiles = Array.isArray(receipt.__diffChangedFiles)
     ? receipt.__diffChangedFiles.filter((file) => typeof file === "string")
     : [];
   const diffLineStats = receipt.__diffLineStats ?? {};
-  const requiredCheckCoverage = requiredChecks.length === 0
-    ? 1
-    : requiredChecks.filter((check) => verificationCommands.includes(check)).length / requiredChecks.length;
+  const requiredCheckCoverage = computeRequiredCheckCoverage(requiredChecks, supportedVerificationCommands);
   const proofRequired = requiredChecks.includes("npm run proof:check");
   const reportedProofCheck = typeof results.reportedProofCheck === "boolean"
     ? results.reportedProofCheck
@@ -407,15 +437,16 @@ function scoreReceipt(receipt, task) {
   const addedRegressionTests = typeof results.addedRegressionTests === "boolean"
     ? results.addedRegressionTests
     : null;
-  const evidenceQuality = results.evidenceQuality ?? inferEvidenceQuality({
+  const inferredEvidenceQuality = inferEvidenceQuality({
     taskCompleted: results.taskCompleted,
     testsPassed: results.testsPassed,
     requiredCheckCoverage,
     proofRequired,
-    reportedProofCheck,
+    reportedProofCheck: supportedVerificationCommands.includes("npm run proof:check"),
     addedRegressionTests,
     finalHandoffQuality: results.finalHandoffQuality
   });
+  const evidenceQuality = boundedEvidenceQuality(results.evidenceQuality, inferredEvidenceQuality);
 
   return {
     taskId: receipt.taskId,
@@ -458,6 +489,16 @@ function inferEvidenceQuality({
     return "strong";
   }
   return "adequate";
+}
+
+function boundedEvidenceQuality(claimedQuality, inferredQuality) {
+  if (!isKnownQuality(claimedQuality)) {
+    return inferredQuality;
+  }
+
+  return qualityScore(claimedQuality) <= qualityScore(inferredQuality)
+    ? claimedQuality
+    : inferredQuality;
 }
 
 function summarizeTask(task, scores) {
@@ -529,6 +570,10 @@ function baselineArtifactForCheck(check) {
     return "baselineScopeLog";
   }
   return null;
+}
+
+function supportedCommandsForLog(checks, checkLog) {
+  return checks.filter((check) => logIncludesCommand(checkLog, check));
 }
 
 function parseDiffChangedFiles(diffText) {
@@ -606,6 +651,10 @@ function qualityScore(quality) {
   }[quality] ?? 0;
 }
 
+function isKnownQuality(quality) {
+  return ["missing", "weak", "adequate", "strong"].includes(quality);
+}
+
 function bestQuality(qualities) {
   return qualities
     .slice()
@@ -637,6 +686,14 @@ function average(values) {
     return null;
   }
   return round(values.reduce((sum, value) => sum + value, 0) / values.length);
+}
+
+function computeRequiredCheckCoverage(requiredChecks, verificationCommands) {
+  if (requiredChecks.length === 0) {
+    return 1;
+  }
+
+  return requiredChecks.filter((check) => verificationCommands.includes(check)).length / requiredChecks.length;
 }
 
 function round(value) {

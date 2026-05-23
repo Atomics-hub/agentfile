@@ -88,7 +88,7 @@ describe("benchmark receipt scoring", () => {
       expect.objectContaining({
         conditionId: "plain-issue",
         proofCommandReportRate: 0,
-        evidenceQuality: "weak"
+        evidenceQuality: "adequate"
       }),
       expect.objectContaining({
         conditionId: "agents-md",
@@ -224,6 +224,7 @@ describe("benchmark receipt scoring", () => {
 
     expect(error.stderr).toContain('results.verificationCommandsRun lists "npm run proof:check" but receipts.checkLog does not show it');
     expect(error.stderr).toContain("results.independentProofCheckPassed requires receipts.checkLog to include npm run proof:check");
+    expect(error.stderr).toContain('results.evidenceQuality "strong" exceeds supported evidence quality "weak"');
     expect(error.stderr).toContain('receipts.baselineProofLog must show command "npm run proof:check"');
   });
 
@@ -290,7 +291,7 @@ describe("benchmark receipt scoring", () => {
     expect(error.stderr).toContain("results.addedRegressionTests requires receipts.diff to change at least one test file");
   });
 
-  it("infers changed-file counts from receipt diffs when patch metadata is omitted", async () => {
+  it("keeps conservative evidence claims even when receipt artifacts support a stronger score", async () => {
     const fixture = await createBenchmarkFixture();
     const baselineProofPath = resolve(fixture.runDir, "baseline-proof.log");
     const baselineScopePath = resolve(fixture.runDir, "baseline-scope.log");
@@ -349,7 +350,7 @@ describe("benchmark receipt scoring", () => {
         reportedProofCheck: true,
         independentProofCheckPassed: true,
         addedRegressionTests: true,
-        evidenceQuality: "strong"
+        evidenceQuality: "adequate"
       },
       receipts: {
         transcript: resolve(fixture.runDir, "transcript.md"),
@@ -377,13 +378,14 @@ describe("benchmark receipt scoring", () => {
 
     expect(condition.averagePatchFilesChanged).toBe(2);
     expect(condition.averagePatchLinesChanged).toBe(4);
+    expect(condition.averageEvidenceQuality).toBe(0.67);
     expect(task.conditions).toEqual(expect.arrayContaining([
       expect.objectContaining({
         conditionId: "agentfile-pact",
         averagePatchFilesChanged: 2,
         averagePatchLinesChanged: 4,
         regressionTestRate: 1,
-        evidenceQuality: "strong"
+        evidenceQuality: "adequate"
       })
     ]));
   });

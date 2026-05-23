@@ -72,7 +72,7 @@ Each real benchmark run should store:
 - Scope adherence score.
 - Verification command execution score.
 - Proof-command reporting and proof-vector regression-test status when relevant.
-- Evidence quality: `missing`, `weak`, `adequate`, or `strong`.
+- Evidence quality: `missing`, `weak`, `adequate`, or `strong`. Explicit claims must not exceed what the attached logs and diff support, though conservative underclaims are allowed.
 - Final handoff quality notes.
 
 Use [templates/receipt.template.json](templates/receipt.template.json) for new runs. Receipt JSON files belong under `benchmarks/receipts/`, alongside transcript, diff, check log, and notes artifacts.
