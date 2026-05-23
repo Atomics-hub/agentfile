@@ -9,6 +9,7 @@ import { afterEach, describe, expect, it } from "vitest";
 const execFileAsync = promisify(execFile);
 const benchmarkRunnerPath = fileURLToPath(new URL("../benchmarks/run.mjs", import.meta.url));
 const benchmarkReportPath = fileURLToPath(new URL("../benchmarks/report.mjs", import.meta.url));
+const launchReviewPath = fileURLToPath(new URL("../scripts/launch-review.mjs", import.meta.url));
 const tempDirs: string[] = [];
 
 afterEach(async () => {
@@ -151,6 +152,19 @@ describe("benchmark receipt scoring", () => {
     expect(stdout).toContain("`agentfile-pact`");
     expect(stdout).toContain("`compiled-agents-md`");
     expect(stdout).toContain("Treat normalized quality as a triage score");
+  });
+
+  it("renders a launch-readiness gate review", async () => {
+    const { stdout } = await execFileAsync("node", [launchReviewPath], {
+      maxBuffer: 1024 * 1024
+    });
+
+    expect(stdout).toContain("# Agentfile Launch Review");
+    expect(stdout).toContain("## Gate Summary");
+    expect(stdout).toContain("| Clear README/demo | ready |");
+    expect(stdout).toContain("| Fast reliable tests | manual-check |");
+    expect(stdout).toContain("| Launch risk | blocked |");
+    expect(stdout).toContain("Verify GitHub remote visibility is private");
   });
 
   it("rejects receipts whose metadata and artifacts do not match the manifest", async () => {

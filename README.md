@@ -175,6 +175,13 @@ npm install
 npm run check
 ```
 
+Review current benchmark and launch readiness evidence:
+
+```sh
+npm run benchmark:report
+npm run launch:review
+```
+
 Run the end-to-end demo:
 
 ```sh

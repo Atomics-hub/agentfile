@@ -51,6 +51,14 @@ The repository is ready to go public when:
 - Security docs explain what Agentfile does and does not enforce.
 - The benchmark plan is framed as a plan unless data has actually been collected.
 
+Generate the current local launch-review gate summary:
+
+```sh
+npm run launch:review
+```
+
+The generated review is a decision aid. It does not replace a clean-clone `npm run check`, private remote verification, or manual claim review.
+
 ## Current Highest-Leverage Work
 
 1. Repeat `redact-auth-logs` and `verify-webhook-raw-signature` under both `agents-md` and `agentfile-pact`.

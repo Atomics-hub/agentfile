@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added `npm run launch:review` to map local evidence to the public-readiness gate.
 - Benchmark score summaries and the Markdown report now surface task-local condition-pair counts and repeated comparisons, making one-off evidence gaps explicit.
 - Added `npm run benchmark:report` to render validated benchmark evidence as Markdown.
 - Added golden tests that keep benchmark `compiled-agentfile.AGENTS.md` task inputs synced with Pact source and the `agents-md` renderer.
