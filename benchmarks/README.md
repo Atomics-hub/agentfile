@@ -15,7 +15,7 @@ npm run benchmark:plan
 
 The current command validates that benchmark inputs exist, validates any JSON receipts in `benchmarks/receipts/`, cross-checks receipt command metadata against the attached logs and diffs, and prints the planned task, conditions, checks, metrics, receipt count, and score summary. It does not run agents and it does not claim results.
 
-The score summary is intentionally narrow. It tracks completion, test pass rate, scope adherence, required-check coverage, changed-file counts, proof-command reporting, proof-vector regression tests, handoff quality, and inferred evidence quality from stored receipts.
+The score summary is intentionally narrow. It tracks completion, test pass rate, scope adherence, required-check coverage, changed-file and changed-line counts, proof-command reporting, proof-vector regression tests, handoff quality, and inferred evidence quality from stored receipts.
 
 See [Benchmark Results](../docs/benchmark-results.md) for the current receipt summary and the limits on what those receipts can claim.
 

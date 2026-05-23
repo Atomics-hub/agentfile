@@ -293,9 +293,10 @@ function validateReceiptArtifacts(task, receipt, receiptPath, artifactContents, 
     validateVerificationCommands(task, receipt, receiptPath, checkLog, errors);
   }
   if (typeof diffText === "string") {
-    const diffChangedFiles = parseDiffChangedFiles(diffText);
-    receipt.__diffChangedFiles = diffChangedFiles;
-    validateDiffClaims(receipt, receiptPath, diffChangedFiles, errors);
+    const diffStats = parseDiffStats(diffText);
+    receipt.__diffChangedFiles = diffStats.files;
+    receipt.__diffLineStats = diffStats;
+    validateDiffClaims(receipt, receiptPath, diffStats.files, errors);
   }
 
   for (const check of task.checks ?? []) {
@@ -395,6 +396,7 @@ function scoreReceipt(receipt, task) {
   const diffChangedFiles = Array.isArray(receipt.__diffChangedFiles)
     ? receipt.__diffChangedFiles.filter((file) => typeof file === "string")
     : [];
+  const diffLineStats = receipt.__diffLineStats ?? {};
   const requiredCheckCoverage = requiredChecks.length === 0
     ? 1
     : requiredChecks.filter((check) => verificationCommands.includes(check)).length / requiredChecks.length;
@@ -424,6 +426,9 @@ function scoreReceipt(receipt, task) {
     patchFilesChanged: typeof results.patchFilesChanged === "number"
       ? results.patchFilesChanged
       : (diffChangedFiles.length > 0 ? diffChangedFiles.length : null),
+    patchInsertions: typeof diffLineStats.insertions === "number" ? diffLineStats.insertions : null,
+    patchDeletions: typeof diffLineStats.deletions === "number" ? diffLineStats.deletions : null,
+    patchLinesChanged: typeof diffLineStats.linesChanged === "number" ? diffLineStats.linesChanged : null,
     requiredCheckCoverage,
     proofRequired,
     reportedProofCheck,
@@ -473,6 +478,9 @@ function summarizeTask(task, scores) {
       averagePatchFilesChanged: summarizeOptionalNumber(
         conditionScores.map((score) => score.patchFilesChanged)
       ),
+      averagePatchLinesChanged: summarizeOptionalNumber(
+        conditionScores.map((score) => score.patchLinesChanged)
+      ),
       averageEvidenceQuality: average(conditionScores.map((score) => score.evidenceQualityScore)),
       evidenceQuality: bestQuality(conditionScores.map((score) => score.evidenceQuality))
     }));
@@ -495,6 +503,7 @@ function summarizeScoreGroup(conditionId, scores) {
     averageScopeAdherence: average(scores.map((score) => score.scopeAdherence)),
     requiredCheckCoverageRate: average(scores.map((score) => score.requiredCheckCoverage)),
     averagePatchFilesChanged: summarizeOptionalNumber(scores.map((score) => score.patchFilesChanged)),
+    averagePatchLinesChanged: summarizeOptionalNumber(scores.map((score) => score.patchLinesChanged)),
     proofCommandReportRate: proofScores.length === 0
       ? null
       : average(proofScores.map((score) => score.reportedProofCheck ? 1 : 0)),
@@ -523,20 +532,36 @@ function baselineArtifactForCheck(check) {
 }
 
 function parseDiffChangedFiles(diffText) {
+  return parseDiffStats(diffText).files;
+}
+
+function parseDiffStats(diffText) {
   const files = [];
+  let insertions = 0;
+  let deletions = 0;
 
   for (const line of diffText.split(/\r?\n/u)) {
-    if (!line.startsWith("diff --git ")) {
+    if (line.startsWith("diff --git ")) {
+      const match = /^diff --git a\/(.+) b\/(.+)$/u.exec(line);
+      if (match) {
+        files.push(match[2]);
+      }
       continue;
     }
 
-    const match = /^diff --git a\/(.+) b\/(.+)$/u.exec(line);
-    if (match) {
-      files.push(match[2]);
+    if (line.startsWith("+") && !line.startsWith("+++")) {
+      insertions += 1;
+    } else if (line.startsWith("-") && !line.startsWith("---")) {
+      deletions += 1;
     }
   }
 
-  return [...new Set(files)];
+  return {
+    files: [...new Set(files)],
+    insertions,
+    deletions,
+    linesChanged: insertions + deletions
+  };
 }
 
 function didChangeTestFiles(diffChangedFiles) {
