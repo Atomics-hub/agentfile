@@ -141,8 +141,40 @@ describe("agentfile file discovery", () => {
     expect(stdout).toContain("touch src/auth/**, tests/auth/**");
     expect(stdout).toContain("exclude src/billing/**, infra/**");
     expect(stdout).toContain("deny .env, .env.*");
+    expect(stdout).toContain("cannot use network");
+    expect(stdout).toContain("cannot read secrets");
     expect(stdout).toContain('must "Public auth APIs must not change."');
     expect(stdout).toContain('must_not "Refresh tokens must never be logged."');
+  });
+
+  it("rejects agent target compilation when IR scope cannot be represented as Pact source", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-agent-invalid-scope-"));
+    tempDirs.push(cwd);
+
+    const contractPath = join(cwd, "scope-only.agentfile");
+    await writeFile(contractPath, `agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: scope-only
+task:
+  id: scope-only
+  goal: Exercise agent-target representability diagnostics.
+scope:
+  include:
+    - src/**
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`, "utf8");
+
+    await expect(
+      runCli(["compile", contractPath, "--target", "agent"], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining(
+        'cannot compile target "agent": scope.include path must appear in permissions.filesystem.read to render Pact source: src/**'
+      )
+    });
   });
 });
 

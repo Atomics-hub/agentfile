@@ -1,6 +1,8 @@
+import { AgentfileError } from "../diagnostics.js";
 import type { Agentfile } from "../schema.js";
 
 export function compileAgentSource(agentfile: Agentfile): string {
+  ensurePactRepresentable(agentfile);
   const lines = [`mission ${agentfile.task.id} {`];
   const writesMatchReads =
     agentfile.permissions.filesystem.write.length > 0 &&
@@ -103,8 +105,12 @@ export function compileAgentSource(agentfile: Agentfile): string {
   if (agentfile.permissions.network.default === "allow") {
     lines.push("  can use network");
   } else {
-    for (const host of agentfile.permissions.network.allow) {
-      lines.push(`  can use network host ${quoteAgentString(host)}`);
+    if (agentfile.permissions.network.allow.length === 0) {
+      lines.push("  cannot use network");
+    } else {
+      for (const host of agentfile.permissions.network.allow) {
+        lines.push(`  can use network host ${quoteAgentString(host)}`);
+      }
     }
   }
 
@@ -116,6 +122,8 @@ export function compileAgentSource(agentfile: Agentfile): string {
         lines.push(`  can read secret ${quoteAgentString(secret)}`);
       }
     }
+  } else {
+    lines.push("  cannot read secrets");
   }
 
   if (rendersNoDependencyChange(agentfile)) {
@@ -181,6 +189,18 @@ export function compileAgentSource(agentfile: Agentfile): string {
   lines.push("}");
 
   return `${lines.join("\n")}\n`;
+}
+
+function ensurePactRepresentable(agentfile: Agentfile): void {
+  const unreadableScopePath = agentfile.scope.include.find(
+    (path) => !agentfile.permissions.filesystem.read.includes(path)
+  );
+
+  if (unreadableScopePath) {
+    throw new AgentfileError(
+      `cannot compile target "agent": scope.include path must appear in permissions.filesystem.read to render Pact source: ${unreadableScopePath}`
+    );
+  }
 }
 
 function quoteAgentString(value: string): string {

@@ -1181,6 +1181,8 @@ mission split-restrictions {
 
     expect(rendered).toContain("mission fix-login-refresh-race {");
     expect(rendered).toContain("touch src/auth/**, tests/auth/**");
+    expect(rendered).toContain("cannot use network");
+    expect(rendered).toContain("cannot read secrets");
     expect(rendered).toContain('must preserve "Public auth APIs"');
     expect(rendered).toContain('must_not leak "Refresh tokens"');
     expect(rendered).toContain('run "npm run lint"');
@@ -1197,11 +1199,76 @@ mission split-restrictions {
     expect(rendered).toContain("touch src/auth/**, tests/auth/**");
     expect(rendered).toContain("exclude src/billing/**, infra/**");
     expect(rendered).toContain("deny .env, .env.*");
+    expect(rendered).toContain("cannot use network");
+    expect(rendered).toContain("cannot read secrets");
 
     const reparsed = parsePactSource(rendered, "generated-from-ir.agent");
     expect(reparsed.scope.exclude).toEqual(contract.scope.exclude);
     expect(reparsed.permissions.filesystem.deny).toEqual(contract.permissions.filesystem.deny);
     expect(reparsed.permissions.filesystem.write).toEqual(contract.permissions.filesystem.write);
+  });
+
+  it("renders deny-by-default network and secrets posture explicitly in canonical Pact output", () => {
+    const contract = parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: explicit-denials
+task:
+  id: explicit-denials
+  goal: Make canonical Pact output preserve zero-authority posture.
+scope:
+  include:
+    - src/**
+permissions:
+  filesystem:
+    read:
+      - src/**
+  shell:
+    allow:
+      - npm test
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`);
+
+    const rendered = compileAgentfile(contract, "agent");
+
+    expect(rendered).toContain("cannot use network");
+    expect(rendered).toContain("cannot read secrets");
+
+    const reparsed = parsePactSource(rendered, "explicit-denials.agent");
+    expect(reparsed.task.id).toBe(contract.task.id);
+    expect(reparsed.task.goal).toBe(contract.task.goal);
+    expect(reparsed.scope.include).toEqual(contract.scope.include);
+    expect(reparsed.permissions.filesystem.read).toEqual(contract.permissions.filesystem.read);
+    expect(reparsed.permissions.shell.allow).toEqual(contract.permissions.shell.allow);
+    expect(reparsed.permissions.network.default).toBe("deny");
+    expect(reparsed.permissions.secrets.access).toBe("deny");
+  });
+
+  it("rejects agent target compilation when IR scope cannot be represented in Pact source", () => {
+    const contract = parseAgentfile(`
+agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: scope-without-read
+task:
+  id: scope-without-read
+  goal: Refuse invalid Pact rendering when scope lacks readable authority.
+scope:
+  include:
+    - src/**
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`);
+
+    expect(() => compileAgentfile(contract, "agent")).toThrow(
+      /cannot compile target "agent": scope\.include path must appear in permissions\.filesystem\.read/
+    );
   });
 
   it("renders touch when canonical Pact scope is fully writable", () => {

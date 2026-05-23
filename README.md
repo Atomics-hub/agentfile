@@ -65,6 +65,8 @@ Filesystem scope can now distinguish read-only and writable areas with `read ...
 
 Canonical `.agent` rendering now prefers `touch ...` when the contract's read and write scopes are identical, so the Pact target keeps fully writable missions compact without losing round-trip fidelity.
 
+Canonical `.agent` rendering also makes deny-by-default network and secret posture explicit with `cannot use network` and `cannot read secrets`, so YAML-to-Pact output preserves zero-authority intent during review.
+
 Strict IR allowlists now match Pact source semantics: `permissions.network.allow` entries must be bare hosts, and `permissions.secrets.allow` entries must name concrete secrets instead of wildcard patterns.
 
 Comma-delimited source lists are strict: `read`, `write`, `touch`, `exclude`, `deny`, `never`, `ask approval for`, and policy `for ...` targets require concrete entries and reject blank items, trailing commas, and duplicate exact entries.
