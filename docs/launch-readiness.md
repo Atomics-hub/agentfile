@@ -64,9 +64,10 @@ Run the local pre-public dry run before treating the repository as launchable:
 
 ```sh
 npm run launch:dry-run
+npm run launch:clean-clone
 ```
 
-The dry run executes `npm run check`, validates the benchmark plan, renders the benchmark report, renders the launch-review gate, and confirms `package.json` still has `private: true`. It does not publish packages, push commits, or change repository visibility. Remote privacy still requires a separate `gh repo view Atomics-hub/agentfile --json visibility` check.
+The dry run executes `npm run check`, validates the benchmark plan, renders the benchmark report, renders the launch-review gate, and confirms `package.json` still has `private: true`. The clean-clone verifier clones the committed checkout into a temporary directory, runs `npm ci`, then runs the same dry run from that clean checkout. Neither command publishes packages, pushes commits, or changes repository visibility. Remote privacy still requires a separate `gh repo view Atomics-hub/agentfile --json visibility` check.
 
 ## Current Highest-Leverage Work
 

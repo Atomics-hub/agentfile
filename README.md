@@ -182,6 +182,7 @@ npm run benchmark:report
 npm run claims:review
 npm run launch:review
 npm run launch:dry-run
+npm run launch:clean-clone
 ```
 
 Run the end-to-end demo:

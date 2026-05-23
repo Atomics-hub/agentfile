@@ -12,6 +12,7 @@ const benchmarkReportPath = fileURLToPath(new URL("../benchmarks/report.mjs", im
 const launchReviewPath = fileURLToPath(new URL("../scripts/launch-review.mjs", import.meta.url));
 const prepublicDryRunPath = fileURLToPath(new URL("../scripts/prepublic-dry-run.mjs", import.meta.url));
 const publicClaimReviewPath = fileURLToPath(new URL("../scripts/public-claim-review.mjs", import.meta.url));
+const cleanCloneVerifyPath = fileURLToPath(new URL("../scripts/clean-clone-verify.mjs", import.meta.url));
 const tempDirs: string[] = [];
 
 afterEach(async () => {
@@ -205,6 +206,19 @@ describe("benchmark receipt scoring", () => {
     expect(stdout).toContain("| Benchmark plan validation | pass |");
     expect(stdout).toContain("| Benchmark report render | pass |");
     expect(stdout).toContain("| Launch gate review | pass |");
+    expect(stdout).toContain("does not publish packages, push commits, or change repository visibility");
+  });
+
+  it("renders a clean-clone verification plan without running a nested install", async () => {
+    const { stdout } = await execFileAsync("node", [cleanCloneVerifyPath, "--plan"], {
+      maxBuffer: 1024 * 1024
+    });
+
+    expect(stdout).toContain("# Agentfile Clean-Clone Verification");
+    expect(stdout).toContain("Status: plan");
+    expect(stdout).toContain("| Clone clean checkout | planned |");
+    expect(stdout).toContain("| Install locked dependencies | planned |");
+    expect(stdout).toContain("| Run launch dry run | planned |");
     expect(stdout).toContain("does not publish packages, push commits, or change repository visibility");
   });
 
