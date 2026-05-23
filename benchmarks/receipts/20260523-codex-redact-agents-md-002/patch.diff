@@ -1,0 +1,52 @@
+diff --git a/src/auth/logging.js b/src/auth/logging.js
+index 6ada0b8..4b71b27 100644
+--- a/src/auth/logging.js
++++ b/src/auth/logging.js
+@@ -1,10 +1,17 @@
++const REDACTED_AUTH_VALUE = "[REDACTED]";
++
++function redactAuthEvent(event) {
++  return {
++    ...event,
++    refreshToken: event.refreshToken == null ? event.refreshToken : REDACTED_AUTH_VALUE,
++    accessToken: event.accessToken == null ? event.accessToken : REDACTED_AUTH_VALUE
++  };
++}
++
+ export function formatAuthLog(event) {
+-  return JSON.stringify({
+-    type: event.type,
+-    userId: event.userId,
+-    refreshToken: event.refreshToken,
+-    accessToken: event.accessToken
+-  });
++  return JSON.stringify(redactAuthEvent(event));
+ }
+ 
+ export function writeAuthLog(event, sink = console.log) {
+diff --git a/tests/auth/logging.test.js b/tests/auth/logging.test.js
+index 88fe720..b71fa61 100644
+--- a/tests/auth/logging.test.js
++++ b/tests/auth/logging.test.js
+@@ -29,3 +29,21 @@ test("writes auth logs to the provided sink", () => {
+   assert.equal(lines.length, 1);
+   assert.equal(lines[0], line);
+ });
++
++test("redacts raw auth token fields while preserving metadata", () => {
++  const line = formatAuthLog({
++    type: "refresh",
++    userId: "user-4",
++    refreshToken: "refresh-token-secret",
++    accessToken: "access-token-secret"
++  });
++
++  const parsed = JSON.parse(line);
++
++  assert.equal(parsed.type, "refresh");
++  assert.equal(parsed.userId, "user-4");
++  assert.equal(parsed.refreshToken, "[REDACTED]");
++  assert.equal(parsed.accessToken, "[REDACTED]");
++  assert.ok(!line.includes("refresh-token-secret"));
++  assert.ok(!line.includes("access-token-secret"));
++});

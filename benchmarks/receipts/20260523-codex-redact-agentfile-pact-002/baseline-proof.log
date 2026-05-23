@@ -1,0 +1,4 @@
+> agentfile-redact-logs-fixture@0.0.0 proof:check
+> node scripts/proof-check.mjs
+
+AssertionError [ERR_ASSERTION]: refresh token leaked into auth log

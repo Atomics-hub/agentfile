@@ -30,7 +30,7 @@ describe("benchmark receipt scoring", () => {
     expect(plan.metrics).toContain("proof_vector_regression_tests");
     expect(plan.metrics).toContain("evidence_quality");
     expect(plan.scoreSummary.comparableConditionPairs).toBe(15);
-    expect(plan.scoreSummary.repeatedConditionPairs).toBe(1);
+    expect(plan.scoreSummary.repeatedConditionPairs).toBe(2);
 
     const agentfile = plan.scoreSummary.byCondition.find(
       (condition: { conditionId: string }) => condition.conditionId === "agentfile-pact"
@@ -122,8 +122,10 @@ describe("benchmark receipt scoring", () => {
     expect(redactTask.conditions).toEqual(expect.arrayContaining([
       expect.objectContaining({
         conditionId: "agentfile-pact",
+        receiptCount: 2,
         proofCommandReportRate: 1,
         independentProofCheckPassRate: 1,
+        averagePatchLinesChanged: 24.5,
         evidenceQuality: "strong"
       }),
       expect.objectContaining({
@@ -134,8 +136,10 @@ describe("benchmark receipt scoring", () => {
       }),
       expect.objectContaining({
         conditionId: "agents-md",
+        receiptCount: 2,
         proofCommandReportRate: 1,
         independentProofCheckPassRate: 1,
+        averagePatchLinesChanged: 46.5,
         evidenceQuality: "strong"
       }),
       expect.objectContaining({
@@ -149,7 +153,19 @@ describe("benchmark receipt scoring", () => {
       })
     ]));
     expect(redactTask.comparisons).toHaveLength(6);
-    expect(redactTask.comparisons.every((comparison: { isRepeated: boolean }) => comparison.isRepeated === false)).toBe(true);
+    expect(redactTask.comparisons).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        leftConditionId: "agentfile-pact",
+        rightConditionId: "agents-md",
+        comparableReceiptCount: 2,
+        isRepeated: true,
+        normalizedQualityDelta: 0.02,
+        proofCommandReportDelta: 0,
+        independentProofCheckPassDelta: 0,
+        regressionTestDelta: 0,
+        evidenceQualityDelta: 0
+      })
+    ]));
   });
 
   it("renders a compact Markdown benchmark report", async () => {
@@ -161,16 +177,23 @@ describe("benchmark receipt scoring", () => {
     expect(stdout).toContain("## Condition Summary");
     expect(stdout).toContain("## Task Coverage");
     expect(stdout).toContain("- Comparable pairs: 15");
-    expect(stdout).toContain("- Repeated pairs: 1");
+    expect(stdout).toContain("- Repeated pairs: 2");
     expect(stdout).toContain("| Pair | Matched | Repeated | Delta Quality | Delta Proof | Delta Proof Pass | Delta Regression | Delta Evidence |");
     expect(stdout).toContain("| `agentfile-pact` vs `plain-issue` | 2 | yes | 0.17 | 0 | 0 | 1 | 0.33 |");
+    expect(stdout).toContain("| `agentfile-pact` vs `agents-md` | 2 | yes | 0.02 | 0 | 0 | 0 | 0 |");
     expect(stdout).toContain("`agentfile-pact`");
     expect(stdout).toContain("`compiled-agents-md`");
     expect(stdout).toContain("Treat normalized quality as a triage score");
   });
 
   it("renders a launch-readiness gate review", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "agentfile-launch-review-missing-"));
+    tempDirs.push(directory);
     const { stdout } = await execFileAsync("node", [launchReviewPath], {
+      env: {
+        ...process.env,
+        AGENTFILE_CLEAN_CLONE_REPORT: resolve(directory, "missing-clean-clone-report.json")
+      },
       maxBuffer: 1024 * 1024
     });
 

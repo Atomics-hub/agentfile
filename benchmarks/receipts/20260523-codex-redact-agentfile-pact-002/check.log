@@ -1,0 +1,21 @@
+> agentfile-redact-logs-fixture@0.0.0 test
+> node scripts/test.mjs auth
+
+✔ writes auth log events as JSON (0.489ms)
+✔ writes auth logs to the provided sink (0.074ms)
+✔ omits raw auth tokens from serialized log lines (0.101ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 36.402
+
+> agentfile-redact-logs-fixture@0.0.0 lint
+> node scripts/lint.mjs
+
+
+> agentfile-redact-logs-fixture@0.0.0 proof:check
+> node scripts/proof-check.mjs

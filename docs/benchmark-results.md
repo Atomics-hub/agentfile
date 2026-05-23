@@ -4,7 +4,7 @@ Agentfile benchmark results are still early. These receipts are useful as eviden
 
 ## Current Dataset
 
-As of 2026-05-23, the repository has sixteen validated receipts across five task families, including `agents-md` generic instruction-file receipts and compiled `AGENTS.md` receipts generated from Pact source for two proof-sensitive tasks.
+As of 2026-05-23, the repository has eighteen validated receipts across five task families, including `agents-md` generic instruction-file receipts and compiled `AGENTS.md` receipts generated from Pact source for two proof-sensitive tasks.
 
 | Task | Condition | Completed | Checks passed | Scope adherence | Reported required proof commands | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -13,9 +13,9 @@ As of 2026-05-23, the repository has sixteen validated receipts across five task
 | `preserve-session-claims` | `plain-issue` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint`, `npm run scope:check` | Both conditions preserved the billing boundary. |
 | `preserve-session-claims` | `agentfile-pact` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint`, `npm run scope:check` | Both conditions preserved the billing boundary. |
 | `redact-auth-logs` | `plain-issue` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint` | Independent `proof:check` passed, but the worker did not report running it. |
-| `redact-auth-logs` | `agents-md` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint`, `npm run proof:check` | Generic instruction-file worker ran proof and added token-redaction regression coverage. |
+| `redact-auth-logs` | `agents-md` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint`, `npm run proof:check` | Two generic instruction-file workers ran proof and added token-redaction regression coverage. |
 | `redact-auth-logs` | `compiled-agents-md` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint`, `npm run proof:check` | Generated Agentfile output was used directly as the worker instruction file and passed. |
-| `redact-auth-logs` | `agentfile-pact` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint`, `npm run proof:check` | Worker reported the dedicated proof check required by the contract. |
+| `redact-auth-logs` | `agentfile-pact` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint`, `npm run proof:check` | Two Agentfile workers reported the dedicated proof check required by the contract and added regression coverage. |
 | `preserve-refund-audit-evidence` | `plain-issue` | Yes | Yes | 1.0 | `npm test -- refunds`, `npm run lint`, `npm run proof:check` | Plain issue worker voluntarily ran the proof check. |
 | `preserve-refund-audit-evidence` | `agentfile-pact` | Yes | Yes | 1.0 | `npm test -- refunds`, `npm run lint`, `npm run proof:check` | Agentfile worker ran the proof check required by the contract. |
 | `verify-webhook-raw-signature` | `plain-issue` | Yes | Yes | 1.0 | `npm test -- webhooks`, `npm run lint`, `npm run proof:check` | Two plain-issue workers voluntarily ran proof but did not add raw-body regression tests. |
@@ -35,7 +35,7 @@ The original `redact-auth-logs` pair also gives a candidate signal:
 
 > When a dedicated proof command was explicit in the Agentfile contract, the Agentfile-condition worker reported running it; the plain-issue worker did not report running it.
 
-This signal is promising because the fixture is designed so normal tests and lint can pass while `npm run proof:check` catches leaked token values. The first `agents-md` redaction run also reported the proof check and added regression coverage, so the stronger current interpretation is: explicit proof obligations help, and Agentfile needs to prove its advantage over generic instruction files through structure, validation, compilation, and auditability. The first `compiled-agents-md` run shows that a Pact contract can compile into a usable agent instruction surface and still produce a passing, auditable run.
+This signal is promising because the fixture is designed so normal tests and lint can pass while `npm run proof:check` catches leaked token values. The repeated `agents-md` redaction runs also reported the proof check and added regression coverage, so the stronger current interpretation is: explicit proof obligations help, and Agentfile needs to prove its advantage over generic instruction files through structure, validation, compilation, and auditability. The repeated `agentfile-pact` vs `agents-md` comparison is now an honesty point: strong Markdown can match the core proof behavior on this task, while Agentfile still contributes typed source, validation, compilation, and audit structure. The first `compiled-agents-md` run shows that a Pact contract can compile into a usable agent instruction surface and still produce a passing, auditable run.
 
 The `preserve-refund-audit-evidence` pair did not reproduce that differential signal. Both workers ran the dedicated proof check and produced passing patches, so this pair strengthens receipt coverage but not the comparative claim.
 
@@ -54,7 +54,7 @@ The dataset is still small. It has one agent family, one repo-local fixture suit
 Before public launch, the benchmark story should either stay framed as a plan or earn more repeated evidence:
 
 - Use `npm run benchmark:report` for review, but cite underlying receipts in public-facing claims.
-- Repeat `redact-auth-logs` and `verify-webhook-raw-signature` under `agents-md` and `agentfile-pact` to test whether structured contracts outperform strong Markdown instructions.
+- Repeat `verify-webhook-raw-signature` under `agents-md` and add more proof-sensitive task families to test whether structured contracts show measurable value over strong Markdown instructions.
 - Repeat compiled-output runs across more task families and start tracking whether compiled instructions reduce missing proof checks, weaker tests, or oversized patches compared with hand-written instructions.
 - Keep each receipt reviewable: transcript, diff, check log, scope score, verification commands, and handoff quality.
 

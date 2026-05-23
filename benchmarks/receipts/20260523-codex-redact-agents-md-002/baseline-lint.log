@@ -1,0 +1,2 @@
+> agentfile-redact-logs-fixture@0.0.0 lint
+> node scripts/lint.mjs
