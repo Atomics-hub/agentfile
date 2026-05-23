@@ -8,6 +8,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 const execFileAsync = promisify(execFile);
 const benchmarkRunnerPath = fileURLToPath(new URL("../benchmarks/run.mjs", import.meta.url));
+const benchmarkReportPath = fileURLToPath(new URL("../benchmarks/report.mjs", import.meta.url));
 const tempDirs: string[] = [];
 
 afterEach(async () => {
@@ -107,6 +108,19 @@ describe("benchmark receipt scoring", () => {
         evidenceQuality: "strong"
       })
     ]));
+  });
+
+  it("renders a compact Markdown benchmark report", async () => {
+    const { stdout } = await execFileAsync("node", [benchmarkReportPath], {
+      maxBuffer: 1024 * 1024
+    });
+
+    expect(stdout).toContain("# Agentfile Benchmark Report");
+    expect(stdout).toContain("## Condition Summary");
+    expect(stdout).toContain("## Task Coverage");
+    expect(stdout).toContain("`agentfile-pact`");
+    expect(stdout).toContain("`compiled-agents-md`");
+    expect(stdout).toContain("Treat normalized quality as a triage score");
   });
 
   it("rejects receipts whose metadata and artifacts do not match the manifest", async () => {

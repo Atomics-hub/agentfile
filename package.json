@@ -42,6 +42,7 @@
     "lint": "tsc -p tsconfig.json --noEmit",
     "test": "npm run build && vitest run",
     "benchmark:plan": "node benchmarks/run.mjs",
+    "benchmark:report": "node benchmarks/report.mjs",
     "audit": "npm audit --audit-level=moderate",
     "check": "npm run lint && npm test && npm run audit"
   },

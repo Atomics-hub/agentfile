@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added `npm run benchmark:report` to render validated benchmark evidence as Markdown.
 - Added golden tests that keep benchmark `compiled-agentfile.AGENTS.md` task inputs synced with Pact source and the `agents-md` renderer.
 - Benchmark score summaries now include a normalized quality score for triaging condition comparisons.
 - Benchmark score summaries now include average changed-line counts parsed from receipt diffs.

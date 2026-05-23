@@ -53,6 +53,12 @@ Preview the benchmark plan:
 npm run benchmark:plan
 ```
 
+Render the same validated data as a compact Markdown report:
+
+```sh
+npm run benchmark:report
+```
+
 The current skeleton does not run agents or claim results. It records the first task, conditions, checks, metrics, receipt shape, and score summary so future benchmark runs can produce comparable receipts.
 
 The full benchmark harness should:

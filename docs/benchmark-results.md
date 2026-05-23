@@ -53,6 +53,7 @@ The dataset is still small. It has one agent family, one repo-local fixture suit
 
 Before public launch, the benchmark story should either stay framed as a plan or earn more repeated evidence:
 
+- Use `npm run benchmark:report` for review, but cite underlying receipts in public-facing claims.
 - Repeat `redact-auth-logs` and `verify-webhook-raw-signature` under `agents-md` and `agentfile-pact` to test whether structured contracts outperform strong Markdown instructions.
 - Repeat compiled-output runs across more task families and start tracking whether compiled instructions reduce missing proof checks, weaker tests, or oversized patches compared with hand-written instructions.
 - Keep each receipt reviewable: transcript, diff, check log, scope score, verification commands, and handoff quality.
