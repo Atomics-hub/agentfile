@@ -50,7 +50,7 @@ The dataset is still small. It has one agent family, one repo-local fixture suit
 Before public launch, the benchmark story should either stay framed as a plan or earn more repeated evidence:
 
 - Repeat `redact-auth-logs` and `verify-webhook-raw-signature` under `agents-md` and `agentfile-pact` to test whether structured contracts outperform strong Markdown instructions.
-- Add one benchmark where the Agentfile compiler output is consumed by an existing agent instruction target, proving the language-to-agent bridge directly.
+- Run the `compiled-agents-md` redaction benchmark where Agentfile compiler output is consumed as the actual worker instruction file.
 - Keep each receipt reviewable: transcript, diff, check log, scope score, verification commands, and handoff quality.
 
 The first public-safe result should stay narrow:
