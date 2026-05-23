@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Benchmark score summaries now include a normalized quality score for triaging condition comparisons.
 - Benchmark score summaries now include average changed-line counts parsed from receipt diffs.
 - Benchmark score summaries now include average changed-file counts so patch focus can be compared across conditions.
 - Added the first compiled AGENTS.md webhook benchmark receipt generated from Pact source.

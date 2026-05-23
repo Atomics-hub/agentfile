@@ -447,6 +447,19 @@ function scoreReceipt(receipt, task) {
     finalHandoffQuality: results.finalHandoffQuality
   });
   const evidenceQuality = boundedEvidenceQuality(results.evidenceQuality, inferredEvidenceQuality);
+  const proofCompletionScore = proofRequired ? (supportedVerificationCommands.includes("npm run proof:check") ? 1 : 0) : null;
+  const regressionEvidenceScore = addedRegressionTests === null ? null : (addedRegressionTests ? 1 : 0);
+  const patchLinesChanged = typeof diffLineStats.linesChanged === "number" ? diffLineStats.linesChanged : null;
+  const normalizedQualityScore = average([
+    results.taskCompleted === true ? 1 : 0,
+    results.testsPassed === true ? 1 : 0,
+    typeof results.scopeAdherence === "number" ? results.scopeAdherence : 0,
+    requiredCheckCoverage,
+    proofCompletionScore,
+    regressionEvidenceScore,
+    qualityScore(evidenceQuality),
+    patchFocusScore(patchLinesChanged)
+  ].filter((value) => value !== null));
 
   return {
     taskId: receipt.taskId,
@@ -459,14 +472,15 @@ function scoreReceipt(receipt, task) {
       : (diffChangedFiles.length > 0 ? diffChangedFiles.length : null),
     patchInsertions: typeof diffLineStats.insertions === "number" ? diffLineStats.insertions : null,
     patchDeletions: typeof diffLineStats.deletions === "number" ? diffLineStats.deletions : null,
-    patchLinesChanged: typeof diffLineStats.linesChanged === "number" ? diffLineStats.linesChanged : null,
+    patchLinesChanged,
     requiredCheckCoverage,
     proofRequired,
     reportedProofCheck,
     addedRegressionTests,
     finalHandoffQuality: results.finalHandoffQuality ?? "missing",
     evidenceQuality,
-    evidenceQualityScore: qualityScore(evidenceQuality)
+    evidenceQualityScore: qualityScore(evidenceQuality),
+    normalizedQualityScore
   };
 }
 
@@ -522,6 +536,9 @@ function summarizeTask(task, scores) {
       averagePatchLinesChanged: summarizeOptionalNumber(
         conditionScores.map((score) => score.patchLinesChanged)
       ),
+      averageNormalizedQualityScore: average(
+        conditionScores.map((score) => score.normalizedQualityScore)
+      ),
       averageEvidenceQuality: average(conditionScores.map((score) => score.evidenceQualityScore)),
       evidenceQuality: bestQuality(conditionScores.map((score) => score.evidenceQuality))
     }));
@@ -545,6 +562,7 @@ function summarizeScoreGroup(conditionId, scores) {
     requiredCheckCoverageRate: average(scores.map((score) => score.requiredCheckCoverage)),
     averagePatchFilesChanged: summarizeOptionalNumber(scores.map((score) => score.patchFilesChanged)),
     averagePatchLinesChanged: summarizeOptionalNumber(scores.map((score) => score.patchLinesChanged)),
+    averageNormalizedQualityScore: average(scores.map((score) => score.normalizedQualityScore)),
     proofCommandReportRate: proofScores.length === 0
       ? null
       : average(proofScores.map((score) => score.reportedProofCheck ? 1 : 0)),
@@ -649,6 +667,14 @@ function qualityScore(quality) {
     adequate: 0.67,
     strong: 1
   }[quality] ?? 0;
+}
+
+function patchFocusScore(patchLinesChanged) {
+  if (typeof patchLinesChanged !== "number" || patchLinesChanged <= 0) {
+    return null;
+  }
+
+  return round(Math.min(1, 40 / patchLinesChanged));
 }
 
 function isKnownQuality(quality) {

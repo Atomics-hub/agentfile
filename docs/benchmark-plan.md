@@ -65,6 +65,7 @@ The full benchmark harness should:
 - Score policy adherence.
 - Score patch focus with changed-file and changed-line counts backed by the stored diff artifact.
 - Score proof-command reporting, proof-vector regression tests, and evidence quality.
+- Report a normalized quality score for quick comparison while keeping raw metrics available for claims.
 - Store receipts for review.
 
 Each receipt should follow `benchmarks/receipt.schema.json` and live under `benchmarks/receipts/` with links to its transcript, diff, check log, and review notes.

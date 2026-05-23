@@ -29,7 +29,7 @@ The receipts support a narrow internal statement:
 
 > The current benchmark pipeline can capture comparable agent runs, diffs, check logs, and review notes for plain issue and Agentfile Pact conditions.
 
-`npm run benchmark:plan` now emits a `scoreSummary` from the stored receipts. In the current receipt set, `agentfile-pact` has complete required-check coverage, complete proof-command reporting on proof-sensitive tasks, and stronger inferred evidence quality. The summary also reports average changed-file and changed-line counts backed by the stored diffs, so patch focus can be compared alongside proof quality. `plain-issue` also completes every task, but its required-check coverage and proof-command reporting are lower because the `redact-auth-logs` plain run did not report `npm run proof:check`.
+`npm run benchmark:plan` now emits a `scoreSummary` from the stored receipts. In the current receipt set, `agentfile-pact` has complete required-check coverage, complete proof-command reporting on proof-sensitive tasks, and stronger inferred evidence quality. The summary also reports average changed-file and changed-line counts backed by the stored diffs, plus a normalized quality score that combines completion, supported checks, proof reporting, regression-test evidence, evidence quality, and patch focus. `plain-issue` also completes every task, but its proof-command reporting is lower because the `redact-auth-logs` plain run did not report `npm run proof:check`.
 
 The original `redact-auth-logs` pair also gives a candidate signal:
 
@@ -60,3 +60,5 @@ Before public launch, the benchmark story should either stay framed as a plan or
 The first public-safe result should stay narrow:
 
 > Agentfile makes proof obligations explicit enough to audit whether an agent reported running the required verification commands.
+
+The normalized quality score is a triage aid, not a headline claim. Public claims should cite the underlying receipt evidence and raw metrics.
