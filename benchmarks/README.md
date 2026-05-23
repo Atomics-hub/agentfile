@@ -59,7 +59,7 @@ The second `verify-webhook-raw-signature` receipt pair repeated the useful quali
 
 The `verify-webhook-raw-signature` task now also includes an `agents-md` condition so Agentfile can be compared against generic Markdown instruction-file guidance, not only plain issue text.
 
-The first `agents-md` webhook receipt passed and matched the Agentfile webhook runs on proof reporting and raw-body regression coverage. That makes generic instruction files a real comparator, not a strawman.
+The repeated `agents-md` webhook receipts passed and matched the Agentfile webhook runs on proof reporting and raw-body regression coverage. That makes generic instruction files a real comparator, not a strawman, and keeps the current Agentfile edge focused on typed source, validation, compilation, and auditability.
 
 The first `compiled-agents-md` webhook receipt also passed and added raw-body regression coverage, giving a second proof-sensitive bridge receipt for compiled Agentfile output.
 

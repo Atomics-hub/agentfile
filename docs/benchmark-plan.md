@@ -113,7 +113,7 @@ The second `verify-webhook-raw-signature` receipt pair repeated the same evidenc
 
 The `verify-webhook-raw-signature` task now includes an `agents-md` condition for generic Markdown instruction-file guidance. This is the bridge condition needed before claiming Agentfile improves on scattered instruction files.
 
-The first `agents-md` webhook receipt passed and matched the Agentfile webhook runs on proof reporting and raw-body regression coverage. The next benchmark step is to repeat that condition and add generic instruction-file conditions to other proof-sensitive fixtures.
+The repeated `agents-md` webhook receipts passed and matched the Agentfile webhook runs on proof reporting and raw-body regression coverage. This makes the generic instruction-file comparator stronger and keeps the current launch story honest: Agentfile's value has to show up through typed source, validation, compilation, and auditability, not by pretending strong Markdown cannot carry proof instructions.
 
 The webhook task now also includes a `compiled-agents-md` condition generated from the Pact source. `npm run benchmark:plan` now surfaces zero-receipt manifest conditions, so this bridge condition is visible as planned-but-unrun evidence until the first compiled webhook receipt is collected.
 

@@ -1,0 +1,24 @@
+
+> agentfile-webhook-signature-fixture@0.0.0 test
+> node scripts/test.mjs webhooks
+
+✔ accepts a valid webhook signature (1.118542ms)
+✔ rejects a tampered compact webhook body (0.142625ms)
+✔ verifies equivalent JSON against its exact raw bytes (0.131459ms)
+✔ rejects malformed signature headers (0.085375ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 82.517917
+
+> agentfile-webhook-signature-fixture@0.0.0 lint
+> node scripts/lint.mjs
+
+
+> agentfile-webhook-signature-fixture@0.0.0 proof:check
+> node scripts/proof-check.mjs
+

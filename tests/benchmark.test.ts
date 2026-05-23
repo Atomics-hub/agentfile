@@ -30,7 +30,7 @@ describe("benchmark receipt scoring", () => {
     expect(plan.metrics).toContain("proof_vector_regression_tests");
     expect(plan.metrics).toContain("evidence_quality");
     expect(plan.scoreSummary.comparableConditionPairs).toBe(15);
-    expect(plan.scoreSummary.repeatedConditionPairs).toBe(2);
+    expect(plan.scoreSummary.repeatedConditionPairs).toBe(4);
 
     const agentfile = plan.scoreSummary.byCondition.find(
       (condition: { conditionId: string }) => condition.conditionId === "agentfile-pact"
@@ -84,13 +84,27 @@ describe("benchmark receipt scoring", () => {
       }),
       expect.objectContaining({
         conditionId: "agents-md",
-        receiptCount: 1,
+        receiptCount: 2,
         independentProofCheckPassRate: 1,
         regressionTestRate: 1,
+        averagePatchFilesChanged: 2,
+        averagePatchLinesChanged: 25.5,
+        averageNormalizedQualityScore: 1,
         evidenceQuality: "strong"
       })
     ]));
     expect(webhookTask.comparisons).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        leftConditionId: "agentfile-pact",
+        rightConditionId: "agents-md",
+        comparableReceiptCount: 2,
+        isRepeated: true,
+        normalizedQualityDelta: 0,
+        proofCommandReportDelta: 0,
+        independentProofCheckPassDelta: 0,
+        regressionTestDelta: 0,
+        evidenceQualityDelta: 0
+      }),
       expect.objectContaining({
         leftConditionId: "agentfile-pact",
         rightConditionId: "plain-issue",
@@ -112,6 +126,17 @@ describe("benchmark receipt scoring", () => {
         independentProofCheckPassDelta: 0,
         regressionTestDelta: 0,
         evidenceQualityDelta: 0
+      }),
+      expect.objectContaining({
+        leftConditionId: "agents-md",
+        rightConditionId: "plain-issue",
+        comparableReceiptCount: 2,
+        isRepeated: true,
+        normalizedQualityDelta: 0.17,
+        proofCommandReportDelta: 0,
+        independentProofCheckPassDelta: 0,
+        regressionTestDelta: 1,
+        evidenceQualityDelta: 0.33
       })
     ]));
 
@@ -177,10 +202,12 @@ describe("benchmark receipt scoring", () => {
     expect(stdout).toContain("## Condition Summary");
     expect(stdout).toContain("## Task Coverage");
     expect(stdout).toContain("- Comparable pairs: 15");
-    expect(stdout).toContain("- Repeated pairs: 2");
+    expect(stdout).toContain("- Repeated pairs: 4");
     expect(stdout).toContain("| Pair | Matched | Repeated | Delta Quality | Delta Proof | Delta Proof Pass | Delta Regression | Delta Evidence |");
     expect(stdout).toContain("| `agentfile-pact` vs `plain-issue` | 2 | yes | 0.17 | 0 | 0 | 1 | 0.33 |");
     expect(stdout).toContain("| `agentfile-pact` vs `agents-md` | 2 | yes | 0.02 | 0 | 0 | 0 | 0 |");
+    expect(stdout).toContain("| `agentfile-pact` vs `agents-md` | 2 | yes | 0 | 0 | 0 | 0 | 0 |");
+    expect(stdout).toContain("| `agents-md` vs `plain-issue` | 2 | yes | 0.17 | 0 | 0 | 1 | 0.33 |");
     expect(stdout).toContain("`agentfile-pact`");
     expect(stdout).toContain("`compiled-agents-md`");
     expect(stdout).toContain("Treat normalized quality as a triage score");
