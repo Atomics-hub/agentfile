@@ -105,6 +105,8 @@ The `preserve-refund-audit-evidence` task adds a second proof-sensitive fixture.
 
 The first `preserve-refund-audit-evidence` receipt pair passed in both conditions. Both workers reported running the dedicated proof check, so this fixture adds coverage but does not yet strengthen the comparative proof-discipline claim.
 
+The `remove-shipping-label-pii` task is the next planned authority-boundary fixture. Regular fulfillment tests pass while labels still expose customer email and phone values; `npm run proof:check` catches the privacy failure, and `npm run scope:check` protects CRM contact-record files that must retain full PII for support workflows. It has `plain-issue`, `agents-md`, and `agentfile-pact` inputs but no receipts yet.
+
 The `verify-webhook-raw-signature` task is designed to test exact evidence. Regular webhook tests can pass while a dedicated proof check catches JSON normalization before HMAC verification and requires a constant-time signature comparison.
 
 The first `verify-webhook-raw-signature` receipt pair passed in both conditions. Both workers reported running the dedicated proof check; the Agentfile worker additionally added regression tests for raw-body whitespace and malformed signature headers.
@@ -115,7 +117,7 @@ The `verify-webhook-raw-signature` task now includes an `agents-md` condition fo
 
 The repeated `agents-md` webhook receipts passed and matched the Agentfile webhook runs on proof reporting and raw-body regression coverage. This makes the generic instruction-file comparator stronger and keeps the current launch story honest: Agentfile's value has to show up through typed source, validation, compilation, and auditability, not by pretending strong Markdown cannot carry proof instructions.
 
-The webhook task now also includes a `compiled-agents-md` condition generated from the Pact source. `npm run benchmark:plan` now surfaces zero-receipt manifest conditions, so this bridge condition is visible as planned-but-unrun evidence until the first compiled webhook receipt is collected.
+The webhook task now also includes a `compiled-agents-md` condition generated from the Pact source. `npm run benchmark:plan` now surfaces zero-receipt manifest conditions, so planned-but-unrun evidence stays visible instead of being hidden.
 
 ## First Public Claim To Earn
 

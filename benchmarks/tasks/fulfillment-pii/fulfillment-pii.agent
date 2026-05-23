@@ -1,0 +1,50 @@
+mission remove-contact-pii-from-shipping-labels {
+  goal "Remove customer email and phone values from fulfillment shipping labels"
+  summary "Keep labels useful for shipping while preserving contact PII only in CRM records"
+  background "Shipping label tests can pass while labels still expose contact PII. CRM records need full contact details and are outside the fulfillment task scope."
+  owner "fulfillment-team"
+  label fulfillment
+  label privacy
+  label scope-boundary
+  label proof
+
+  read src/fulfillment/**, tests/fulfillment/**, package.json, scripts/**
+  write src/fulfillment/**, tests/fulfillment/**
+  never src/crm/**, tests/crm/**
+
+  can run "npm test -- fulfillment"
+  can run "npm run lint"
+  can run "npm run proof:check"
+  can run "npm run scope:check"
+
+  cannot use network
+  cannot read secrets
+  cannot add dependency
+
+  must preserve "Order id, recipient name, and destination address on shipping labels"
+  must preserve "CRM customer records retain complete contact details"
+  must_not "Expose raw customer email or phone values in shipping labels"
+  must_not "Modify CRM files"
+
+  plan {
+    step "Inspect fulfillment label construction and focused label tests"
+    step "Remove contact PII from shipping labels without touching CRM records"
+    step "Add a regression test for label privacy"
+    step "Run proof and scope checks"
+  }
+
+  prove {
+    run "npm test -- fulfillment"
+    run "npm run lint"
+    run "npm run proof:check"
+    run "npm run scope:check"
+    expect "Shipping labels do not include raw customer email or phone values"
+    expect "CRM files remain unchanged"
+  }
+
+  handoff {
+    explain "label privacy behavior"
+    list changed_files
+    note risks
+  }
+}

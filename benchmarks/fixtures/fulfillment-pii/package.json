@@ -1,0 +1,12 @@
+{
+  "name": "agentfile-fulfillment-pii-fixture",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node scripts/test.mjs",
+    "lint": "node scripts/lint.mjs",
+    "proof:check": "node scripts/proof-check.mjs",
+    "scope:check": "node scripts/scope-check.mjs"
+  }
+}

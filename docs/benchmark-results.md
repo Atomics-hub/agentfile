@@ -4,7 +4,7 @@ Agentfile benchmark results are still early. These receipts are useful as eviden
 
 ## Current Dataset
 
-As of 2026-05-23, the repository has nineteen validated receipts across five task families, including repeated `agents-md` generic instruction-file receipts and compiled `AGENTS.md` receipts generated from Pact source for two proof-sensitive tasks.
+As of 2026-05-23, the repository has nineteen validated receipts across five executed task families, including repeated `agents-md` generic instruction-file receipts and compiled `AGENTS.md` receipts generated from Pact source for two proof-sensitive tasks. The manifest also includes a planned `remove-shipping-label-pii` fixture with no receipts yet.
 
 | Task | Condition | Completed | Checks passed | Scope adherence | Reported required proof commands | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -54,6 +54,7 @@ The dataset is still small. It has one agent family, one repo-local fixture suit
 Before public launch, the benchmark story should either stay framed as a plan or earn more repeated evidence:
 
 - Use `npm run benchmark:report` for review, but cite underlying receipts in public-facing claims.
+- Collect first `remove-shipping-label-pii` receipts across `plain-issue`, `agents-md`, and `agentfile-pact` to test privacy proof plus CRM scope-boundary behavior.
 - Add more proof-sensitive task families with repeated `agents-md` and compiled-output conditions to test whether structured contracts show measurable value over strong Markdown instructions.
 - Repeat compiled-output runs across more task families and start tracking whether compiled instructions reduce missing proof checks, weaker tests, or oversized patches compared with hand-written instructions.
 - Keep each receipt reviewable: transcript, diff, check log, scope score, verification commands, and handoff quality.
