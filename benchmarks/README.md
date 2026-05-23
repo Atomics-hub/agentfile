@@ -13,7 +13,7 @@ Preview the benchmark plan:
 npm run benchmark:plan
 ```
 
-The current command validates that benchmark inputs exist, validates any JSON receipts in `benchmarks/receipts/`, cross-checks receipt command metadata against the attached logs, and prints the planned task, conditions, checks, metrics, receipt count, and score summary. It does not run agents and it does not claim results.
+The current command validates that benchmark inputs exist, validates any JSON receipts in `benchmarks/receipts/`, cross-checks receipt command metadata against the attached logs and diffs, and prints the planned task, conditions, checks, metrics, receipt count, and score summary. It does not run agents and it does not claim results.
 
 The score summary is intentionally narrow. It tracks completion, test pass rate, scope adherence, required-check coverage, changed-file counts, proof-command reporting, proof-vector regression tests, handoff quality, and inferred evidence quality from stored receipts.
 
@@ -65,7 +65,7 @@ Each real benchmark run should store:
 
 - Input condition and model/agent version.
 - Tool-call transcript or equivalent execution log.
-- Patch diff.
+- Patch diff that supports any reported changed-file counts or regression-test claims.
 - Check results.
 - Check logs that actually show the verification commands claimed in the receipt metadata.
 - Baseline failing logs for each manifest check. At minimum this means `baselineTestLog` for test commands and `baselineLintLog` for lint; proof-sensitive tasks also need `baselineProofLog`, and scope-boundary tasks need `baselineScopeLog`.

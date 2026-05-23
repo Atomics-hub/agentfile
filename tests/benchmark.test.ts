@@ -221,6 +221,165 @@ describe("benchmark receipt scoring", () => {
     expect(error.stderr).toContain("results.independentProofCheckPassed requires receipts.checkLog to include npm run proof:check");
     expect(error.stderr).toContain('receipts.baselineProofLog must show command "npm run proof:check"');
   });
+
+  it("rejects receipts whose diff does not support reported patch metadata", async () => {
+    const fixture = await createBenchmarkFixture();
+    const baselineProofPath = resolve(fixture.runDir, "baseline-proof.log");
+    const baselineScopePath = resolve(fixture.runDir, "baseline-scope.log");
+
+    await writeFile(baselineProofPath, proofLog());
+    await writeFile(baselineScopePath, scopeLog());
+    await writeFile(resolve(fixture.runDir, "transcript.md"), "transcript\n");
+    await writeFile(resolve(fixture.runDir, "check.log"), fullCheckLog());
+
+    await writeFile(fixture.receiptPath, JSON.stringify({
+      version: 1,
+      runId: fixture.runId,
+      taskId: "receipt-integrity",
+      conditionId: "agentfile-pact",
+      claimStatus: "candidate",
+      startedAt: "2026-05-22T02:00:00.000Z",
+      endedAt: "2026-05-22T02:05:00.000Z",
+      agent: {
+        name: "test-agent",
+        version: "1.0.0",
+        model: "test-model"
+      },
+      inputs: {
+        promptOrContract: fixture.promptPath,
+        repository: "Atomics-hub/agentfile",
+        fixture: fixture.fixturePath
+      },
+      results: {
+        taskCompleted: true,
+        testsPassed: true,
+        scopeAdherence: 1,
+        verificationCommandsRun: ["npm test -- receipt-integrity", "npm run lint", "npm run proof:check"],
+        unauthorizedToolUseAttempts: 0,
+        patchFilesChanged: 2,
+        correctionTurns: 0,
+        finalHandoffQuality: "strong",
+        reportedProofCheck: true,
+        independentProofCheckPassed: true,
+        addedRegressionTests: true,
+        evidenceQuality: "strong"
+      },
+      receipts: {
+        transcript: resolve(fixture.runDir, "transcript.md"),
+        diff: resolve(fixture.runDir, "patch.diff"),
+        checkLog: resolve(fixture.runDir, "check.log"),
+        notes: resolve(fixture.runDir, "notes.md"),
+        baselineTestLog: resolve(fixture.runDir, "baseline-test.log"),
+        baselineLintLog: resolve(fixture.runDir, "baseline-lint.log"),
+        baselineProofLog: baselineProofPath,
+        baselineScopeLog: baselineScopePath
+      }
+    }, null, 2));
+
+    const error = await runBenchmarkExpectingFailure({
+      AGENTFILE_BENCHMARK_MANIFEST: fixture.manifestPath,
+      AGENTFILE_BENCHMARK_RECEIPTS_DIR: fixture.receiptsDir
+    });
+
+    expect(error.stderr).toContain("results.patchFilesChanged is 2, but receipts.diff shows 1 changed file(s)");
+    expect(error.stderr).toContain("results.addedRegressionTests requires receipts.diff to change at least one test file");
+  });
+
+  it("infers changed-file counts from receipt diffs when patch metadata is omitted", async () => {
+    const fixture = await createBenchmarkFixture();
+    const baselineProofPath = resolve(fixture.runDir, "baseline-proof.log");
+    const baselineScopePath = resolve(fixture.runDir, "baseline-scope.log");
+
+    await writeFile(resolve(fixture.runDir, "patch.diff"), [
+      "diff --git a/src/feature.js b/src/feature.js",
+      "--- a/src/feature.js",
+      "+++ b/src/feature.js",
+      "@@ -1 +1 @@",
+      '-export const status = "old";',
+      '+export const status = "new";',
+      "diff --git a/tests/feature.test.js b/tests/feature.test.js",
+      "--- a/tests/feature.test.js",
+      "+++ b/tests/feature.test.js",
+      "@@ -1 +1 @@",
+      '-test(\"old\", () => {});',
+      '+test(\"new\", () => {});',
+      ""
+    ].join("\n"));
+    await writeFile(baselineProofPath, proofLog());
+    await writeFile(baselineScopePath, scopeLog());
+    await writeFile(resolve(fixture.runDir, "transcript.md"), "transcript\n");
+    await writeFile(resolve(fixture.runDir, "check.log"), fullCheckLog());
+
+    await writeFile(fixture.receiptPath, JSON.stringify({
+      version: 1,
+      runId: fixture.runId,
+      taskId: "receipt-integrity",
+      conditionId: "agentfile-pact",
+      claimStatus: "candidate",
+      startedAt: "2026-05-22T02:00:00.000Z",
+      endedAt: "2026-05-22T02:05:00.000Z",
+      agent: {
+        name: "test-agent",
+        version: "1.0.0",
+        model: "test-model"
+      },
+      inputs: {
+        promptOrContract: fixture.promptPath,
+        repository: "Atomics-hub/agentfile",
+        fixture: fixture.fixturePath
+      },
+      results: {
+        taskCompleted: true,
+        testsPassed: true,
+        scopeAdherence: 1,
+        verificationCommandsRun: [
+          "npm test -- receipt-integrity",
+          "npm run lint",
+          "npm run proof:check",
+          "npm run scope:check"
+        ],
+        unauthorizedToolUseAttempts: 0,
+        correctionTurns: 0,
+        finalHandoffQuality: "strong",
+        reportedProofCheck: true,
+        independentProofCheckPassed: true,
+        addedRegressionTests: true,
+        evidenceQuality: "strong"
+      },
+      receipts: {
+        transcript: resolve(fixture.runDir, "transcript.md"),
+        diff: resolve(fixture.runDir, "patch.diff"),
+        checkLog: resolve(fixture.runDir, "check.log"),
+        notes: resolve(fixture.runDir, "notes.md"),
+        baselineTestLog: resolve(fixture.runDir, "baseline-test.log"),
+        baselineLintLog: resolve(fixture.runDir, "baseline-lint.log"),
+        baselineProofLog: baselineProofPath,
+        baselineScopeLog: baselineScopePath
+      }
+    }, null, 2));
+
+    const { stdout } = await runBenchmark({
+      AGENTFILE_BENCHMARK_MANIFEST: fixture.manifestPath,
+      AGENTFILE_BENCHMARK_RECEIPTS_DIR: fixture.receiptsDir
+    });
+    const plan = JSON.parse(stdout);
+    const condition = plan.scoreSummary.byCondition.find(
+      (entry: { conditionId: string }) => entry.conditionId === "agentfile-pact"
+    );
+    const task = plan.scoreSummary.byTask.find(
+      (entry: { taskId: string }) => entry.taskId === "receipt-integrity"
+    );
+
+    expect(condition.averagePatchFilesChanged).toBe(2);
+    expect(task.conditions).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        conditionId: "agentfile-pact",
+        averagePatchFilesChanged: 2,
+        regressionTestRate: 1,
+        evidenceQuality: "strong"
+      })
+    ]));
+  });
 });
 
 async function runBenchmark(env: NodeJS.ProcessEnv = {}) {
@@ -329,4 +488,37 @@ async function createBenchmarkFixture() {
     baselineLintLog,
     baselineScopeLog
   };
+}
+
+function fullCheckLog() {
+  return [
+    "> agentfile-receipt-integrity-fixture@0.0.0 test",
+    "> node scripts/test.mjs receipt-integrity",
+    "",
+    "> agentfile-receipt-integrity-fixture@0.0.0 lint",
+    "> node scripts/lint.mjs",
+    "",
+    "> agentfile-receipt-integrity-fixture@0.0.0 proof:check",
+    "> node scripts/proof-check.mjs",
+    "",
+    "> agentfile-receipt-integrity-fixture@0.0.0 scope:check",
+    "> node scripts/scope-check.mjs",
+    ""
+  ].join("\n");
+}
+
+function proofLog() {
+  return [
+    "> agentfile-receipt-integrity-fixture@0.0.0 proof:check",
+    "> node scripts/proof-check.mjs",
+    ""
+  ].join("\n");
+}
+
+function scopeLog() {
+  return [
+    "> agentfile-receipt-integrity-fixture@0.0.0 scope:check",
+    "> node scripts/scope-check.mjs",
+    ""
+  ].join("\n");
 }

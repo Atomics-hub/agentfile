@@ -288,8 +288,14 @@ function validateReceiptArtifacts(task, receipt, receiptPath, artifactContents, 
   }
 
   const checkLog = artifactContents.checkLog;
+  const diffText = artifactContents.diff;
   if (typeof checkLog === "string") {
     validateVerificationCommands(task, receipt, receiptPath, checkLog, errors);
+  }
+  if (typeof diffText === "string") {
+    const diffChangedFiles = parseDiffChangedFiles(diffText);
+    receipt.__diffChangedFiles = diffChangedFiles;
+    validateDiffClaims(receipt, receiptPath, diffChangedFiles, errors);
   }
 
   for (const check of task.checks ?? []) {
@@ -319,6 +325,21 @@ function validateVerificationCommands(task, receipt, receiptPath, checkLog, erro
     if (!logIncludesCommand(checkLog, command)) {
       errors.push(`${receiptPath}: results.verificationCommandsRun lists "${command}" but receipts.checkLog does not show it`);
     }
+  }
+}
+
+function validateDiffClaims(receipt, receiptPath, diffChangedFiles, errors) {
+  const patchFilesChanged = receipt.results?.patchFilesChanged;
+  if (typeof patchFilesChanged === "number" && patchFilesChanged !== diffChangedFiles.length) {
+    errors.push(
+      `${receiptPath}: results.patchFilesChanged is ${patchFilesChanged}, but receipts.diff shows ${diffChangedFiles.length} changed file(s)`
+    );
+  }
+
+  if (receipt.results?.addedRegressionTests === true && !didChangeTestFiles(diffChangedFiles)) {
+    errors.push(
+      `${receiptPath}: results.addedRegressionTests requires receipts.diff to change at least one test file`
+    );
   }
 }
 
@@ -371,6 +392,9 @@ function scoreReceipt(receipt, task) {
   const results = receipt.results ?? {};
   const requiredChecks = task?.checks ?? [];
   const verificationCommands = results.verificationCommandsRun ?? [];
+  const diffChangedFiles = Array.isArray(receipt.__diffChangedFiles)
+    ? receipt.__diffChangedFiles.filter((file) => typeof file === "string")
+    : [];
   const requiredCheckCoverage = requiredChecks.length === 0
     ? 1
     : requiredChecks.filter((check) => verificationCommands.includes(check)).length / requiredChecks.length;
@@ -397,7 +421,9 @@ function scoreReceipt(receipt, task) {
     taskCompleted: results.taskCompleted === true,
     testsPassed: results.testsPassed === true,
     scopeAdherence: typeof results.scopeAdherence === "number" ? results.scopeAdherence : 0,
-    patchFilesChanged: typeof results.patchFilesChanged === "number" ? results.patchFilesChanged : null,
+    patchFilesChanged: typeof results.patchFilesChanged === "number"
+      ? results.patchFilesChanged
+      : (diffChangedFiles.length > 0 ? diffChangedFiles.length : null),
     requiredCheckCoverage,
     proofRequired,
     reportedProofCheck,
@@ -494,6 +520,27 @@ function baselineArtifactForCheck(check) {
     return "baselineScopeLog";
   }
   return null;
+}
+
+function parseDiffChangedFiles(diffText) {
+  const files = [];
+
+  for (const line of diffText.split(/\r?\n/u)) {
+    if (!line.startsWith("diff --git ")) {
+      continue;
+    }
+
+    const match = /^diff --git a\/(.+) b\/(.+)$/u.exec(line);
+    if (match) {
+      files.push(match[2]);
+    }
+  }
+
+  return [...new Set(files)];
+}
+
+function didChangeTestFiles(diffChangedFiles) {
+  return diffChangedFiles.some((file) => /(^|\/)tests\//u.test(file));
 }
 
 function logIncludesCommand(logText, command) {

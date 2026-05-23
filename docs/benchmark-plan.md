@@ -63,7 +63,7 @@ The full benchmark harness should:
 - Capture tool calls, file diffs, logs, and final response.
 - Run deterministic tests and static checks.
 - Score policy adherence.
-- Score patch focus with changed-file counts.
+- Score patch focus with changed-file counts backed by the stored diff artifact.
 - Score proof-command reporting, proof-vector regression tests, and evidence quality.
 - Store receipts for review.
 
