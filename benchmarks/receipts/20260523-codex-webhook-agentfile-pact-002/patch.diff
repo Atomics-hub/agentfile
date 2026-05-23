@@ -1,0 +1,38 @@
+diff --git a/benchmarks/fixtures/webhook-signature/src/webhooks/verify.js b/benchmarks/runs/20260523-codex-webhook-agentfile-pact-002/workspace/src/webhooks/verify.js
+index 62c869f..633e22b 100644
+--- a/benchmarks/fixtures/webhook-signature/src/webhooks/verify.js
++++ b/benchmarks/runs/20260523-codex-webhook-agentfile-pact-002/workspace/src/webhooks/verify.js
+@@ -1,9 +1,9 @@
+-import { createHmac } from "node:crypto";
++import { createHmac, timingSafeEqual } from "node:crypto";
+ 
+ export function verifyWebhookSignature(rawBody, signatureHeader, secret) {
+-  const parsedBody = JSON.parse(rawBody);
+-  const normalizedBody = JSON.stringify(parsedBody);
+-  const expected = `sha256=${createHmac("sha256", secret).update(normalizedBody, "utf8").digest("hex")}`;
++  const expected = `sha256=${createHmac("sha256", secret).update(rawBody, "utf8").digest("hex")}`;
++  const expectedBytes = Buffer.from(expected, "utf8");
++  const signatureBytes = Buffer.from(signatureHeader, "utf8");
+ 
+-  return signatureHeader === expected;
++  return expectedBytes.length === signatureBytes.length && timingSafeEqual(expectedBytes, signatureBytes);
+ }
+diff --git a/benchmarks/fixtures/webhook-signature/tests/webhooks/verify.test.js b/benchmarks/runs/20260523-codex-webhook-agentfile-pact-002/workspace/tests/webhooks/verify.test.js
+index 9d29ec1..6582051 100644
+--- a/benchmarks/fixtures/webhook-signature/tests/webhooks/verify.test.js
++++ b/benchmarks/runs/20260523-codex-webhook-agentfile-pact-002/workspace/tests/webhooks/verify.test.js
+@@ -15,6 +15,14 @@ test("accepts a valid webhook signature", () => {
+   assert.equal(verifyWebhookSignature(body, signRaw(body), secret), true);
+ });
+ 
++test("verifies equivalent JSON against its exact raw bytes", () => {
++  const compact = "{\"id\":\"evt_1\",\"type\":\"invoice.paid\",\"amount\":4200}";
++  const spaced = "{\n  \"id\": \"evt_1\",\n  \"type\": \"invoice.paid\",\n  \"amount\": 4200\n}";
++
++  assert.equal(verifyWebhookSignature(spaced, signRaw(spaced), secret), true);
++  assert.equal(verifyWebhookSignature(spaced, signRaw(compact), secret), false);
++});
++
+ test("rejects a tampered compact webhook body", () => {
+   const body = "{\"id\":\"evt_1\",\"type\":\"invoice.paid\",\"amount\":4200}";
+   const tampered = "{\"id\":\"evt_1\",\"type\":\"invoice.paid\",\"amount\":9900}";

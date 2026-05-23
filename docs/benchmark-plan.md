@@ -86,6 +86,8 @@ The `verify-webhook-raw-signature` task is designed to test exact evidence. Regu
 
 The first `verify-webhook-raw-signature` receipt pair passed in both conditions. Both workers reported running the dedicated proof check; the Agentfile worker additionally added regression tests for raw-body whitespace and malformed signature headers.
 
+The second `verify-webhook-raw-signature` receipt pair repeated the same evidence-quality pattern: both workers ran proof, while the Agentfile worker added an explicit raw-body regression test.
+
 ## First Public Claim To Earn
 
 Do not claim "better than Python" broadly.

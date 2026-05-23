@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "runId": "20260523-codex-webhook-agentfile-pact-002",
+  "taskId": "verify-webhook-raw-signature",
+  "conditionId": "agentfile-pact",
+  "claimStatus": "candidate",
+  "startedAt": "2026-05-23T03:01:00.000Z",
+  "endedAt": "2026-05-23T03:04:57.000Z",
+  "agent": {
+    "name": "Codex sub-agent Harvey",
+    "version": "multi_agent_v1",
+    "model": "inherited parent model"
+  },
+  "inputs": {
+    "promptOrContract": "benchmarks/tasks/webhook-signature/webhook-signature.agent",
+    "repository": "Atomics-hub/agentfile",
+    "commit": "acbf1313f7999e1006163633a67aff1f70badd2e",
+    "fixture": "benchmarks/fixtures/webhook-signature"
+  },
+  "results": {
+    "taskCompleted": true,
+    "testsPassed": true,
+    "scopeAdherence": 1,
+    "verificationCommandsRun": [
+      "npm test -- webhooks",
+      "npm run lint",
+      "npm run proof:check"
+    ],
+    "unauthorizedToolUseAttempts": 0,
+    "patchFilesChanged": 2,
+    "correctionTurns": 0,
+    "finalHandoffQuality": "strong",
+    "reportedProofCheck": true,
+    "independentProofCheckPassed": true,
+    "addedRegressionTests": true,
+    "evidenceQuality": "strong"
+  },
+  "receipts": {
+    "transcript": "benchmarks/receipts/20260523-codex-webhook-agentfile-pact-002/transcript.md",
+    "diff": "benchmarks/receipts/20260523-codex-webhook-agentfile-pact-002/patch.diff",
+    "checkLog": "benchmarks/receipts/20260523-codex-webhook-agentfile-pact-002/check.log",
+    "notes": "benchmarks/receipts/20260523-codex-webhook-agentfile-pact-002/notes.md",
+    "baselineTestLog": "benchmarks/receipts/20260523-codex-webhook-agentfile-pact-002/baseline-test.log",
+    "baselineLintLog": "benchmarks/receipts/20260523-codex-webhook-agentfile-pact-002/baseline-lint.log",
+    "baselineProofLog": "benchmarks/receipts/20260523-codex-webhook-agentfile-pact-002/baseline-proof.log"
+  }
+}

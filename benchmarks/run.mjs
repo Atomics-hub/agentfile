@@ -218,16 +218,24 @@ function inferEvidenceQuality({
 }
 
 function summarizeTask(taskId, scores) {
+  const byCondition = [...groupBy(scores, (score) => score.conditionId).entries()];
+
   return {
     taskId,
-    conditions: scores
-      .sort((a, b) => a.conditionId.localeCompare(b.conditionId))
-      .map((score) => ({
-        conditionId: score.conditionId,
-        requiredCheckCoverage: round(score.requiredCheckCoverage),
-        reportedProofCheck: score.proofRequired ? score.reportedProofCheck : null,
-        addedRegressionTests: score.addedRegressionTests,
-        evidenceQuality: score.evidenceQuality
+    conditions: byCondition
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([conditionId, conditionScores]) => ({
+        conditionId,
+        receiptCount: conditionScores.length,
+        requiredCheckCoverage: average(conditionScores.map((score) => score.requiredCheckCoverage)),
+        proofCommandReportRate: summarizeOptionalBoolean(
+          conditionScores.filter((score) => score.proofRequired).map((score) => score.reportedProofCheck)
+        ),
+        regressionTestRate: summarizeOptionalBoolean(
+          conditionScores.map((score) => score.addedRegressionTests)
+        ),
+        averageEvidenceQuality: average(conditionScores.map((score) => score.evidenceQualityScore)),
+        evidenceQuality: bestQuality(conditionScores.map((score) => score.evidenceQuality))
       }))
   };
 }
@@ -270,6 +278,22 @@ function qualityScore(quality) {
     adequate: 0.67,
     strong: 1
   }[quality] ?? 0;
+}
+
+function bestQuality(qualities) {
+  return qualities
+    .slice()
+    .sort((a, b) => qualityScore(b) - qualityScore(a))[0] ?? "missing";
+}
+
+function summarizeOptionalBoolean(values) {
+  const concreteValues = values.filter((value) => value !== null);
+
+  if (concreteValues.length === 0) {
+    return null;
+  }
+
+  return average(concreteValues.map((value) => value ? 1 : 0));
 }
 
 function average(values) {

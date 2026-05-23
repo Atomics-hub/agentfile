@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added a repeated webhook-signature benchmark receipt pair that reproduced the Agentfile regression-test quality signal.
 - Added benchmark score summaries for proof-command reporting, proof-vector regression tests, and evidence quality.
 - Added matched webhook-signature benchmark receipts showing both conditions ran proof while Agentfile added stronger regression tests.
 - Added a raw-body webhook signature benchmark fixture with exact HMAC proof vectors.
