@@ -69,7 +69,7 @@ Strict IR allowlists now match Pact source semantics: `permissions.network.allow
 
 Comma-delimited source lists are strict: `read`, `write`, `touch`, `exclude`, `deny`, `never`, `ask approval for`, and policy `for ...` targets require concrete entries and reject blank items, trailing commas, and duplicate exact entries.
 
-Repeated Pact metadata and authority entries such as duplicate `owner`, `label`, `can run`, `cannot run`, `can use network host`, or `can read secret` lines are rejected instead of being silently normalized away.
+Repeated Pact metadata and authority entries such as duplicate `owner`, `label`, `can run`, `cannot run`, `can use network`, `cannot use network`, `can use network host`, `can read secrets`, `cannot read secrets`, `can read secret`, or `cannot add dependency` lines are rejected instead of being silently normalized away.
 
 It can also express direct invariant statements with `must "..."`, `must_not "..."`, `should "..."`, and `may "..."` in addition to the more opinionated sugar forms like `must preserve "..."` and `must_not leak "..."`. Policy statements may optionally scope themselves with `for ...`, for example `must "Keep auth latency within budget." for src/auth/**, tests/auth/**`.
 

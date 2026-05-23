@@ -372,14 +372,9 @@ function parseMissionLine(
         lineNo
       );
     }
-    ensureCapabilityConsistency(
-      state.secretsSpecified,
-      state.secrets,
-      "allow",
-      "secrets policy",
-      filePath,
-      lineNo
-    );
+    if (state.secretsSpecified && state.secrets !== "allow") {
+      throw syntaxError(`conflicting secrets policy: already ${state.secrets}`, filePath, lineNo);
+    }
     state.secrets = "allow";
     state.secretsSpecified = true;
     const secret = requireNonEmptyText(canReadSecret, "can read secret", filePath, lineNo);
@@ -410,6 +405,9 @@ function parseMissionLine(
   }
 
   if (line === "cannot add dependency") {
+    if (state.policies.some(isNoDependencyChangePolicy)) {
+      throw syntaxError("duplicate dependency policy: cannot add dependency", filePath, lineNo);
+    }
     state.policies.push({
       id: "no-dependency-change",
       level: "must_not",
@@ -1031,9 +1029,15 @@ function ensureCapabilityConsistency(
   filePath: string | undefined,
   lineNo: number
 ): void {
-  if (specified && current !== next) {
-    throw syntaxError(`conflicting ${label}: already ${current}`, filePath, lineNo);
+  if (!specified) {
+    return;
   }
+
+  if (current === next) {
+    throw syntaxError(`duplicate ${label}: already ${current}`, filePath, lineNo);
+  }
+
+  throw syntaxError(`conflicting ${label}: already ${current}`, filePath, lineNo);
 }
 
 function pushUnique(values: string[], value: string): void {
@@ -1303,6 +1307,15 @@ function duplicateValues(values: string[]): string[] {
   }
 
   return duplicates;
+}
+
+function isNoDependencyChangePolicy(policy: Agentfile["policies"][number]): boolean {
+  return (
+    policy.id === "no-dependency-change" &&
+    policy.level === "must_not" &&
+    policy.appliesTo.length === 0 &&
+    policy.statement === "New runtime dependencies may not be added."
+  );
 }
 
 function looksLikePact(source: string): boolean {

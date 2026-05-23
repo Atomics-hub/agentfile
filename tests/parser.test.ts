@@ -968,6 +968,56 @@ mission duplicate-secret-name {
 `)).toThrow(/duplicate secret name: OPENAI_API_KEY/);
 
     expect(() => parsePactSource(`
+mission duplicate-can-use-network {
+  goal "Reject duplicate broad network grants"
+  touch src/**
+
+  can use network
+  can use network
+}
+`)).toThrow(/duplicate network policy: already allow/);
+
+    expect(() => parsePactSource(`
+mission duplicate-cannot-use-network {
+  goal "Reject duplicate network denials"
+  touch src/**
+
+  cannot use network
+  cannot use network
+}
+`)).toThrow(/duplicate network policy: already deny/);
+
+    expect(() => parsePactSource(`
+mission duplicate-can-read-secrets {
+  goal "Reject duplicate broad secret grants"
+  touch src/**
+
+  can read secrets
+  can read secrets
+}
+`)).toThrow(/duplicate secrets policy: already allow/);
+
+    expect(() => parsePactSource(`
+mission duplicate-cannot-read-secrets {
+  goal "Reject duplicate secret denials"
+  touch src/**
+
+  cannot read secrets
+  cannot read secrets
+}
+`)).toThrow(/duplicate secrets policy: already deny/);
+
+    expect(() => parsePactSource(`
+mission duplicate-dependency-guard {
+  goal "Reject duplicate dependency guards"
+  touch package.json, src/**
+
+  cannot add dependency
+  cannot add dependency
+}
+`)).toThrow(/duplicate dependency policy: cannot add dependency/);
+
+    expect(() => parsePactSource(`
 mission duplicate-list-entries {
   goal "Reject duplicate delimited entries"
   touch src/**, src/**
