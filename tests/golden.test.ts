@@ -11,6 +11,17 @@ const demoTargets = [
   ["copilot-md", "tests/fixtures/demo/copilot-instructions.md"]
 ] as const satisfies ReadonlyArray<readonly [CompileTarget, string]>;
 
+const benchmarkCompiledAgentsFixtures = [
+  [
+    "benchmarks/tasks/redact-logs/redact-logs.agent",
+    "benchmarks/tasks/redact-logs/compiled-agentfile.AGENTS.md"
+  ],
+  [
+    "benchmarks/tasks/webhook-signature/webhook-signature.agent",
+    "benchmarks/tasks/webhook-signature/compiled-agentfile.AGENTS.md"
+  ]
+] as const;
+
 describe("demo golden outputs", () => {
   it.each(demoTargets)("keeps %s output stable", async (target, fixturePath) => {
     const source = await readFile("examples/fix-login-race.agent", "utf8");
@@ -21,3 +32,15 @@ describe("demo golden outputs", () => {
   });
 });
 
+describe("benchmark compiled AGENTS.md fixtures", () => {
+  it.each(benchmarkCompiledAgentsFixtures)(
+    "keeps %s synced with generated AGENTS.md output",
+    async (sourcePath, fixturePath) => {
+      const source = await readFile(sourcePath, "utf8");
+      const agentfile = parseSource(source, sourcePath);
+      const expected = await readFile(fixturePath, "utf8");
+
+      expect(compileAgentfile(agentfile, "agents-md")).toBe(expected);
+    }
+  );
+});
