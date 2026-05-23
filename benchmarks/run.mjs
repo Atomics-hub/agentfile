@@ -245,6 +245,11 @@ async function validateReceipt(receipt, receiptPath) {
     requireField(receipt.receipts, "diff", "string", `${receiptPath}: receipts`, errors);
     requireField(receipt.receipts, "checkLog", "string", `${receiptPath}: receipts`, errors);
     requireField(receipt.receipts, "notes", "string", `${receiptPath}: receipts`, errors);
+    optionalField(receipt.receipts, "baselineTestLog", "string", `${receiptPath}: receipts`, errors);
+    optionalField(receipt.receipts, "baselineLintLog", "string", `${receiptPath}: receipts`, errors);
+    optionalField(receipt.receipts, "baselineProofLog", "string", `${receiptPath}: receipts`, errors);
+    optionalField(receipt.receipts, "baselineScopeLog", "string", `${receiptPath}: receipts`, errors);
+    validateRequiredBaselineArtifacts(task, receipt.receipts, receiptPath, errors);
 
     const expectedReceiptDir = receipt.runId
       ? resolve(receiptsRoot, receipt.runId)
@@ -264,6 +269,22 @@ async function validateReceipt(receipt, receiptPath) {
   }
 
   return errors;
+}
+
+function validateRequiredBaselineArtifacts(task, receipts, receiptPath, errors) {
+  if (!task) {
+    return;
+  }
+
+  for (const check of task.checks ?? []) {
+    const artifactName = baselineArtifactForCheck(check);
+    if (!artifactName) {
+      continue;
+    }
+    if (typeof receipts?.[artifactName] !== "string") {
+      errors.push(`${receiptPath}: receipts.${artifactName} is required for task check "${check}"`);
+    }
+  }
 }
 
 function validateUniqueRunIds(receipts) {
@@ -398,6 +419,22 @@ function summarizeScoreGroup(conditionId, scores) {
     strongHandoffRate: average(scores.map((score) => score.finalHandoffQuality === "strong" ? 1 : 0)),
     averageEvidenceQuality: average(scores.map((score) => score.evidenceQualityScore))
   };
+}
+
+function baselineArtifactForCheck(check) {
+  if (check.startsWith("npm test")) {
+    return "baselineTestLog";
+  }
+  if (check === "npm run lint") {
+    return "baselineLintLog";
+  }
+  if (check === "npm run proof:check") {
+    return "baselineProofLog";
+  }
+  if (check === "npm run scope:check") {
+    return "baselineScopeLog";
+  }
+  return null;
 }
 
 function groupBy(values, keyFor) {

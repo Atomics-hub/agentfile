@@ -61,6 +61,7 @@ Each real benchmark run should store:
 - Tool-call transcript or equivalent execution log.
 - Patch diff.
 - Check results.
+- Baseline failing logs for each manifest check. At minimum this means `baselineTestLog` for test commands and `baselineLintLog` for lint; proof-sensitive tasks also need `baselineProofLog`, and scope-boundary tasks need `baselineScopeLog`.
 - Scope adherence score.
 - Verification command execution score.
 - Proof-command reporting and proof-vector regression-test status when relevant.

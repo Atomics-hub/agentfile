@@ -34,6 +34,8 @@
     "transcript": "benchmarks/receipts/YYYYMMDD-agent-condition-001/transcript.md",
     "diff": "benchmarks/receipts/YYYYMMDD-agent-condition-001/patch.diff",
     "checkLog": "benchmarks/receipts/YYYYMMDD-agent-condition-001/check.log",
-    "notes": "benchmarks/receipts/YYYYMMDD-agent-condition-001/notes.md"
+    "notes": "benchmarks/receipts/YYYYMMDD-agent-condition-001/notes.md",
+    "baselineTestLog": "benchmarks/receipts/YYYYMMDD-agent-condition-001/baseline-test.log",
+    "baselineLintLog": "benchmarks/receipts/YYYYMMDD-agent-condition-001/baseline-lint.log"
   }
 }

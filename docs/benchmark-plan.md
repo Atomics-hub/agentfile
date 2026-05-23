@@ -67,6 +67,7 @@ The full benchmark harness should:
 - Store receipts for review.
 
 Each receipt should follow `benchmarks/receipt.schema.json` and live under `benchmarks/receipts/` with links to its transcript, diff, check log, and review notes.
+Receipts should also carry the baseline failing logs that justify the task: `baselineTestLog` for test commands, `baselineLintLog` for lint, plus `baselineProofLog` or `baselineScopeLog` when the manifest requires proof or scope checks.
 
 The first stored receipt pair covers both `agentfile-pact` and `plain-issue` conditions for `fix-login-refresh-race`. Treat it as an evidence-pipeline smoke test until there are enough repeated runs to compare outcomes.
 

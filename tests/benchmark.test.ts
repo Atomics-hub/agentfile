@@ -126,7 +126,9 @@ describe("benchmark receipt scoring", () => {
         transcript: missingTranscriptPath,
         diff: resolve(fixture.runDir, "patch.diff"),
         checkLog: resolve(fixture.runDir, "check.log"),
-        notes: resolve(fixture.runDir, "notes.md")
+        notes: resolve(fixture.runDir, "notes.md"),
+        baselineTestLog: resolve(fixture.runDir, "baseline-test.log"),
+        baselineLintLog: resolve(fixture.runDir, "baseline-lint.log")
       }
     }, null, 2));
 
@@ -138,6 +140,8 @@ describe("benchmark receipt scoring", () => {
     expect(error.stderr).toContain("endedAt must be greater than or equal to startedAt");
     expect(error.stderr).toContain("inputs.promptOrContract must match receipt-integrity/agentfile-pact input");
     expect(error.stderr).toContain("results.reportedProofCheck requires verificationCommandsRun to include npm run proof:check");
+    expect(error.stderr).toContain('receipts.baselineProofLog is required for task check "npm run proof:check"');
+    expect(error.stderr).toContain('receipts.baselineScopeLog is required for task check "npm run scope:check"');
     expect(error.stderr).toContain(`receipts.transcript file is missing: ${missingTranscriptPath}`);
   });
 });
@@ -184,6 +188,8 @@ async function createBenchmarkFixture() {
   await writeFile(resolve(runDir, "patch.diff"), "diff --git a/file b/file\n");
   await writeFile(resolve(runDir, "check.log"), "npm test -- receipt-integrity\n");
   await writeFile(resolve(runDir, "notes.md"), "notes\n");
+  await writeFile(resolve(runDir, "baseline-test.log"), "failing baseline test\n");
+  await writeFile(resolve(runDir, "baseline-lint.log"), "failing baseline lint\n");
 
   await writeFile(manifestPath, JSON.stringify({
     version: 1,
@@ -196,7 +202,7 @@ async function createBenchmarkFixture() {
         id: "receipt-integrity",
         family: "evidence_validation",
         fixture: fixturePath,
-        checks: ["npm test -- receipt-integrity", "npm run proof:check"],
+        checks: ["npm test -- receipt-integrity", "npm run lint", "npm run proof:check", "npm run scope:check"],
         conditions: [
           {
             id: "agentfile-pact",

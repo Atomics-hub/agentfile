@@ -116,7 +116,11 @@
         "transcript": { "type": "string" },
         "diff": { "type": "string" },
         "checkLog": { "type": "string" },
-        "notes": { "type": "string" }
+        "notes": { "type": "string" },
+        "baselineTestLog": { "type": "string" },
+        "baselineLintLog": { "type": "string" },
+        "baselineProofLog": { "type": "string" },
+        "baselineScopeLog": { "type": "string" }
       },
       "additionalProperties": true
     }
