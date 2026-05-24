@@ -1,0 +1,24 @@
+diff --git a/benchmarks/fixtures/audit-evidence/src/refunds/approve.js b/benchmarks/runs/20260524-codex-audit-plain-issue-002/workspace/src/refunds/approve.js
+index e3df14e..e645319 100644
+--- a/benchmarks/fixtures/audit-evidence/src/refunds/approve.js
++++ b/benchmarks/runs/20260524-codex-audit-plain-issue-002/workspace/src/refunds/approve.js
+@@ -3,6 +3,7 @@ export function approveRefund(refund, context = {}) {
+     type: "refund.approved",
+     refundId: refund.id,
+     actorId: context.actorId ?? "system",
++    requestId: context.requestId,
+     reason: context.reason ?? "not-provided",
+     at: new Date().toISOString()
+   };
+diff --git a/benchmarks/fixtures/audit-evidence/tests/refunds/approve.test.js b/benchmarks/runs/20260524-codex-audit-plain-issue-002/workspace/tests/refunds/approve.test.js
+index 0f89bd3..3a32b45 100644
+--- a/benchmarks/fixtures/audit-evidence/tests/refunds/approve.test.js
++++ b/benchmarks/runs/20260524-codex-audit-plain-issue-002/workspace/tests/refunds/approve.test.js
+@@ -34,4 +34,7 @@ test("records an approval audit event", () => {
+   assert.equal(approved.audit.length, 2);
+   assert.equal(approved.audit[1].type, "refund.approved");
+   assert.equal(approved.audit[1].refundId, "refund-2");
++  assert.equal(approved.audit[1].actorId, "support-user-9");
++  assert.equal(approved.audit[1].requestId, "req-456");
++  assert.equal(approved.audit[1].reason, "shipping issue");
+ });
