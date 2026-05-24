@@ -14,6 +14,7 @@ const launchReviewPath = fileURLToPath(new URL("../scripts/launch-review.mjs", i
 const prepublicDryRunPath = fileURLToPath(new URL("../scripts/prepublic-dry-run.mjs", import.meta.url));
 const publicClaimReviewPath = fileURLToPath(new URL("../scripts/public-claim-review.mjs", import.meta.url));
 const cleanCloneVerifyPath = fileURLToPath(new URL("../scripts/clean-clone-verify.mjs", import.meta.url));
+const launchMetadataReviewPath = fileURLToPath(new URL("../scripts/launch-metadata-review.mjs", import.meta.url));
 const tempDirs: string[] = [];
 
 afterEach(async () => {
@@ -698,6 +699,18 @@ describe("benchmark receipt scoring", () => {
     expect(review.violationCount).toBe(0);
   });
 
+  it("renders launch metadata guidance for public repository setup", async () => {
+    const { stdout } = await execFileAsync("node", [launchMetadataReviewPath], {
+      maxBuffer: 1024 * 1024
+    });
+
+    expect(stdout).toContain("# Agentfile Launch Metadata Review");
+    expect(stdout).toContain("Status: pass");
+    expect(stdout).toContain("| Package description | pass |");
+    expect(stdout).toContain("Expected private repo description: Contract language for reviewable AI coding agent delegation.");
+    expect(stdout).toContain("does not publish packages, push commits, or change repository visibility");
+  });
+
   it("renders a pre-public dry-run gate without recursively running full checks", async () => {
     const { stdout } = await execFileAsync("node", [prepublicDryRunPath, "--skip-check"], {
       maxBuffer: 20 * 1024 * 1024
@@ -707,6 +720,7 @@ describe("benchmark receipt scoring", () => {
     expect(stdout).toContain("Status: pass");
     expect(stdout).toContain("Mode: skip-check");
     expect(stdout).toContain("| Package remains private | pass |");
+    expect(stdout).toContain("| Launch metadata review | pass |");
     expect(stdout).toContain("| Benchmark plan validation | pass |");
     expect(stdout).toContain("| Benchmark report render | pass |");
     expect(stdout).toContain("| Launch gate review | pass |");

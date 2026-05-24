@@ -36,6 +36,11 @@ const commands = [
     args: ["run", "demo:quick"]
   }]),
   {
+    name: "Launch metadata review",
+    command: "npm run launch:metadata",
+    args: ["run", "launch:metadata"]
+  },
+  {
     name: "Benchmark plan validation",
     command: "npm run benchmark:plan",
     args: ["run", "benchmark:plan"]

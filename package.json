@@ -46,6 +46,7 @@
     "benchmark:report": "node benchmarks/report.mjs",
     "demo:quick": "node scripts/readme-quick-loop.mjs",
     "claims:review": "node scripts/public-claim-review.mjs",
+    "launch:metadata": "node scripts/launch-metadata-review.mjs",
     "launch:review": "node scripts/launch-review.mjs",
     "launch:dry-run": "node scripts/prepublic-dry-run.mjs",
     "launch:clean-clone": "node scripts/clean-clone-verify.mjs",

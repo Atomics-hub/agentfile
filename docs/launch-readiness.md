@@ -56,11 +56,12 @@ The repository is ready to go public when:
 Generate the current local launch-review gate summary:
 
 ```sh
+npm run launch:metadata
 npm run claims:review
 npm run launch:review
 ```
 
-The generated review is a decision aid. It summarizes benchmark receipt coverage, completed four-condition task families, launch gates, and claim-scan status. The benchmark proof gate becomes ready only when coverage has enough receipt count, comparable pairs, repeated pairs, completed four-condition task families, and no missing condition receipts. It does not replace private remote verification or manual claim review against [Public Claims Policy](public-claims.md). The fast-test gate becomes ready only when `npm run launch:clean-clone` has written a passing report for the current commit.
+The metadata review checks package identity, repository URLs, private package posture, and the intended private GitHub description: `Contract language for reviewable AI coding agent delegation.` The generated launch review is a decision aid. It summarizes benchmark receipt coverage, completed four-condition task families, launch gates, and claim-scan status. The benchmark proof gate becomes ready only when coverage has enough receipt count, comparable pairs, repeated pairs, completed four-condition task families, and no missing condition receipts. It does not replace private remote verification or manual claim review against [Public Claims Policy](public-claims.md). The fast-test gate becomes ready only when `npm run launch:clean-clone` has written a passing report for the current commit.
 
 Run the local pre-public dry run before treating the repository as launchable:
 
@@ -70,7 +71,7 @@ npm run launch:dry-run
 npm run launch:clean-clone
 ```
 
-The quick demo script builds the CLI, validates the example contract, writes the generated instruction files into a temporary directory, prints short excerpts from those files, explains what the loop does and does not prove, verifies the passing receipt, and confirms the pending receipt fails with missing proof. The dry run executes `npm run check`, `npm run demo:quick`, validates the benchmark plan, renders the benchmark report, renders the launch-review gate, and confirms `package.json` still has `private: true`. The clean-clone verifier clones the committed checkout into a temporary directory, runs `npm ci`, then runs the same dry run from that clean checkout. It writes `.agentfile/clean-clone-report.json`, which `npm run launch:review` uses to mark the fast-test gate ready when the report matches the current commit. Neither command publishes packages, pushes commits, or changes repository visibility. Remote privacy still requires a separate `gh repo view Atomics-hub/agentfile --json visibility` check.
+The quick demo script builds the CLI, validates the example contract, writes the generated instruction files into a temporary directory, prints short excerpts from those files, explains what the loop does and does not prove, verifies the passing receipt, and confirms the pending receipt fails with missing proof. The dry run executes `npm run check`, `npm run demo:quick`, `npm run launch:metadata`, validates the benchmark plan, renders the benchmark report, renders the launch-review gate, and confirms `package.json` still has `private: true`. The clean-clone verifier clones the committed checkout into a temporary directory, runs `npm ci`, then runs the same dry run from that clean checkout. It writes `.agentfile/clean-clone-report.json`, which `npm run launch:review` uses to mark the fast-test gate ready when the report matches the current commit. Neither command publishes packages, pushes commits, or changes repository visibility. Remote privacy still requires a separate `gh repo view Atomics-hub/agentfile --json visibility,description` check.
 
 ## Current Highest-Leverage Work
 
