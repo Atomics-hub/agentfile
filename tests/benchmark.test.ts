@@ -31,7 +31,7 @@ describe("benchmark receipt scoring", () => {
     expect(plan.metrics).toContain("proof_vector_regression_tests");
     expect(plan.metrics).toContain("evidence_quality");
     expect(plan.scoreSummary.comparableConditionPairs).toBe(27);
-    expect(plan.scoreSummary.repeatedConditionPairs).toBe(21);
+    expect(plan.scoreSummary.repeatedConditionPairs).toBe(24);
 
     const agentfile = plan.scoreSummary.byCondition.find(
       (condition: { conditionId: string }) => condition.conditionId === "agentfile-pact"
@@ -156,8 +156,12 @@ describe("benchmark receipt scoring", () => {
       }),
       expect.objectContaining({
         conditionId: "plain-issue",
+        receiptCount: 2,
         proofCommandReportRate: 0,
         independentProofCheckPassRate: 1,
+        regressionTestRate: 1,
+        averagePatchLinesChanged: 12,
+        averageNormalizedQualityScore: 0.96,
         evidenceQuality: "adequate"
       }),
       expect.objectContaining({
@@ -204,6 +208,17 @@ describe("benchmark receipt scoring", () => {
         evidenceQualityDelta: 0
       }),
       expect.objectContaining({
+        leftConditionId: "agentfile-pact",
+        rightConditionId: "plain-issue",
+        comparableReceiptCount: 2,
+        isRepeated: true,
+        normalizedQualityDelta: 0.04,
+        proofCommandReportDelta: 1,
+        independentProofCheckPassDelta: 0,
+        regressionTestDelta: 0,
+        evidenceQualityDelta: 0.33
+      }),
+      expect.objectContaining({
         leftConditionId: "agents-md",
         rightConditionId: "compiled-agents-md",
         comparableReceiptCount: 2,
@@ -213,6 +228,28 @@ describe("benchmark receipt scoring", () => {
         independentProofCheckPassDelta: 0,
         regressionTestDelta: 0,
         evidenceQualityDelta: 0
+      }),
+      expect.objectContaining({
+        leftConditionId: "agents-md",
+        rightConditionId: "plain-issue",
+        comparableReceiptCount: 2,
+        isRepeated: true,
+        normalizedQualityDelta: 0.02,
+        proofCommandReportDelta: 1,
+        independentProofCheckPassDelta: 0,
+        regressionTestDelta: 0,
+        evidenceQualityDelta: 0.33
+      }),
+      expect.objectContaining({
+        leftConditionId: "compiled-agents-md",
+        rightConditionId: "plain-issue",
+        comparableReceiptCount: 2,
+        isRepeated: true,
+        normalizedQualityDelta: 0.04,
+        proofCommandReportDelta: 1,
+        independentProofCheckPassDelta: 0,
+        regressionTestDelta: 0,
+        evidenceQualityDelta: 0.33
       })
     ]));
 
@@ -342,7 +379,7 @@ describe("benchmark receipt scoring", () => {
     });
 
     expect(stdout).toContain("# Agentfile Benchmark Report");
-    expect(stdout).toContain("- Receipts: 37");
+    expect(stdout).toContain("- Receipts: 38");
     expect(stdout).toContain("## Coverage Summary");
     expect(stdout).toContain("- Fully covered tasks: 7 / 7");
     expect(stdout).toContain("- Missing condition receipts: 0");
@@ -355,12 +392,13 @@ describe("benchmark receipt scoring", () => {
     expect(stdout).not.toContain("| `share-discount-calculation` | `plain-issue` | `benchmarks/tasks/pricing-refactor/plain-issue.md` |");
     expect(stdout).toContain("## Task Coverage");
     expect(stdout).toContain("- Comparable pairs: 27");
-    expect(stdout).toContain("- Repeated pairs: 21");
+    expect(stdout).toContain("- Repeated pairs: 24");
     expect(stdout).not.toContain("| `remove-shipping-label-pii` | `agentfile-pact` | `benchmarks/tasks/fulfillment-pii/fulfillment-pii.agent` |");
     expect(stdout).not.toContain("| `remove-shipping-label-pii` | `compiled-agents-md` | `benchmarks/tasks/fulfillment-pii/compiled-agentfile.AGENTS.md` |");
     expect(stdout).not.toContain("| `remove-shipping-label-pii` | `agents-md` | `benchmarks/tasks/fulfillment-pii/AGENTS.md` |");
     expect(stdout).not.toContain("| `remove-shipping-label-pii` | `plain-issue` | `benchmarks/tasks/fulfillment-pii/plain-issue.md` |");
     expect(stdout).toContain("| Pair | Matched | Repeated | Delta Quality | Delta Proof | Delta Proof Pass | Delta Regression | Delta Evidence |");
+    expect(stdout).toContain("| `agentfile-pact` vs `plain-issue` | 2 | yes | 0.04 | 1 | 0 | 0 | 0.33 |");
     expect(stdout).toContain("| `agentfile-pact` vs `plain-issue` | 2 | yes | 0.17 | 0 | 0 | 1 | 0.33 |");
     expect(stdout).toContain("| `agentfile-pact` vs `plain-issue` | 2 | yes | 0 | 0 | 0 | 0 | 0 |");
     expect(stdout).toContain("| `agentfile-pact` vs `agents-md` | 2 | yes | 0.02 | 0 | 0 | 0 | 0 |");

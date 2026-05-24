@@ -4,7 +4,7 @@ Agentfile benchmark results are still early. These receipts are useful as eviden
 
 ## Current Dataset
 
-As of 2026-05-24, the repository has thirty-seven validated receipts across seven covered task families. The covered set includes repeated `agents-md` generic instruction-file receipts, fully repeated four-condition pricing and fulfillment fixtures, and repeated compiled `AGENTS.md` redaction, webhook, and fulfillment receipts generated from Pact source. The `remove-shipping-label-pii` and `share-discount-calculation` fixtures now have matching repeated plain-issue, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact receipts.
+As of 2026-05-24, the repository has thirty-eight validated receipts across seven covered task families. The covered set includes repeated `agents-md` generic instruction-file receipts, fully repeated four-condition redaction, fulfillment, and pricing fixtures, and repeated compiled `AGENTS.md` redaction, webhook, and fulfillment receipts generated from Pact source. The `redact-auth-logs`, `remove-shipping-label-pii`, and `share-discount-calculation` fixtures now have matching repeated plain-issue, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact receipts.
 
 | Task | Condition | Completed | Checks passed | Scope adherence | Reported required proof commands | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -12,7 +12,7 @@ As of 2026-05-24, the repository has thirty-seven validated receipts across seve
 | `fix-login-refresh-race` | `agentfile-pact` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint` | Smoke-test receipt. |
 | `preserve-session-claims` | `plain-issue` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint`, `npm run scope:check` | Both conditions preserved the billing boundary. |
 | `preserve-session-claims` | `agentfile-pact` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint`, `npm run scope:check` | Both conditions preserved the billing boundary. |
-| `redact-auth-logs` | `plain-issue` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint` | Independent `proof:check` passed, but the worker did not report running it. |
+| `redact-auth-logs` | `plain-issue` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint` | Two plain-issue workers produced passing redaction patches; independent `proof:check` passed, but neither worker reported running it. |
 | `redact-auth-logs` | `agents-md` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint`, `npm run proof:check` | Two generic instruction-file workers ran proof and added token-redaction regression coverage. |
 | `redact-auth-logs` | `compiled-agents-md` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint`, `npm run proof:check` | Two generated Agentfile-output workers ran proof and added token-redaction regression coverage. |
 | `redact-auth-logs` | `agentfile-pact` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint`, `npm run proof:check` | Two Agentfile workers reported the dedicated proof check required by the contract and added regression coverage. |
@@ -37,13 +37,13 @@ The receipts support a narrow internal statement:
 
 > The current benchmark pipeline can capture comparable agent runs, diffs, check logs, and review notes for plain issue and Agentfile Pact conditions.
 
-`npm run benchmark:plan` now emits a `scoreSummary` from the stored receipts. In the current receipt set, `agentfile-pact` has complete required-check coverage, complete proof-command reporting on proof-sensitive tasks, and stronger inferred evidence quality. The summary also reports average changed-file and changed-line counts backed by the stored diffs, plus a normalized quality score that combines completion, supported checks, proof reporting, regression-test evidence, evidence quality, and patch focus. `plain-issue` also completes every task, but its proof-command reporting is lower because the `redact-auth-logs` plain run did not report `npm run proof:check`.
+`npm run benchmark:plan` now emits a `scoreSummary` from the stored receipts. In the current receipt set, `agentfile-pact` has complete required-check coverage, complete proof-command reporting on proof-sensitive tasks, and stronger inferred evidence quality. The summary also reports average changed-file and changed-line counts backed by the stored diffs, plus a normalized quality score that combines completion, supported checks, proof reporting, regression-test evidence, evidence quality, and patch focus. `plain-issue` also completes every task, but its proof-command reporting is lower because both `redact-auth-logs` plain runs did not report `npm run proof:check`.
 
-The original `redact-auth-logs` pair also gives a candidate signal:
+The repeated `redact-auth-logs` set gives a candidate signal:
 
 > When a dedicated proof command was explicit in the Agentfile contract, the Agentfile-condition worker reported running it; the plain-issue worker did not report running it.
 
-This signal is promising because the fixture is designed so normal tests and lint can pass while `npm run proof:check` catches leaked token values. The repeated `agents-md` redaction runs also reported the proof check and added regression coverage, so the stronger current interpretation is: explicit proof obligations help, and Agentfile needs to prove its advantage over generic instruction files through structure, validation, compilation, and auditability. The repeated `agentfile-pact` vs `agents-md` comparison is now an honesty point: strong Markdown can match the core proof behavior on this task, while Agentfile still contributes typed source, validation, compilation, and audit structure. The repeated `compiled-agents-md` redaction runs show that a Pact contract can compile into a usable agent instruction surface and still produce passing, auditable work on a proof-sensitive task.
+This signal is promising because the fixture is designed so normal tests and lint can pass while `npm run proof:check` catches leaked token values. It is now repeated for native Pact versus plain issue text and for generated/hand-written instruction files versus plain issue text. The repeated `agents-md` redaction runs also reported the proof check and added regression coverage, so the stronger current interpretation is: explicit proof obligations help, and Agentfile needs to prove its advantage over generic instruction files through structure, validation, compilation, and auditability. The repeated `agentfile-pact` vs `agents-md` comparison remains an honesty point: strong Markdown can match the core proof behavior on this task, while Agentfile still contributes typed source, validation, compilation, and audit structure. The repeated `compiled-agents-md` redaction runs show that a Pact contract can compile into a usable agent instruction surface and still produce passing, auditable work on a proof-sensitive task.
 
 The `preserve-refund-audit-evidence` pair did not reproduce that differential signal. Both workers ran the dedicated proof check and produced passing patches, so this pair strengthens receipt coverage but not the comparative claim.
 
@@ -67,7 +67,7 @@ Before public launch, the benchmark story should either stay framed as a plan or
 
 - Use `npm run benchmark:report` for review, but cite underlying receipts in public-facing claims.
 - Add another privacy/scope fixture before making public comparative claims from this family.
-- Add a second plain-issue receipt to redaction so the security logging fixture can match the repeated four-condition depth now available for fulfillment and pricing.
+- Add another proof-sensitive task family to test whether the redaction proof-command signal repeats outside auth logging.
 - Add more proof-sensitive task families with repeated `agents-md` and compiled-output conditions to test whether structured contracts show measurable value over strong Markdown instructions.
 - Repeat compiled-output runs across more task families and start tracking whether compiled instructions reduce missing proof checks, weaker tests, or oversized patches compared with hand-written instructions.
 - Keep each receipt reviewable: transcript, diff, check log, scope score, verification commands, and handoff quality.

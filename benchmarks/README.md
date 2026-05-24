@@ -41,13 +41,13 @@ The first `preserve-session-claims` receipt pair also passed in both conditions.
 
 The `redact-auth-logs` fixture stresses proof discipline: regular auth tests can pass while `npm run proof:check` still catches raw token leakage. The Agentfile condition names that proof check explicitly.
 
-The first `redact-auth-logs` receipt pair produced the first useful comparative signal: both conditions made passing patches, but only the Agentfile condition reported running the dedicated proof check.
+The repeated `redact-auth-logs` receipt set produced the first useful comparative signal: all conditions made passing patches, but native Pact, compiled `AGENTS.md`, and hand-written `AGENTS.md` workers reported the dedicated proof check while the plain-issue workers did not.
 
 The `redact-auth-logs` task now also includes an `agents-md` condition so the proof-checking signal can be tested against generic instruction-file guidance.
 
 The first `agents-md` redaction receipt passed and reported the dedicated proof check, so the comparison is now more serious: Agentfile must show measurable value over strong instruction files through structure, validation, compilation, and auditability.
 
-The second redaction repeat now has both `agentfile-pact` and `agents-md` receipts. Both conditions reported proof and added regression coverage, so this task currently supports explicit-proof-obligation claims more than broad superiority claims.
+The redaction repeat now has native Pact, plain issue, hand-written `AGENTS.md`, and compiled `AGENTS.md` receipts. The instruction-file conditions reported proof and added regression coverage, so this task currently supports explicit-proof-obligation claims more than broad superiority claims.
 
 The task also includes a `compiled-agents-md` condition that uses `agentfile compile --target agents-md` output as the actual worker input. This tests the language-to-agent bridge directly instead of treating Pact source and hand-written Markdown as separate worlds.
 

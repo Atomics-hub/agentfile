@@ -97,13 +97,13 @@ The first `preserve-session-claims` receipt pair passed in both conditions. Both
 
 The `redact-auth-logs` task is designed to test proof discipline: regular auth tests can pass while a dedicated proof check catches leaked token values. The plain issue asks for tests and lint; the Agentfile condition explicitly requires `npm run proof:check`.
 
-The first `redact-auth-logs` receipt pair produced a candidate signal for Agentfile's proof-checking value: both patches passed independent verification, but only the Agentfile-condition worker reported executing the dedicated proof check.
+The repeated `redact-auth-logs` receipt set produced a candidate signal for explicit proof obligations: all patches passed independent verification, but the native Pact, compiled `AGENTS.md`, and hand-written `AGENTS.md` workers reported executing the dedicated proof check while the plain-issue workers did not.
 
 The `redact-auth-logs` task now also includes an `agents-md` condition so the candidate proof-checking signal can be tested against generic instruction-file guidance.
 
 The first `agents-md` redaction receipt passed and reported the dedicated proof check. This makes the next benchmark question sharper: whether Agentfile's structured, validated, compilable contract produces clearer verification behavior than a strong Markdown instruction file.
 
-The second redaction repeat now has both `agentfile-pact` and `agents-md` receipts. Both conditions reported `npm run proof:check` and added regression coverage, which is an important honesty point before making any public comparison against strong instruction files.
+The redaction repeat now has native Pact, plain issue, hand-written `AGENTS.md`, and compiled `AGENTS.md` receipts. The instruction-file conditions reported `npm run proof:check` and added regression coverage, which is an important honesty point before making any public comparison against strong instruction files.
 
 The redaction task now includes a `compiled-agents-md` condition generated from the Pact source. This condition tests whether compiled Agentfile output can serve as the actual agent instruction surface.
 
