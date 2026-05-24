@@ -144,6 +144,53 @@ describe("agentfile receipt", () => {
     expect(stdout).toContain("## Receipt Fields");
     expect(stdout).toContain("- Agent, model, and harness");
   });
+
+  it("prints a machine-readable receipt template", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-json-"));
+    tempDirs.push(cwd);
+
+    const { stdout } = await runCli(["receipt", examplePath, "--format", "json"], cwd);
+    const receipt = JSON.parse(stdout);
+
+    expect(receipt.kind).toBe("AgentfileReceiptTemplate");
+    expect(receipt.contract.taskId).toBe("fix-login-refresh-race");
+    expect(receipt.scope.include).toEqual(["src/auth/**", "tests/auth/**"]);
+    expect(receipt.authority.network.default).toBe("deny");
+    expect(receipt.requiredProof[0]).toMatchObject({
+      id: "npm-test-auth",
+      command: "npm test -- auth",
+      required: true,
+      status: "pending",
+      evidence: null
+    });
+    expect(receipt.handoffEvidence).toContainEqual(expect.objectContaining({
+      item: "Attach or link the transcript/tool log.",
+      status: "pending"
+    }));
+  });
+
+  it("writes receipt artifacts and protects existing files", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-output-"));
+    tempDirs.push(cwd);
+
+    const outputPath = join(cwd, "receipts", "fix-login.md");
+
+    const { stdout } = await runCli(["receipt", examplePath, "--output", outputPath], cwd);
+    const content = await readFile(outputPath, "utf8");
+
+    expect(stdout).toContain(`Wrote ${outputPath}`);
+    expect(content).toContain("# Agentfile Receipt Checklist");
+    await expect(
+      runCli(["receipt", examplePath, "--output", outputPath], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining(`refusing to overwrite ${outputPath}; pass --force to replace it`)
+    });
+
+    await runCli(["receipt", examplePath, "--format", "json", "--output", outputPath, "--force"], cwd);
+    const jsonReceipt = JSON.parse(await readFile(outputPath, "utf8"));
+
+    expect(jsonReceipt.kind).toBe("AgentfileReceiptTemplate");
+  });
 });
 
 describe("agentfile file discovery", () => {

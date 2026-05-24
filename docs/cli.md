@@ -96,10 +96,14 @@ Print a short human-readable summary of the contract.
 
 ## `agentfile receipt [file]`
 
-Print a Markdown checklist for auditing a completed harness run against the contract.
+Print a receipt artifact for auditing a completed harness run against the contract.
 
-The checklist includes the contract path, task goal, scope, authority, required proof commands, acceptance evidence, handoff evidence, and receipt fields such as agent/model/harness, transcript, diff, check log, and final summary.
+By default this prints a Markdown checklist. Pass `--format json` for a machine-readable receipt template with pending proof, acceptance, and handoff evidence slots. Pass `--output <file>` to write the artifact; parent directories are created and existing files are protected unless `--force` is passed.
+
+The artifact includes the contract path, task goal, scope, authority, required proof commands, acceptance evidence, handoff evidence, and receipt fields such as agent/model/harness, transcript, diff, check log, and final summary.
 
 ```sh
 agentfile receipt examples/fix-login-race.agent
+agentfile receipt examples/fix-login-race.agent --output receipts/fix-login.md
+agentfile receipt examples/fix-login-race.agent --format json --output receipts/fix-login.json
 ```

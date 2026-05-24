@@ -237,6 +237,7 @@ Generate a receipt checklist from the same contract:
 
 ```sh
 node dist/cli.js receipt examples/fix-login-race.agent
+node dist/cli.js receipt examples/fix-login-race.agent --output receipts/fix-login.md
 ```
 
 Expected excerpt:
@@ -256,4 +257,28 @@ Task: `fix-login-refresh-race`
 - [ ] Attach or link the transcript/tool log.
 - [ ] Attach or link the patch diff.
 - [ ] Attach or link the check log.
+```
+
+Generate a machine-readable receipt template when a harness wants to attach evidence programmatically:
+
+```sh
+node dist/cli.js receipt examples/fix-login-race.agent --format json
+```
+
+Expected excerpt:
+
+```json
+{
+  "kind": "AgentfileReceiptTemplate",
+  "contract": {
+    "taskId": "fix-login-refresh-race"
+  },
+  "requiredProof": [
+    {
+      "command": "npm test -- auth",
+      "status": "pending",
+      "evidence": null
+    }
+  ]
+}
 ```

@@ -152,10 +152,27 @@ program
   .command("receipt")
   .description("Print a receipt checklist for auditing an agent run against a contract.")
   .argument("[file]", "Agentfile path")
-  .action(async (file: string) => {
+  .option("--format <format>", "markdown or json", "markdown")
+  .option("-o, --output <file>", "write the receipt artifact to a file")
+  .option("--force", "overwrite an existing output file", false)
+  .action(async (file: string, options: { format: string; output?: string; force: boolean }) => {
     const resolved = await resolveFile(file);
     const agentfile = await load(resolved);
-    process.stdout.write(renderReceiptChecklist(agentfile, resolved));
+    const format = parseReceiptFormat(options.format);
+    const receipt = renderReceipt(agentfile, resolved, format);
+
+    if (options.output) {
+      if (!options.force && await exists(options.output)) {
+        throw new AgentfileError(`refusing to overwrite ${options.output}; pass --force to replace it`);
+      }
+
+      await mkdir(dirname(options.output), { recursive: true });
+      await writeFile(options.output, receipt, "utf8");
+      console.log(`Wrote ${options.output}`);
+      return;
+    }
+
+    process.stdout.write(receipt);
   });
 
 program.parseAsync().catch((error: unknown) => {
@@ -176,7 +193,18 @@ async function load(filePath: string) {
   return parseSource(source, filePath);
 }
 
+type ReceiptFormat = "markdown" | "json";
+
+function renderReceipt(agentfile: Agentfile, contractPath: string, format: ReceiptFormat): string {
+  if (format === "json") {
+    return `${JSON.stringify(buildReceiptTemplate(agentfile, contractPath), null, 2)}\n`;
+  }
+
+  return renderReceiptChecklist(agentfile, contractPath);
+}
+
 function renderReceiptChecklist(agentfile: Agentfile, contractPath: string): string {
+  const handoffEvidence = receiptHandoffEvidence(agentfile);
   const lines = [
     "# Agentfile Receipt Checklist",
     "",
@@ -226,32 +254,14 @@ function renderReceiptChecklist(agentfile: Agentfile, contractPath: string): str
     }
   }
 
-  const reviewText = agentfile.workflow.review.join("\n").toLowerCase();
-  const reviewListsChangedFiles = reviewText.includes("changed file");
-  const reviewNotesRisks = reviewText.includes("risk");
-
   lines.push(
     "",
     "## Handoff Evidence",
-    "",
-    "- [ ] Attach or link the transcript/tool log.",
-    "- [ ] Attach or link the patch diff.",
-    "- [ ] Attach or link the check log."
+    ""
   );
 
-  if (!reviewListsChangedFiles) {
-    lines.push("- [ ] List changed files.");
-  }
-
-  lines.push(reviewNotesRisks
-    ? "- [ ] Note skipped checks, approvals, and policy limits."
-    : "- [ ] Note risks, skipped checks, approvals, and policy limits."
-  );
-
-  if (agentfile.workflow.review.length > 0) {
-    for (const item of agentfile.workflow.review) {
-      lines.push(`- [ ] ${item}`);
-    }
+  for (const item of handoffEvidence) {
+    lines.push(`- [ ] ${item}`);
   }
 
   lines.push(
@@ -271,6 +281,85 @@ function renderReceiptChecklist(agentfile: Agentfile, contractPath: string): str
   return lines.join("\n");
 }
 
+function buildReceiptTemplate(agentfile: Agentfile, contractPath: string) {
+  return {
+    agentfile: "0.1.0",
+    kind: "AgentfileReceiptTemplate",
+    contract: {
+      path: contractPath,
+      taskId: agentfile.task.id,
+      goal: agentfile.task.goal
+    },
+    source: {
+      contractSourceUsed: contractPath,
+      generatedInstructionSurfaceUsed: null
+    },
+    scope: {
+      include: agentfile.scope.include,
+      exclude: agentfile.scope.exclude,
+      filesystem: agentfile.permissions.filesystem
+    },
+    authority: {
+      shell: agentfile.permissions.shell,
+      network: agentfile.permissions.network,
+      secrets: agentfile.permissions.secrets,
+      approvals: agentfile.permissions.approvals
+    },
+    requiredProof: agentfile.checks.map((check) => ({
+      id: check.id,
+      command: check.command ?? null,
+      description: check.description ?? null,
+      required: check.required,
+      status: "pending",
+      evidence: null
+    })),
+    acceptanceEvidence: agentfile.workflow.acceptance.map((item) => ({
+      item,
+      status: "pending",
+      evidence: null
+    })),
+    handoffEvidence: receiptHandoffEvidence(agentfile).map((item) => ({
+      item,
+      status: "pending",
+      evidence: null
+    })),
+    receiptFields: [
+      "contract source used",
+      "generated instruction surface used, if any",
+      "agent, model, and harness",
+      "started and ended timestamps",
+      "verification commands run",
+      "scope adherence notes",
+      "final handoff summary"
+    ]
+  };
+}
+
+function receiptHandoffEvidence(agentfile: Agentfile): string[] {
+  const reviewText = agentfile.workflow.review.join("\n").toLowerCase();
+  const reviewListsChangedFiles = reviewText.includes("changed file");
+  const reviewNotesRisks = reviewText.includes("risk");
+  const handoffEvidence = [
+    "Attach or link the transcript/tool log.",
+    "Attach or link the patch diff.",
+    "Attach or link the check log."
+  ];
+
+  if (!reviewListsChangedFiles) {
+    handoffEvidence.push("List changed files.");
+  }
+
+  handoffEvidence.push(reviewNotesRisks
+    ? "Note skipped checks, approvals, and policy limits."
+    : "Note risks, skipped checks, approvals, and policy limits."
+  );
+
+  return [
+    ...handoffEvidence,
+    ...agentfile.workflow.review
+  ];
+}
+
 function listOrNone(values: string[]): string {
   return values.length > 0 ? values.join(", ") : "none";
 }
@@ -286,6 +375,14 @@ function parseTarget(value: string): CompileTarget {
   }
 
   throw new AgentfileError(`unknown compile target "${value}". Expected ${quotedTargetIds(compileTargets)}.`);
+}
+
+function parseReceiptFormat(value: string): ReceiptFormat {
+  if (value === "markdown" || value === "json") {
+    return value;
+  }
+
+  throw new AgentfileError(`unknown receipt format "${value}". Expected "markdown" or "json".`);
 }
 
 function compileTargetHelp(): string {
