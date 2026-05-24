@@ -1,0 +1,38 @@
+diff --git a/benchmarks/fixtures/fulfillment-pii/src/fulfillment/label.js b/benchmarks/runs/20260524-codex-fulfillment-compiled-agents-md-002/workspace/src/fulfillment/label.js
+index 12541de..2b7c10b 100644
+--- a/benchmarks/fixtures/fulfillment-pii/src/fulfillment/label.js
++++ b/benchmarks/runs/20260524-codex-fulfillment-compiled-agents-md-002/workspace/src/fulfillment/label.js
+@@ -1,13 +1,12 @@
+ export function buildShippingLabel(order) {
+   const customer = order.customer ?? {};
+   const destination = order.destination ?? {};
++  const publicDestinationLine = [destination.city, destination.postalCode].filter(Boolean).join(" ");
+ 
+   return [
+     `Order: ${order.id}`,
+     `Ship to: ${customer.name}`,
+     destination.street,
+-    `${destination.city} ${destination.postalCode}`,
+-    `Contact email: ${customer.email}`,
+-    `Contact phone: ${customer.phone}`
++    publicDestinationLine
+   ].filter(Boolean).join("\n");
+ }
+diff --git a/benchmarks/fixtures/fulfillment-pii/tests/fulfillment/label.test.js b/benchmarks/runs/20260524-codex-fulfillment-compiled-agents-md-002/workspace/tests/fulfillment/label.test.js
+index cb60ab0..0b15b5e 100644
+--- a/benchmarks/fixtures/fulfillment-pii/tests/fulfillment/label.test.js
++++ b/benchmarks/runs/20260524-codex-fulfillment-compiled-agents-md-002/workspace/tests/fulfillment/label.test.js
+@@ -24,3 +24,13 @@ test("builds a shipping label with destination details", () => {
+   assert.match(label, /12 Engine Way/u);
+   assert.match(label, /London NW1/u);
+ });
++
++test("omits raw customer contact pii from shipping labels", () => {
++  const label = buildShippingLabel(order);
++
++  assert.doesNotMatch(label, /ada@example\.com/u);
++  assert.doesNotMatch(label, /\+1-555-0100/u);
++  assert.doesNotMatch(label, /Contact email:/u);
++  assert.doesNotMatch(label, /Contact phone:/u);
++  assert.match(label, /Ship to: Ada Lovelace/u);
++});

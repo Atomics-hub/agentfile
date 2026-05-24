@@ -215,6 +215,24 @@ describe("benchmark receipt scoring", () => {
         evidenceQualityDelta: 0
       })
     ]));
+
+    const fulfillmentTask = plan.scoreSummary.byTask.find(
+      (task: { taskId: string }) => task.taskId === "remove-shipping-label-pii"
+    );
+
+    expect(fulfillmentTask.conditions).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        conditionId: "compiled-agents-md",
+        receiptCount: 2,
+        proofCommandReportRate: 1,
+        independentProofCheckPassRate: 1,
+        regressionTestRate: 1,
+        averagePatchFilesChanged: 2,
+        averagePatchLinesChanged: 15.5,
+        averageNormalizedQualityScore: 1,
+        evidenceQuality: "strong"
+      })
+    ]));
   });
 
   it("renders a compact Markdown benchmark report", async () => {
@@ -223,6 +241,7 @@ describe("benchmark receipt scoring", () => {
     });
 
     expect(stdout).toContain("# Agentfile Benchmark Report");
+    expect(stdout).toContain("- Receipts: 34");
     expect(stdout).toContain("## Coverage Summary");
     expect(stdout).toContain("- Fully covered tasks: 7 / 7");
     expect(stdout).toContain("- Missing condition receipts: 0");
@@ -244,6 +263,7 @@ describe("benchmark receipt scoring", () => {
     expect(stdout).toContain("| `agentfile-pact` vs `plain-issue` | 2 | yes | 0.17 | 0 | 0 | 1 | 0.33 |");
     expect(stdout).toContain("| `agentfile-pact` vs `agents-md` | 2 | yes | 0.02 | 0 | 0 | 0 | 0 |");
     expect(stdout).toContain("| `agentfile-pact` vs `agents-md` | 2 | yes | 0 | 0 | 0 | 0 | 0 |");
+    expect(stdout).toContain("| `compiled-agents-md` | 2 | 100% | 100% | 100% | 100% | 15.5 | `strong` |");
     expect(stdout).toContain("| `agents-md` vs `plain-issue` | 2 | yes | 0.17 | 0 | 0 | 1 | 0.33 |");
     expect(stdout).toContain("`agentfile-pact`");
     expect(stdout).toContain("`compiled-agents-md`");

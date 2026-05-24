@@ -4,7 +4,7 @@ Agentfile benchmark results are still early. These receipts are useful as eviden
 
 ## Current Dataset
 
-As of 2026-05-24, the repository has thirty-three validated receipts across seven covered task families. The covered set includes repeated `agents-md` generic instruction-file receipts, a fully repeated four-condition pricing fixture, and repeated compiled `AGENTS.md` redaction and webhook receipts generated from Pact source. The `remove-shipping-label-pii` and `share-discount-calculation` fixtures now have matching plain-issue, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact receipts.
+As of 2026-05-24, the repository has thirty-four validated receipts across seven covered task families. The covered set includes repeated `agents-md` generic instruction-file receipts, a fully repeated four-condition pricing fixture, and repeated compiled `AGENTS.md` redaction, webhook, and fulfillment receipts generated from Pact source. The `remove-shipping-label-pii` and `share-discount-calculation` fixtures now have matching plain-issue, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact receipts.
 
 | Task | Condition | Completed | Checks passed | Scope adherence | Reported required proof commands | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -20,7 +20,7 @@ As of 2026-05-24, the repository has thirty-three validated receipts across seve
 | `preserve-refund-audit-evidence` | `agentfile-pact` | Yes | Yes | 1.0 | `npm test -- refunds`, `npm run lint`, `npm run proof:check` | Agentfile worker ran the proof check required by the contract. |
 | `remove-shipping-label-pii` | `plain-issue` | Yes | Yes | 1.0 | `npm test -- fulfillment`, `npm run lint`, `npm run proof:check`, `npm run scope:check` | Plain issue worker found and ran proof/scope checks, removed label PII, added regression coverage, and preserved CRM files. |
 | `remove-shipping-label-pii` | `agents-md` | Yes | Yes | 1.0 | `npm test -- fulfillment`, `npm run lint`, `npm run proof:check`, `npm run scope:check` | Hand-written `AGENTS.md` worker matched the plain baseline on proof reporting, scope preservation, and regression coverage. |
-| `remove-shipping-label-pii` | `compiled-agents-md` | Yes | Yes | 1.0 | `npm test -- fulfillment`, `npm run lint`, `npm run proof:check`, `npm run scope:check` | Generated Agentfile output passed after one correction turn and preserved the CRM boundary. |
+| `remove-shipping-label-pii` | `compiled-agents-md` | Yes | Yes | 1.0 | `npm test -- fulfillment`, `npm run lint`, `npm run proof:check`, `npm run scope:check` | Two generated Agentfile-output workers removed label PII, ran proof/scope checks, and preserved the CRM boundary. |
 | `remove-shipping-label-pii` | `agentfile-pact` | Yes | Yes | 1.0 | `npm test -- fulfillment`, `npm run lint`, `npm run proof:check`, `npm run scope:check` | Native Pact worker passed first try, added regression coverage, and preserved the CRM boundary. |
 | `verify-webhook-raw-signature` | `plain-issue` | Yes | Yes | 1.0 | `npm test -- webhooks`, `npm run lint`, `npm run proof:check` | Two plain-issue workers voluntarily ran proof but did not add raw-body regression tests. |
 | `verify-webhook-raw-signature` | `agents-md` | Yes | Yes | 1.0 | `npm test -- webhooks`, `npm run lint`, `npm run proof:check` | Two generic instruction-file workers ran proof and added raw-body regression coverage. |
@@ -47,11 +47,11 @@ This signal is promising because the fixture is designed so normal tests and lin
 
 The `preserve-refund-audit-evidence` pair did not reproduce that differential signal. Both workers ran the dedicated proof check and produced passing patches, so this pair strengthens receipt coverage but not the comparative claim.
 
-The `remove-shipping-label-pii` receipts now compare plain issue text, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact source on a privacy proof plus CRM scope boundary. All four workers removed raw contact PII from labels, added regression coverage, ran proof and scope checks, and left CRM files unchanged. The compiled-output worker reported one proof-failure correction before passing; the native Pact worker passed first try. This fixture supports the auditability and compilation story, but it does not yet show a broad Agentfile outcome advantage.
+The `remove-shipping-label-pii` receipts now compare plain issue text, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact source on a privacy proof plus CRM scope boundary. All four instruction surfaces removed raw contact PII from labels, added regression coverage, ran proof and scope checks, and left CRM files unchanged. The compiled-output condition now has two passing receipts: one reported a proof-failure correction before passing, and one passed cleanly. This fixture supports the auditability and compilation story, but it does not yet show a broad Agentfile outcome advantage.
 
 The `verify-webhook-raw-signature` repeats also did not produce a proof-command differential signal, because both plain-issue workers ran `npm run proof:check`. They did produce a repeated quality signal: both Agentfile workers added explicit raw-body regression tests, while both plain-issue workers only changed implementation. The repeated `agents-md` and compiled `AGENTS.md` webhook runs matched Agentfile on proof reporting, proof-pass behavior, and regression coverage. That is a useful honesty point before any claim that Agentfile beats strong instruction files.
 
-The compiled-output bridge now has passing receipts on redaction, webhook, fulfillment, and pricing refactor tasks, with repeated compiled-output evidence on redaction proof work, webhook proof work, and pricing breadth work. That supports a narrow implementation claim: Pact source can compile into existing agent instruction surfaces that are concrete enough for agents to execute and for humans to audit.
+The compiled-output bridge now has passing receipts on redaction, webhook, fulfillment, and pricing refactor tasks, with repeated compiled-output evidence on redaction proof work, webhook proof work, fulfillment privacy/scope work, and pricing breadth work. That supports a narrow implementation claim: Pact source can compile into existing agent instruction surfaces that are concrete enough for agents to execute and for humans to audit.
 
 The new `share-discount-calculation` fixture now has native Pact, plain-issue, hand-written `AGENTS.md`, and compiled `AGENTS.md` receipts. All four conditions now have two passing receipts with focused regression coverage, making every pricing condition-pair repeated. This is useful breadth and bridge evidence, but not a positive differential signal: all four instruction surfaces solved the task, preserved the tax boundary, and added regression coverage.
 
@@ -67,7 +67,7 @@ Before public launch, the benchmark story should either stay framed as a plan or
 
 - Use `npm run benchmark:report` for review, but cite underlying receipts in public-facing claims.
 - Repeat the four-condition `remove-shipping-label-pii` comparison or add another privacy/scope fixture before making public comparative claims from this family.
-- Add a second compiled `AGENTS.md` receipt to fulfillment or another privacy/scope fixture so the compiled bridge is repeated beyond security proof tasks and pricing breadth work.
+- Add a second hand-written `AGENTS.md`, native Pact, or plain-issue receipt to fulfillment so the privacy/scope condition pairs become repeated too.
 - Add more proof-sensitive task families with repeated `agents-md` and compiled-output conditions to test whether structured contracts show measurable value over strong Markdown instructions.
 - Repeat compiled-output runs across more task families and start tracking whether compiled instructions reduce missing proof checks, weaker tests, or oversized patches compared with hand-written instructions.
 - Keep each receipt reviewable: transcript, diff, check log, scope score, verification commands, and handoff quality.
