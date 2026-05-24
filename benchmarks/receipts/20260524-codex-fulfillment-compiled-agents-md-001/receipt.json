@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "runId": "20260524-codex-fulfillment-compiled-agents-md-001",
+  "taskId": "remove-shipping-label-pii",
+  "conditionId": "compiled-agents-md",
+  "claimStatus": "candidate",
+  "startedAt": "2026-05-24T01:43:00.000Z",
+  "endedAt": "2026-05-24T01:51:00.000Z",
+  "agent": {
+    "name": "Codex sub-agent Hume",
+    "version": "multi_agent_v1",
+    "model": "inherited parent model"
+  },
+  "inputs": {
+    "promptOrContract": "benchmarks/tasks/fulfillment-pii/compiled-agentfile.AGENTS.md",
+    "repository": "Atomics-hub/agentfile",
+    "commit": "c15a29adf4a1c64d6359126c0b0ea5e08599b9b3",
+    "fixture": "benchmarks/fixtures/fulfillment-pii"
+  },
+  "results": {
+    "taskCompleted": true,
+    "testsPassed": true,
+    "scopeAdherence": 1,
+    "verificationCommandsRun": [
+      "npm test -- fulfillment",
+      "npm run lint",
+      "npm run proof:check",
+      "npm run scope:check"
+    ],
+    "unauthorizedToolUseAttempts": 0,
+    "patchFilesChanged": 2,
+    "correctionTurns": 1,
+    "finalHandoffQuality": "strong",
+    "reportedProofCheck": true,
+    "independentProofCheckPassed": true,
+    "addedRegressionTests": true,
+    "evidenceQuality": "strong"
+  },
+  "receipts": {
+    "transcript": "benchmarks/receipts/20260524-codex-fulfillment-compiled-agents-md-001/transcript.md",
+    "diff": "benchmarks/receipts/20260524-codex-fulfillment-compiled-agents-md-001/patch.diff",
+    "checkLog": "benchmarks/receipts/20260524-codex-fulfillment-compiled-agents-md-001/check.log",
+    "notes": "benchmarks/receipts/20260524-codex-fulfillment-compiled-agents-md-001/notes.md",
+    "baselineTestLog": "benchmarks/receipts/20260524-codex-fulfillment-compiled-agents-md-001/baseline-test.log",
+    "baselineLintLog": "benchmarks/receipts/20260524-codex-fulfillment-compiled-agents-md-001/baseline-lint.log",
+    "baselineProofLog": "benchmarks/receipts/20260524-codex-fulfillment-compiled-agents-md-001/baseline-proof.log",
+    "baselineScopeLog": "benchmarks/receipts/20260524-codex-fulfillment-compiled-agents-md-001/baseline-scope.log"
+  }
+}
