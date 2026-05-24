@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added a planned four-condition `share-discount-calculation` benchmark fixture for non-security multi-file refactors with a tax rounding scope boundary.
 - `npm run benchmark:report` now includes a coverage summary for fully covered tasks, missing condition receipts, and completed four-condition task families.
 - `npm run launch:review` now surfaces benchmark coverage, completed four-condition task families, and missing condition receipts.
 - Updated launch-facing claims and readiness docs to reflect the completed fulfillment four-way comparison while keeping public claims narrow.

@@ -65,6 +65,8 @@ The repeated `agents-md` webhook receipts passed and matched the Agentfile webho
 
 The first `compiled-agents-md` webhook receipt also passed and added raw-body regression coverage, giving a second proof-sensitive bridge receipt for compiled Agentfile output.
 
+The `share-discount-calculation` fixture is the next planned breadth test. It moves beyond proof-sensitive security/privacy work into a normal multi-file pricing refactor: invoices and order quotes must share eligible-line coupon totals while the tax rounding module remains out of scope. It has plain issue, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact inputs, but no receipts yet.
+
 ## First Claim To Test
 
 > On repo-local software delegation tasks, Agentfile contracts improve scope adherence and verification rate compared with plain issue prompts.

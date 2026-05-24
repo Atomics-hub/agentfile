@@ -4,7 +4,7 @@ Agentfile benchmark results are still early. These receipts are useful as eviden
 
 ## Current Dataset
 
-As of 2026-05-24, the repository has twenty-three validated receipts across six task families, including repeated `agents-md` generic instruction-file receipts and compiled `AGENTS.md` receipts generated from Pact source for three proof-sensitive tasks. The `remove-shipping-label-pii` fixture now has matching plain-issue, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact receipts.
+As of 2026-05-24, the repository has twenty-three validated receipts across six covered task families, plus one planned breadth fixture with no receipts yet. The covered set includes repeated `agents-md` generic instruction-file receipts and compiled `AGENTS.md` receipts generated from Pact source for three proof-sensitive tasks. The `remove-shipping-label-pii` fixture now has matching plain-issue, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact receipts.
 
 | Task | Condition | Completed | Checks passed | Scope adherence | Reported required proof commands | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -49,6 +49,8 @@ The `verify-webhook-raw-signature` repeats also did not produce a proof-command 
 
 The compiled-output bridge now has passing receipts on redaction, webhook, and fulfillment proof-sensitive tasks. That supports a narrow implementation claim: Pact source can compile into existing agent instruction surfaces that are concrete enough for agents to execute and for humans to audit.
 
+The new `share-discount-calculation` fixture is intentionally unscored for now. It is a planned four-condition comparison for a normal multi-file pricing refactor: invoices and order quotes must share coupon discount totals while tax rounding files remain out of scope. Until receipts exist, it should appear only as missing evidence and as the next benchmark target.
+
 ## What This Does Not Support Yet
 
 Do not use these receipts to claim that Agentfile is broadly better than plain issues, agent instruction files, or programming languages.
@@ -61,6 +63,7 @@ Before public launch, the benchmark story should either stay framed as a plan or
 
 - Use `npm run benchmark:report` for review, but cite underlying receipts in public-facing claims.
 - Repeat the four-condition `remove-shipping-label-pii` comparison or add another privacy/scope fixture before making public comparative claims from this family.
+- Run the four-condition `share-discount-calculation` comparison to test Agentfile outside security/privacy tasks on a multi-file refactor with a forbidden tax boundary.
 - Add more proof-sensitive task families with repeated `agents-md` and compiled-output conditions to test whether structured contracts show measurable value over strong Markdown instructions.
 - Repeat compiled-output runs across more task families and start tracking whether compiled instructions reduce missing proof checks, weaker tests, or oversized patches compared with hand-written instructions.
 - Keep each receipt reviewable: transcript, diff, check log, scope score, verification commands, and handoff quality.

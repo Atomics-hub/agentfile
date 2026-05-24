@@ -23,6 +23,10 @@ const benchmarkCompiledAgentsFixtures = [
   [
     "benchmarks/tasks/fulfillment-pii/fulfillment-pii.agent",
     "benchmarks/tasks/fulfillment-pii/compiled-agentfile.AGENTS.md"
+  ],
+  [
+    "benchmarks/tasks/pricing-refactor/pricing-refactor.agent",
+    "benchmarks/tasks/pricing-refactor/compiled-agentfile.AGENTS.md"
   ]
 ] as const;
 
