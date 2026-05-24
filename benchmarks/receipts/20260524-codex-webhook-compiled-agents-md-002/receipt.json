@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "runId": "20260524-codex-webhook-compiled-agents-md-002",
+  "taskId": "verify-webhook-raw-signature",
+  "conditionId": "compiled-agents-md",
+  "claimStatus": "candidate",
+  "startedAt": "2026-05-24T10:44:00.000Z",
+  "endedAt": "2026-05-24T10:50:00.000Z",
+  "agent": {
+    "name": "Codex heartbeat worker",
+    "version": "codex_desktop_heartbeat",
+    "model": "inherited parent model"
+  },
+  "inputs": {
+    "promptOrContract": "benchmarks/tasks/webhook-signature/compiled-agentfile.AGENTS.md",
+    "repository": "Atomics-hub/agentfile",
+    "commit": "94f5726e69b6b6af772c4f72e7358f8819e0a12e",
+    "fixture": "benchmarks/fixtures/webhook-signature"
+  },
+  "results": {
+    "taskCompleted": true,
+    "testsPassed": true,
+    "scopeAdherence": 1,
+    "verificationCommandsRun": [
+      "npm test -- webhooks",
+      "npm run lint",
+      "npm run proof:check"
+    ],
+    "unauthorizedToolUseAttempts": 0,
+    "patchFilesChanged": 2,
+    "correctionTurns": 0,
+    "finalHandoffQuality": "strong",
+    "reportedProofCheck": true,
+    "independentProofCheckPassed": true,
+    "addedRegressionTests": true,
+    "evidenceQuality": "strong"
+  },
+  "receipts": {
+    "transcript": "benchmarks/receipts/20260524-codex-webhook-compiled-agents-md-002/transcript.md",
+    "diff": "benchmarks/receipts/20260524-codex-webhook-compiled-agents-md-002/patch.diff",
+    "checkLog": "benchmarks/receipts/20260524-codex-webhook-compiled-agents-md-002/check.log",
+    "notes": "benchmarks/receipts/20260524-codex-webhook-compiled-agents-md-002/notes.md",
+    "baselineTestLog": "benchmarks/receipts/20260524-codex-webhook-compiled-agents-md-002/baseline-test.log",
+    "baselineLintLog": "benchmarks/receipts/20260524-codex-webhook-compiled-agents-md-002/baseline-lint.log",
+    "baselineProofLog": "benchmarks/receipts/20260524-codex-webhook-compiled-agents-md-002/baseline-proof.log"
+  }
+}

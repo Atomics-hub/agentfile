@@ -69,7 +69,7 @@ The `verify-webhook-raw-signature` task now also includes an `agents-md` conditi
 
 The repeated `agents-md` webhook receipts passed and matched the Agentfile webhook runs on proof reporting and raw-body regression coverage. That makes generic instruction files a real comparator, not a strawman, and keeps the current Agentfile edge focused on typed source, validation, compilation, and auditability.
 
-The first `compiled-agents-md` webhook receipt also passed and added raw-body regression coverage, giving a second proof-sensitive bridge receipt for compiled Agentfile output.
+The repeated `compiled-agents-md` webhook receipts also passed and added raw-body regression coverage, making the generated instruction-surface comparator repeated on this proof-sensitive task.
 
 The `share-discount-calculation` fixture is the next breadth test. It moves beyond proof-sensitive security/privacy work into a normal multi-file pricing refactor: invoices and order quotes must share eligible-line coupon totals while the tax rounding module remains out of scope. It has plain issue, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact inputs. All four conditions now have two passing receipts with regression coverage and preserved tax boundaries, completing the repeated four-way pricing comparison.
 

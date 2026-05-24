@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added a second compiled `AGENTS.md` webhook benchmark receipt, increasing validated receipts to thirty-two and making the generated instruction-surface webhook comparator repeated.
 - Added a second pricing refactor benchmark receipt for the `compiled-agents-md` condition, increasing validated receipts to thirty-one and completing the repeated four-way pricing comparison.
 - Added a second pricing refactor benchmark receipt for the `agents-md` condition, increasing validated receipts to thirty and making the pricing Pact/`AGENTS.md` comparator repeated.
 - Added a second pricing refactor benchmark receipt for the `plain-issue` condition, increasing validated receipts to twenty-nine and making the pricing Pact/plain comparator repeated.
