@@ -55,7 +55,7 @@ The repeated `compiled-agents-md` redaction receipts passed with all proof comma
 
 The `preserve-refund-audit-evidence` fixture adds a second proof-sensitive task in a different domain. Regular refund tests can pass while `npm run proof:check` still catches missing request evidence in the approval audit trail.
 
-The repeated `preserve-refund-audit-evidence` native Pact and plain-issue pair passed in both conditions. Both worker sets reported running `npm run proof:check`, so the pair is useful non-auth proof-sensitive coverage but not a positive differential signal. The fixture now has first hand-written `AGENTS.md` and compiled `AGENTS.md` receipts too; repeat those instruction-file conditions before making pairwise audit-evidence claims.
+The repeated `preserve-refund-audit-evidence` four-condition set passed in native Pact, plain issue, hand-written `AGENTS.md`, and compiled `AGENTS.md` conditions. Every worker set reported running `npm run proof:check`, so the fixture is useful non-auth proof-sensitive coverage and comparison discipline, but not a positive differential signal.
 
 The `remove-shipping-label-pii` fixture is the next authority-boundary task. It combines a privacy proof check with a CRM scope boundary: fulfillment labels must drop raw email and phone values, while CRM customer records must remain untouched and complete. Plain issue, hand-written `agents-md`, compiled `AGENTS.md`, and native `agentfile-pact` now each have two passing receipts with regression coverage, so every condition pair is repeated on this privacy/scope fixture. The result is useful launch evidence for comparison discipline, but not a positive differential signal because all four surfaces solved the task.
 
