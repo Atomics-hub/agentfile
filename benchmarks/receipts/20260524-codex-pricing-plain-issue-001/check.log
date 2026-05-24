@@ -1,0 +1,30 @@
+$ npm test -- pricing
+
+> agentfile-pricing-refactor-fixture@0.0.0 test
+> node scripts/test.mjs pricing
+
+▶ shared discount calculation
+  ✔ applies the same eligible-line coupon total to orders and invoices (0.601334ms)
+  ✔ does not discount implementation services in either flow (0.062333ms)
+  ✔ preserves tax rounding behavior (0.045792ms)
+✔ shared discount calculation (1.133959ms)
+ℹ tests 3
+ℹ suites 1
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 52.957875
+
+$ npm run lint
+
+> agentfile-pricing-refactor-fixture@0.0.0 lint
+> node scripts/lint.mjs
+
+
+$ npm run scope:check
+
+> agentfile-pricing-refactor-fixture@0.0.0 scope:check
+> node scripts/scope-check.mjs
+

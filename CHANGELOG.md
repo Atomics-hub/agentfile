@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added the first pricing refactor benchmark receipt for the `plain-issue` condition, increasing validated receipts to twenty-five.
 - Added the first pricing refactor benchmark receipt for the `agentfile-pact` condition, increasing validated receipts to twenty-four.
 - Added `npm run benchmark:baseline -- <task-id>` to inspect a fixture's pre-run check status before collecting receipt artifacts.
 - Added a planned four-condition `share-discount-calculation` benchmark fixture for non-security multi-file refactors with a tax rounding scope boundary.
