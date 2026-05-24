@@ -93,3 +93,13 @@ The command creates parent directories for nested default targets and refuses to
 ## `agentfile explain [file]`
 
 Print a short human-readable summary of the contract.
+
+## `agentfile receipt [file]`
+
+Print a Markdown checklist for auditing a completed harness run against the contract.
+
+The checklist includes the contract path, task goal, scope, authority, required proof commands, acceptance evidence, handoff evidence, and receipt fields such as agent/model/harness, transcript, diff, check log, and final summary.
+
+```sh
+agentfile receipt examples/fix-login-race.agent
+```

@@ -119,6 +119,33 @@ describe("agentfile schema", () => {
   });
 });
 
+describe("agentfile receipt", () => {
+  it("prints an audit checklist for a completed harness run", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-"));
+    tempDirs.push(cwd);
+
+    const { stdout } = await runCli(["receipt", examplePath], cwd);
+
+    expect(stdout).toContain("# Agentfile Receipt Checklist");
+    expect(stdout).toContain("Task: `fix-login-refresh-race`");
+    expect(stdout).toContain("Use this after a harness run to tie the agent's work back to the contract.");
+    expect(stdout).toContain("- Included paths: src/auth/**, tests/auth/**");
+    expect(stdout).toContain("- Excluded paths: src/billing/**, infra/**");
+    expect(stdout).toContain("- Allowed shell commands: `npm test -- auth`, `npm run lint`");
+    expect(stdout).toContain("- Network: deny");
+    expect(stdout).toContain("- Secrets: deny");
+    expect(stdout).toContain("- [ ] Run `npm test -- auth` (required).");
+    expect(stdout).toContain("- [ ] Run `npm run lint` (required).");
+    expect(stdout).toContain("## Acceptance Evidence");
+    expect(stdout).toContain("- [ ] Concurrent refresh calls result in exactly one upstream token request");
+    expect(stdout).toContain("## Handoff Evidence");
+    expect(stdout).toContain("- [ ] Attach or link the transcript/tool log.");
+    expect(stdout).toContain("- [ ] List changed files.");
+    expect(stdout).toContain("## Receipt Fields");
+    expect(stdout).toContain("- Agent, model, and harness");
+  });
+});
+
 describe("agentfile file discovery", () => {
   it("resolves agentfile.agent when no file path is provided", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "agentfile-discovery-"));

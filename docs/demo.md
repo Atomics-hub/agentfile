@@ -232,3 +232,28 @@ handoff: changed files, verification, risks
 ```
 
 Benchmark receipts in `benchmarks/receipts/` use that shape today: each run stores the task input, check log, patch diff, transcript, and notes needed to review whether the agent stayed inside the contract.
+
+Generate a receipt checklist from the same contract:
+
+```sh
+node dist/cli.js receipt examples/fix-login-race.agent
+```
+
+Expected excerpt:
+
+```md
+# Agentfile Receipt Checklist
+
+Task: `fix-login-refresh-race`
+
+## Required Proof
+
+- [ ] Run `npm test -- auth` (required).
+- [ ] Run `npm run lint` (required).
+
+## Handoff Evidence
+
+- [ ] Attach or link the transcript/tool log.
+- [ ] Attach or link the patch diff.
+- [ ] Attach or link the check log.
+```

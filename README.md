@@ -320,6 +320,12 @@ Explain the contract:
 agentfile explain examples/fix-login-race.agentfile
 ```
 
+Print the receipt checklist a harness run should satisfy:
+
+```sh
+agentfile receipt examples/fix-login-race.agent
+```
+
 List compile and sync targets:
 
 ```sh
