@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added hand-written and compiled `AGENTS.md` audit-evidence benchmark receipts, increasing validated receipts to forty-two and completing first-pass four-condition audit coverage.
 - Added a second plain-issue audit-evidence benchmark receipt, increasing validated receipts to forty and making the non-auth audit proof-sensitive Pact/plain pair repeated.
 - Added a second native Pact audit-evidence benchmark receipt, increasing validated receipts to thirty-nine and starting repeated non-auth proof-sensitive coverage.
 - Added a second plain-issue redaction benchmark receipt, increasing validated receipts to thirty-eight and making every redaction proof-sensitive condition pair repeated.

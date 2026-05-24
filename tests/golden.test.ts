@@ -21,6 +21,10 @@ const benchmarkCompiledAgentsFixtures = [
     "benchmarks/tasks/webhook-signature/compiled-agentfile.AGENTS.md"
   ],
   [
+    "benchmarks/tasks/audit-evidence/audit-evidence.agent",
+    "benchmarks/tasks/audit-evidence/compiled-agentfile.AGENTS.md"
+  ],
+  [
     "benchmarks/tasks/fulfillment-pii/fulfillment-pii.agent",
     "benchmarks/tasks/fulfillment-pii/compiled-agentfile.AGENTS.md"
   ],

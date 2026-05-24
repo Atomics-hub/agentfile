@@ -30,7 +30,7 @@ describe("benchmark receipt scoring", () => {
     expect(plan.metrics).toContain("independent_proof_check_success");
     expect(plan.metrics).toContain("proof_vector_regression_tests");
     expect(plan.metrics).toContain("evidence_quality");
-    expect(plan.scoreSummary.comparableConditionPairs).toBe(27);
+    expect(plan.scoreSummary.comparableConditionPairs).toBe(32);
     expect(plan.scoreSummary.repeatedConditionPairs).toBe(25);
 
     const agentfile = plan.scoreSummary.byCondition.find(
@@ -270,6 +270,28 @@ describe("benchmark receipt scoring", () => {
         evidenceQuality: "strong"
       }),
       expect.objectContaining({
+        conditionId: "agents-md",
+        receiptCount: 1,
+        proofCommandReportRate: 1,
+        independentProofCheckPassRate: 1,
+        regressionTestRate: 1,
+        averagePatchFilesChanged: 2,
+        averagePatchLinesChanged: 4,
+        averageNormalizedQualityScore: 1,
+        evidenceQuality: "strong"
+      }),
+      expect.objectContaining({
+        conditionId: "compiled-agents-md",
+        receiptCount: 1,
+        proofCommandReportRate: 1,
+        independentProofCheckPassRate: 1,
+        regressionTestRate: 1,
+        averagePatchFilesChanged: 2,
+        averagePatchLinesChanged: 4,
+        averageNormalizedQualityScore: 1,
+        evidenceQuality: "strong"
+      }),
+      expect.objectContaining({
         conditionId: "plain-issue",
         receiptCount: 2,
         proofCommandReportRate: 1,
@@ -282,6 +304,28 @@ describe("benchmark receipt scoring", () => {
       })
     ]));
     expect(auditTask.comparisons).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        leftConditionId: "agentfile-pact",
+        rightConditionId: "agents-md",
+        comparableReceiptCount: 1,
+        isRepeated: false,
+        normalizedQualityDelta: 0,
+        proofCommandReportDelta: 0,
+        independentProofCheckPassDelta: 0,
+        regressionTestDelta: 0,
+        evidenceQualityDelta: 0
+      }),
+      expect.objectContaining({
+        leftConditionId: "agentfile-pact",
+        rightConditionId: "compiled-agents-md",
+        comparableReceiptCount: 1,
+        isRepeated: false,
+        normalizedQualityDelta: 0,
+        proofCommandReportDelta: 0,
+        independentProofCheckPassDelta: 0,
+        regressionTestDelta: 0,
+        evidenceQualityDelta: 0
+      }),
       expect.objectContaining({
         leftConditionId: "agentfile-pact",
         rightConditionId: "plain-issue",
@@ -421,11 +465,11 @@ describe("benchmark receipt scoring", () => {
     });
 
     expect(stdout).toContain("# Agentfile Benchmark Report");
-    expect(stdout).toContain("- Receipts: 40");
+    expect(stdout).toContain("- Receipts: 42");
     expect(stdout).toContain("## Coverage Summary");
     expect(stdout).toContain("- Fully covered tasks: 7 / 7");
     expect(stdout).toContain("- Missing condition receipts: 0");
-    expect(stdout).toContain("- Completed four-condition tasks: `redact-auth-logs`, `remove-shipping-label-pii`, `verify-webhook-raw-signature`, `share-discount-calculation`");
+    expect(stdout).toContain("- Completed four-condition tasks: `redact-auth-logs`, `preserve-refund-audit-evidence`, `remove-shipping-label-pii`, `verify-webhook-raw-signature`, `share-discount-calculation`");
     expect(stdout).toContain("## Condition Summary");
     expect(stdout).not.toContain("## Missing Evidence");
     expect(stdout).not.toContain("| `share-discount-calculation` | `compiled-agents-md` | `benchmarks/tasks/pricing-refactor/compiled-agentfile.AGENTS.md` |");
@@ -433,7 +477,7 @@ describe("benchmark receipt scoring", () => {
     expect(stdout).not.toContain("| `share-discount-calculation` | `agents-md` | `benchmarks/tasks/pricing-refactor/AGENTS.md` |");
     expect(stdout).not.toContain("| `share-discount-calculation` | `plain-issue` | `benchmarks/tasks/pricing-refactor/plain-issue.md` |");
     expect(stdout).toContain("## Task Coverage");
-    expect(stdout).toContain("- Comparable pairs: 27");
+    expect(stdout).toContain("- Comparable pairs: 32");
     expect(stdout).toContain("- Repeated pairs: 25");
     expect(stdout).not.toContain("| `remove-shipping-label-pii` | `agentfile-pact` | `benchmarks/tasks/fulfillment-pii/fulfillment-pii.agent` |");
     expect(stdout).not.toContain("| `remove-shipping-label-pii` | `compiled-agents-md` | `benchmarks/tasks/fulfillment-pii/compiled-agentfile.AGENTS.md` |");
@@ -443,6 +487,8 @@ describe("benchmark receipt scoring", () => {
     expect(stdout).toContain("| `agentfile-pact` vs `plain-issue` | 2 | yes | 0.04 | 1 | 0 | 0 | 0.33 |");
     expect(stdout).toContain("| `agentfile-pact` vs `plain-issue` | 2 | yes | 0.17 | 0 | 0 | 1 | 0.33 |");
     expect(stdout).toContain("| `agentfile-pact` vs `plain-issue` | 2 | yes | 0 | 0 | 0 | 0 | 0 |");
+    expect(stdout).toContain("| `agentfile-pact` vs `agents-md` | 1 | no | 0 | 0 | 0 | 0 | 0 |");
+    expect(stdout).toContain("| `agentfile-pact` vs `compiled-agents-md` | 1 | no | 0 | 0 | 0 | 0 | 0 |");
     expect(stdout).toContain("| `agentfile-pact` vs `agents-md` | 2 | yes | 0.02 | 0 | 0 | 0 | 0 |");
     expect(stdout).toContain("| `agentfile-pact` vs `agents-md` | 2 | yes | 0 | 0 | 0 | 0 | 0 |");
     expect(stdout).toContain("| `agentfile-pact` vs `compiled-agents-md` | 2 | yes | 0 | 0 | 0 | 0 | 0 |");
@@ -507,12 +553,12 @@ describe("benchmark receipt scoring", () => {
     expect(stdout).toContain("Fully covered tasks: 7 / 7");
     expect(stdout).toContain("Missing condition receipts: 0");
     expect(stdout).toContain("## Benchmark Coverage");
-    expect(stdout).toContain("Completed four-condition tasks: `redact-auth-logs`, `remove-shipping-label-pii`, `verify-webhook-raw-signature`, `share-discount-calculation`");
+    expect(stdout).toContain("Completed four-condition tasks: `redact-auth-logs`, `preserve-refund-audit-evidence`, `remove-shipping-label-pii`, `verify-webhook-raw-signature`, `share-discount-calculation`");
     expect(stdout).toContain("## Gate Summary");
     expect(stdout).toContain("| Clear README/demo | ready |");
     expect(stdout).toContain("| Fast reliable tests | manual-check |");
     expect(stdout).toContain("| Benchmark/demo proof | ready |");
-    expect(stdout).toContain("4 completed four-condition task families, 0 missing condition receipts.");
+    expect(stdout).toContain("5 completed four-condition task families, 0 missing condition receipts.");
     expect(stdout).toContain("| Launch risk | ready |");
     expect(stdout).toContain("Automated public-claim review found 0 blocked claim pattern(s)");
     expect(stdout).toContain("Verify GitHub remote visibility is private");

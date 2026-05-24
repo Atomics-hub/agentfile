@@ -9,9 +9,9 @@ This project should launch with narrow, evidence-backed claims. The goal is to m
 - The same contract can generate `AGENTS.md`, `CLAUDE.md`, Cursor rules, and GitHub Copilot instructions.
 - Agentfile makes scope, permissions, proof obligations, and handoff requirements explicit and reviewable.
 - Current benchmark receipts can audit whether agents reported the required verification commands and produced supporting artifacts.
-- Compiled Agentfile instruction output has repeated passing receipts on the current redaction, webhook, fulfillment, and pricing-refactor fixtures.
+- Compiled Agentfile instruction output has repeated passing receipts on the current redaction, webhook, fulfillment, and pricing-refactor fixtures, plus a first passing receipt on the audit-evidence fixture.
 - The redaction fixture has repeated four-condition receipts in which explicit instruction surfaces reported the dedicated proof command and plain issue text did not; this supports a narrow proof-reporting claim, not a broad superiority claim.
-- The audit-evidence fixture has repeated native Pact and plain-issue receipts on a non-auth proof-sensitive task. It supports repeated coverage, but not an Agentfile-over-plain-issue claim because both conditions solved the task and reported the proof check.
+- The audit-evidence fixture has repeated native Pact and plain-issue receipts plus first hand-written `AGENTS.md` and compiled `AGENTS.md` receipts on a non-auth proof-sensitive task. It supports completed four-condition coverage, but not an Agentfile-over-plain-issue or Agentfile-over-`AGENTS.md` claim because every condition solved the task and reported the proof check.
 - The fulfillment privacy fixture has repeated native Pact, compiled `AGENTS.md`, hand-written `AGENTS.md`, and plain-issue receipts. It supports repeated four-condition comparison discipline on a privacy/scope task, but it does not support a claim that Agentfile outperforms plain issue text on that fixture because all four conditions solved it cleanly.
 - The redaction, fulfillment privacy, and pricing refactor fixtures have completed repeated four-way receipt sets across plain issue text, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact source.
 
