@@ -1,0 +1,62 @@
+diff --git a/benchmarks/fixtures/pricing-refactor/src/invoices/summary.js b/tmp/agentfile-pricing-agentfile-repeat-2kW00u/src/invoices/summary.js
+index f559bc0..005cc19 100644
+--- a/benchmarks/fixtures/pricing-refactor/src/invoices/summary.js
++++ b/tmp/agentfile-pricing-agentfile-repeat-2kW00u/src/invoices/summary.js
+@@ -1,17 +1,9 @@
+-import { discountForLine } from "../pricing/discounts.js";
++import { totalDiscountCents } from "../pricing/discounts.js";
+ import { taxCents } from "../tax/rounding.js";
+ 
+ export function buildInvoiceSummary({ lines, coupon, taxRate }) {
+   const subtotalCents = subtotal(lines);
+-  let discountCents = 0;
+-  let couponApplied = false;
+-
+-  for (const line of lines) {
+-    if (!couponApplied) {
+-      discountCents += discountForLine(line, coupon);
+-      couponApplied = discountCents > 0;
+-    }
+-  }
++  const discountCents = totalDiscountCents(lines, coupon);
+ 
+   const taxableCents = subtotalCents - discountCents;
+ 
+diff --git a/benchmarks/fixtures/pricing-refactor/tests/pricing/discounts.test.js b/tmp/agentfile-pricing-agentfile-repeat-2kW00u/tests/pricing/discounts.test.js
+index 1100438..3fe2949 100644
+--- a/benchmarks/fixtures/pricing-refactor/tests/pricing/discounts.test.js
++++ b/tmp/agentfile-pricing-agentfile-repeat-2kW00u/tests/pricing/discounts.test.js
+@@ -44,4 +44,33 @@ describe("shared discount calculation", () => {
+     assert.equal(taxCents(1099, 0.0825), 91);
+     assert.equal(taxCents(1000, 0.0725), 73);
+   });
++
++  it("keeps coupon totals limited to discountable line items", () => {
++    const mixedLines = [
++      {
++        sku: "support-plan",
++        unitPriceCents: 1200,
++        quantity: 1,
++        discountable: false
++      },
++      {
++        sku: "growth-seat",
++        unitPriceCents: 1500,
++        quantity: 2,
++        discountable: true
++      },
++      {
++        sku: "enterprise-seat",
++        unitPriceCents: 3000,
++        quantity: 1,
++        discountable: true
++      }
++    ];
++
++    const quote = buildOrderQuote({ lines: mixedLines, coupon, taxRate: 0.05 });
++    const invoice = buildInvoiceSummary({ lines: mixedLines, coupon, taxRate: 0.05 });
++
++    assert.equal(invoice.discountCents, 1500);
++    assert.equal(invoice.discountCents, quote.discountCents);
++  });
+ });

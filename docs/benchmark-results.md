@@ -4,7 +4,7 @@ Agentfile benchmark results are still early. These receipts are useful as eviden
 
 ## Current Dataset
 
-As of 2026-05-24, the repository has twenty-seven validated receipts across seven covered task families. The covered set includes repeated `agents-md` generic instruction-file receipts and compiled `AGENTS.md` receipts generated from Pact source for three proof-sensitive tasks plus one pricing refactor breadth task. The `remove-shipping-label-pii` and `share-discount-calculation` fixtures now have matching plain-issue, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact receipts.
+As of 2026-05-24, the repository has twenty-eight validated receipts across seven covered task families. The covered set includes repeated `agents-md` generic instruction-file receipts, a repeated native Pact pricing receipt, and compiled `AGENTS.md` receipts generated from Pact source for three proof-sensitive tasks plus one pricing refactor breadth task. The `remove-shipping-label-pii` and `share-discount-calculation` fixtures now have matching plain-issue, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact receipts.
 
 | Task | Condition | Completed | Checks passed | Scope adherence | Reported required proof commands | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -29,7 +29,7 @@ As of 2026-05-24, the repository has twenty-seven validated receipts across seve
 | `share-discount-calculation` | `plain-issue` | Yes | Yes | 1.0 | `npm test -- pricing`, `npm run lint`, `npm run scope:check` | First pricing baseline comparator; plain issue worker reused shared discount logic, added regression coverage, and preserved the tax boundary. |
 | `share-discount-calculation` | `agents-md` | Yes | Yes | 1.0 | `npm test -- pricing`, `npm run lint`, `npm run scope:check` | Hand-written instruction-file comparator reused shared discount logic, added regression coverage, and preserved the tax boundary. |
 | `share-discount-calculation` | `compiled-agents-md` | Yes | Yes | 1.0 | `npm test -- pricing`, `npm run lint`, `npm run scope:check` | Generated Agentfile output reused shared discount logic, added regression coverage, and preserved the tax boundary. |
-| `share-discount-calculation` | `agentfile-pact` | Yes | Yes | 1.0 | `npm test -- pricing`, `npm run lint`, `npm run scope:check` | First non-security pricing-refactor receipt; native Pact worker reused shared discount logic, added regression coverage, and preserved the tax boundary. |
+| `share-discount-calculation` | `agentfile-pact` | Yes | Yes | 1.0 | `npm test -- pricing`, `npm run lint`, `npm run scope:check` | Two native Pact workers reused shared discount logic, added regression coverage, and preserved the tax boundary. |
 
 ## What This Supports
 
@@ -53,7 +53,7 @@ The `verify-webhook-raw-signature` repeats also did not produce a proof-command 
 
 The compiled-output bridge now has passing receipts on redaction, webhook, fulfillment, and pricing refactor tasks. That supports a narrow implementation claim: Pact source can compile into existing agent instruction surfaces that are concrete enough for agents to execute and for humans to audit.
 
-The new `share-discount-calculation` fixture now has native Pact, plain-issue, hand-written `AGENTS.md`, and compiled `AGENTS.md` receipts. All four workers passed and added focused regression coverage, so this task is useful breadth evidence and a completed bridge comparison, but not a positive differential signal.
+The new `share-discount-calculation` fixture now has native Pact, plain-issue, hand-written `AGENTS.md`, and compiled `AGENTS.md` receipts. All four first-run conditions passed and added focused regression coverage, so this task is useful breadth evidence and a completed bridge comparison, but not a positive differential signal. The second native Pact receipt starts the repeated pricing evidence set; the other pricing conditions still need second receipts before this fixture can support repeated four-condition claims.
 
 ## What This Does Not Support Yet
 
@@ -67,7 +67,7 @@ Before public launch, the benchmark story should either stay framed as a plan or
 
 - Use `npm run benchmark:report` for review, but cite underlying receipts in public-facing claims.
 - Repeat the four-condition `remove-shipping-label-pii` comparison or add another privacy/scope fixture before making public comparative claims from this family.
-- Repeat the `share-discount-calculation` comparison or add a second non-security refactor family so the breadth story does not rest on one pricing task.
+- Finish the repeated `share-discount-calculation` comparison by collecting second plain-issue, hand-written `AGENTS.md`, and compiled `AGENTS.md` receipts.
 - Add more proof-sensitive task families with repeated `agents-md` and compiled-output conditions to test whether structured contracts show measurable value over strong Markdown instructions.
 - Repeat compiled-output runs across more task families and start tracking whether compiled instructions reduce missing proof checks, weaker tests, or oversized patches compared with hand-written instructions.
 - Keep each receipt reviewable: transcript, diff, check log, scope score, verification commands, and handoff quality.
