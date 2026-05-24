@@ -20,8 +20,11 @@ Run these commands from the repository root after installing dependencies.
 
 ```sh
 npm install
+npm run demo:quick
 npm run build
 ```
+
+`npm run demo:quick` is the copy-paste version of this demo. It validates the contract, renders generated instruction excerpts for existing harnesses, verifies a passing receipt, and shows the pending-receipt failure that catches missing proof.
 
 For local development, the examples below call the built CLI directly:
 

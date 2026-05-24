@@ -192,6 +192,7 @@ function renderReport({ failed, artifactPreviews }) {
       ])
     ),
     "",
+    ...renderDemoEvidence(),
     ...renderArtifactPreviews(artifactPreviews),
     ...results.filter((result) => result.status === "fail").flatMap((result) => [
       `## ${result.name}`,
@@ -201,6 +202,37 @@ function renderReport({ failed, artifactPreviews }) {
     ]),
     ""
   ].join("\n");
+}
+
+function renderDemoEvidence() {
+  return [
+    "## What This Demonstrates",
+    "",
+    table(
+      ["Visible behavior", "Why it matters"],
+      [
+        [
+          "The `.agent` source validates before any work starts.",
+          "Scope, authority, proof, and handoff are reviewable as a contract instead of scattered prose."
+        ],
+        [
+          "The same source generates AGENTS.md, CLAUDE.md, Cursor, and Copilot instruction files.",
+          "Existing harnesses can consume the contract without replacing the user's agent stack."
+        ],
+        [
+          "A filled JSON receipt verifies against the original contract.",
+          "Completed work can be audited against the same source that delegated it."
+        ],
+        [
+          "A pending JSON receipt fails on missing required proof.",
+          "The receipt loop catches incomplete evidence instead of treating a final answer as enough."
+        ]
+      ]
+    ),
+    "",
+    "This quick loop does not run a live coding agent or prove broad outcome superiority. It proves the contract-to-instructions-to-receipt mechanics that Phase 1 can honestly launch with.",
+    ""
+  ];
 }
 
 function renderArtifactPreviews(previews) {

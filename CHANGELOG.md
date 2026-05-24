@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added an explicit "what this demonstrates" summary to the quick demo so Phase 1 evidence stays narrow and legible.
 - Made `npm run demo:quick` print generated instruction-file excerpts and aligned README CLI examples on the public `.agent` source path.
 - Added `npm run demo:quick` and wired it into the pre-public dry run so the README lifecycle stays executable from clean clones.
 - Added a README five-minute loop that validates a contract, generates agent instruction files, and verifies passing/pending receipt examples.

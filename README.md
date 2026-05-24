@@ -27,6 +27,15 @@ npm run demo:quick
 
 That script runs the same lifecycle by building the CLI, validating one `.agent` contract, projecting it into the instruction files current agent harnesses already read, showing excerpts from those generated files, then verifying a filled receipt against the original contract.
 
+What the loop demonstrates:
+
+- A `.agent` source can be reviewed and validated before a delegated coding task starts.
+- The same contract can generate `AGENTS.md`, `CLAUDE.md`, Cursor, and Copilot instruction surfaces for the harnesses people already use.
+- A receipt can verify that completed work supplied the required proof and handoff evidence.
+- A pending receipt fails when required proof is missing, so the audit loop is visible without inventing a live agent run.
+
+What it does not claim: broad agent superiority, a replacement for programming languages, or enforcement guarantees that the harness itself does not provide.
+
 The steps are intentionally plain CLI commands:
 
 ```sh
