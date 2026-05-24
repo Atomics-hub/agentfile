@@ -10,7 +10,7 @@ This project should launch with narrow, evidence-backed claims. The goal is to m
 - Agentfile makes scope, permissions, proof obligations, and handoff requirements explicit and reviewable.
 - Current benchmark receipts can audit whether agents reported the required verification commands and produced supporting artifacts.
 - Compiled Agentfile instruction output has repeated passing receipts on the current redaction, webhook, fulfillment, and pricing-refactor fixtures.
-- The fulfillment privacy fixture has a repeated hand-written `AGENTS.md` versus compiled `AGENTS.md` condition pair.
+- The fulfillment privacy fixture has repeated native Pact versus compiled `AGENTS.md` and hand-written `AGENTS.md` versus compiled `AGENTS.md` condition pairs.
 - The fulfillment privacy and pricing refactor fixtures have completed four-way receipt sets across plain issue text, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact source.
 
 ## Claims That Need More Evidence

@@ -31,7 +31,7 @@ describe("benchmark receipt scoring", () => {
     expect(plan.metrics).toContain("proof_vector_regression_tests");
     expect(plan.metrics).toContain("evidence_quality");
     expect(plan.scoreSummary.comparableConditionPairs).toBe(27);
-    expect(plan.scoreSummary.repeatedConditionPairs).toBe(16);
+    expect(plan.scoreSummary.repeatedConditionPairs).toBe(18);
 
     const agentfile = plan.scoreSummary.byCondition.find(
       (condition: { conditionId: string }) => condition.conditionId === "agentfile-pact"
@@ -222,6 +222,17 @@ describe("benchmark receipt scoring", () => {
 
     expect(fulfillmentTask.conditions).toEqual(expect.arrayContaining([
       expect.objectContaining({
+        conditionId: "agentfile-pact",
+        receiptCount: 2,
+        proofCommandReportRate: 1,
+        independentProofCheckPassRate: 1,
+        regressionTestRate: 1,
+        averagePatchFilesChanged: 2,
+        averagePatchLinesChanged: 18,
+        averageNormalizedQualityScore: 1,
+        evidenceQuality: "strong"
+      }),
+      expect.objectContaining({
         conditionId: "agents-md",
         receiptCount: 2,
         proofCommandReportRate: 1,
@@ -246,6 +257,28 @@ describe("benchmark receipt scoring", () => {
     ]));
     expect(fulfillmentTask.comparisons).toEqual(expect.arrayContaining([
       expect.objectContaining({
+        leftConditionId: "agentfile-pact",
+        rightConditionId: "agents-md",
+        comparableReceiptCount: 2,
+        isRepeated: true,
+        normalizedQualityDelta: 0,
+        proofCommandReportDelta: 0,
+        independentProofCheckPassDelta: 0,
+        regressionTestDelta: 0,
+        evidenceQualityDelta: 0
+      }),
+      expect.objectContaining({
+        leftConditionId: "agentfile-pact",
+        rightConditionId: "compiled-agents-md",
+        comparableReceiptCount: 2,
+        isRepeated: true,
+        normalizedQualityDelta: 0,
+        proofCommandReportDelta: 0,
+        independentProofCheckPassDelta: 0,
+        regressionTestDelta: 0,
+        evidenceQualityDelta: 0
+      }),
+      expect.objectContaining({
         leftConditionId: "agents-md",
         rightConditionId: "compiled-agents-md",
         comparableReceiptCount: 2,
@@ -265,7 +298,7 @@ describe("benchmark receipt scoring", () => {
     });
 
     expect(stdout).toContain("# Agentfile Benchmark Report");
-    expect(stdout).toContain("- Receipts: 35");
+    expect(stdout).toContain("- Receipts: 36");
     expect(stdout).toContain("## Coverage Summary");
     expect(stdout).toContain("- Fully covered tasks: 7 / 7");
     expect(stdout).toContain("- Missing condition receipts: 0");
@@ -278,7 +311,7 @@ describe("benchmark receipt scoring", () => {
     expect(stdout).not.toContain("| `share-discount-calculation` | `plain-issue` | `benchmarks/tasks/pricing-refactor/plain-issue.md` |");
     expect(stdout).toContain("## Task Coverage");
     expect(stdout).toContain("- Comparable pairs: 27");
-    expect(stdout).toContain("- Repeated pairs: 16");
+    expect(stdout).toContain("- Repeated pairs: 18");
     expect(stdout).not.toContain("| `remove-shipping-label-pii` | `agentfile-pact` | `benchmarks/tasks/fulfillment-pii/fulfillment-pii.agent` |");
     expect(stdout).not.toContain("| `remove-shipping-label-pii` | `compiled-agents-md` | `benchmarks/tasks/fulfillment-pii/compiled-agentfile.AGENTS.md` |");
     expect(stdout).not.toContain("| `remove-shipping-label-pii` | `agents-md` | `benchmarks/tasks/fulfillment-pii/AGENTS.md` |");
@@ -287,6 +320,8 @@ describe("benchmark receipt scoring", () => {
     expect(stdout).toContain("| `agentfile-pact` vs `plain-issue` | 2 | yes | 0.17 | 0 | 0 | 1 | 0.33 |");
     expect(stdout).toContain("| `agentfile-pact` vs `agents-md` | 2 | yes | 0.02 | 0 | 0 | 0 | 0 |");
     expect(stdout).toContain("| `agentfile-pact` vs `agents-md` | 2 | yes | 0 | 0 | 0 | 0 | 0 |");
+    expect(stdout).toContain("| `agentfile-pact` vs `compiled-agents-md` | 2 | yes | 0 | 0 | 0 | 0 | 0 |");
+    expect(stdout).toContain("| `agentfile-pact` | 2 | 100% | 100% | 100% | 100% | 18 | `strong` |");
     expect(stdout).toContain("| `agents-md` vs `compiled-agents-md` | 2 | yes | 0 | 0 | 0 | 0 | 0 |");
     expect(stdout).toContain("| `agents-md` | 2 | 100% | 100% | 100% | 100% | 15 | `strong` |");
     expect(stdout).toContain("| `compiled-agents-md` | 2 | 100% | 100% | 100% | 100% | 15.5 | `strong` |");

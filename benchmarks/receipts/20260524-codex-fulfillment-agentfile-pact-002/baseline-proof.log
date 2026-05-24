@@ -1,0 +1,24 @@
+
+> agentfile-fulfillment-pii-fixture@0.0.0 proof:check
+> node scripts/proof-check.mjs
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: shipping labels must not expose customer email
+    at file:///private/tmp/agentfile-fulfillment-pact-repeat-aqAt2g/scripts/proof-check.mjs:24:8 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 'Order: order-100\n' +
+    'Ship to: Ada Lovelace\n' +
+    '12 Engine Way\n' +
+    'London NW1\n' +
+    'Contact email: ada@example.com\n' +
+    'Contact phone: +1-555-0100',
+  expected: /ada@example\.com/u,
+  operator: 'doesNotMatch',
+  diff: 'simple'
+}
+
+Node.js v24.8.0
