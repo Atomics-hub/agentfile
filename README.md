@@ -16,6 +16,36 @@ Agentfile is not trying to replace Codex, Cursor, Claude Code, IDEs, harnesses, 
 
 The current YAML format is the strict contract IR. Pact `.agent` source is the human-facing language that lowers into that IR and projects into existing agent surfaces.
 
+## Five-Minute Loop
+
+From a clean checkout, the current end-to-end proof is intentionally small:
+
+```sh
+npm install
+npm run build
+node dist/cli.js check examples/fix-login-race.agent
+mkdir -p /tmp/agentfile-demo
+node dist/cli.js sync examples/fix-login-race.agent --target agents-md --output /tmp/agentfile-demo/AGENTS.md --force
+node dist/cli.js sync examples/fix-login-race.agent --target claude-md --output /tmp/agentfile-demo/CLAUDE.md --force
+node dist/cli.js sync examples/fix-login-race.agent --target cursor-mdc --output /tmp/agentfile-demo/agentfile.mdc --force
+node dist/cli.js sync examples/fix-login-race.agent --target copilot-md --output /tmp/agentfile-demo/copilot-instructions.md --force
+node dist/cli.js receipt verify examples/fix-login-race.agent examples/receipts/fix-login-passing.receipt.json
+```
+
+That validates one `.agent` contract, projects it into the instruction files current agent harnesses already read, then verifies a filled receipt against the original contract.
+
+The failure mode is visible too:
+
+```sh
+node dist/cli.js receipt verify examples/fix-login-race.agent examples/receipts/fix-login-pending.receipt.json
+```
+
+Expected excerpt:
+
+```text
+requiredProof[npm-test-auth].status: expected "passed", got "pending"
+```
+
 Pact source looks like this:
 
 ```agent
@@ -238,9 +268,10 @@ npm run build
 node dist/cli.js check examples/fix-login-race.agent
 node dist/cli.js compile examples/fix-login-race.agent --target yaml
 node dist/cli.js compile examples/fix-login-race.agent --target agents-md
+node dist/cli.js receipt verify examples/fix-login-race.agent examples/receipts/fix-login-passing.receipt.json
 ```
 
-See [End-to-End Demo](docs/demo.md) for the full path from Pact source to YAML IR, policy JSON, and generated agent instruction files.
+See [End-to-End Demo](docs/demo.md) for the full path from Pact source to YAML IR, policy JSON, generated agent instruction files, and receipt verification.
 
 ## CLI
 

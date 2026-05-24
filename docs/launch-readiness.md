@@ -8,7 +8,7 @@ This checklist is the public gate. A release candidate should satisfy every requ
 
 | Area | Required standard | Current status |
 | --- | --- | --- |
-| Clear README/demo | A new visitor can understand the thesis, install locally, run one `.agent` example, and see generated outputs for `AGENTS.md`, `CLAUDE.md`, Cursor, and Copilot. | Mostly ready |
+| Clear README/demo | A new visitor can understand the thesis, install locally, run one `.agent` example, see generated outputs for `AGENTS.md`, `CLAUDE.md`, Cursor, and Copilot, and verify a passing/failing receipt lifecycle. | Ready |
 | Clean compiler architecture | Parse, validate, lower, compile target selection, and renderers have obvious ownership boundaries and focused tests. | Mostly ready |
 | Stable CLI | Core commands have documented behavior, useful errors, and integration tests that exercise packaged output. | Mostly ready |
 | Fast reliable tests | `npm run check` passes locally, stays fast enough for frequent automation, and does not rely on stale generated files. | Mostly ready |
@@ -30,7 +30,9 @@ The first public demo should avoid grand claims and show a narrow workflow that 
    - `.cursor/rules/agentfile.mdc`
    - `.github/copilot-instructions.md`
 6. Explain the contract with `agentfile explain`.
-7. Show the same mission in one sentence: "This contract bounds scope, authority, invariants, proof, and handoff before an agent edits code."
+7. Verify `examples/receipts/fix-login-passing.receipt.json` against the contract.
+8. Show `examples/receipts/fix-login-pending.receipt.json` failing because required proof and evidence are still pending.
+9. Show the same mission in one sentence: "This contract bounds scope, authority, invariants, proof, and handoff before an agent edits code."
 
 That demo earns the claim:
 
@@ -71,8 +73,8 @@ The dry run executes `npm run check`, validates the benchmark plan, renders the 
 
 ## Current Highest-Leverage Work
 
-1. Add another proof-sensitive task family with a different failure mode and include plain issue, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact conditions from the start.
-2. Compare patch size, proof reporting, and test quality against hand-written `AGENTS.md` on the next proof-sensitive family.
+1. Finalize the README and demo so the contract-to-instructions-to-receipt loop is copy-pasteable in under five minutes.
+2. Do a final public-readiness review from a clean clone, including the passing and pending receipt examples.
 3. Keep broad benchmark claims out of public docs until repeated comparative data exists across task families and agent runs.
-4. Repeat compiled-output runs across more task families and keep the generated instruction fixtures synced with Pact source.
-5. Do a final public-readiness review from a clean clone.
+4. Add another proof-sensitive task family only if it supports a specific launch claim or exposes a new failure mode.
+5. Keep generated instruction fixtures synced with Pact source.

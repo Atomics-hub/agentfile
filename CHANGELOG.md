@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added a README five-minute loop that validates a contract, generates agent instruction files, and verifies passing/pending receipt examples.
 - Added passing and pending receipt lifecycle examples so the demo can show receipt verification success and failure without running a live agent.
 - Added `agentfile receipt verify` to validate filled JSON receipts against their source contract before handoff.
 - Added `agentfile receipt --format json --output <file>` so harnesses can create durable Markdown or machine-readable receipt artifacts.
