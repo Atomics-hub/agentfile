@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added `npm run benchmark:baseline -- <task-id>` to inspect a fixture's pre-run check status before collecting receipt artifacts.
 - Added a planned four-condition `share-discount-calculation` benchmark fixture for non-security multi-file refactors with a tax rounding scope boundary.
 - `npm run benchmark:report` now includes a coverage summary for fully covered tasks, missing condition receipts, and completed four-condition task families.
 - `npm run launch:review` now surfaces benchmark coverage, completed four-condition task families, and missing condition receipts.

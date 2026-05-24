@@ -62,6 +62,14 @@ npm run benchmark:report
 
 The report includes a coverage summary with fully covered tasks, missing condition receipts, and completed four-condition task families. When task/condition inputs have zero receipts, it also includes a `Missing Evidence` section, which keeps planned comparison work visible without presenting it as evidence.
 
+Before collecting a receipt, inspect the fixture baseline:
+
+```sh
+npm run benchmark:baseline -- share-discount-calculation
+```
+
+This command runs the task's manifest checks against the unfixed fixture and reports which checks fail or pass. It is for receipt preparation only; a failing baseline is expected when the fixture encodes the bug an agent must fix.
+
 The current skeleton does not run agents or claim results. It records the first task, conditions, checks, metrics, receipt shape, and score summary so future benchmark runs can produce comparable receipts.
 
 The full benchmark harness should:

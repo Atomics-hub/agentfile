@@ -8,6 +8,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 const execFileAsync = promisify(execFile);
 const benchmarkRunnerPath = fileURLToPath(new URL("../benchmarks/run.mjs", import.meta.url));
+const benchmarkBaselinePath = fileURLToPath(new URL("../benchmarks/baseline.mjs", import.meta.url));
 const benchmarkReportPath = fileURLToPath(new URL("../benchmarks/report.mjs", import.meta.url));
 const launchReviewPath = fileURLToPath(new URL("../scripts/launch-review.mjs", import.meta.url));
 const prepublicDryRunPath = fileURLToPath(new URL("../scripts/prepublic-dry-run.mjs", import.meta.url));
@@ -224,6 +225,39 @@ describe("benchmark receipt scoring", () => {
     expect(stdout).toContain("`agentfile-pact`");
     expect(stdout).toContain("`compiled-agents-md`");
     expect(stdout).toContain("Treat normalized quality as a triage score");
+  });
+
+  it("reports planned fixture baseline status for receipt preparation", async () => {
+    const { stdout } = await execFileAsync("node", [
+      benchmarkBaselinePath,
+      "share-discount-calculation",
+      "--json"
+    ], {
+      maxBuffer: 1024 * 1024
+    });
+    const report = JSON.parse(stdout);
+
+    expect(report).toEqual(expect.objectContaining({
+      taskId: "share-discount-calculation",
+      fixture: "benchmarks/fixtures/pricing-refactor",
+      status: "baseline-has-failures",
+      failedCheckCount: 1,
+      passedCheckCount: 2
+    }));
+    expect(report.checks).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        command: "npm test -- pricing",
+        status: "fail"
+      }),
+      expect.objectContaining({
+        command: "npm run lint",
+        status: "pass"
+      }),
+      expect.objectContaining({
+        command: "npm run scope:check",
+        status: "pass"
+      })
+    ]));
   });
 
   it("renders a launch-readiness gate review", async () => {
