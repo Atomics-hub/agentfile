@@ -11,6 +11,7 @@ import {
   type CompileTarget
 } from "./compiler.js";
 import { AgentfileError, lintAgentfile } from "./diagnostics.js";
+import { compileJsonSchema } from "./json-schema.js";
 import { parseSource } from "./source.js";
 import { findTarget, quotedTargetIds } from "./targets.js";
 
@@ -114,6 +115,13 @@ program
       console.log(`${target.id}${output}`);
       console.log(`  ${target.description}`);
     }
+  });
+
+program
+  .command("schema")
+  .description("Print the JSON Schema for strict Agentfile contract IR.")
+  .action(() => {
+    process.stdout.write(compileJsonSchema());
   });
 
 program

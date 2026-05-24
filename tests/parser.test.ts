@@ -736,6 +736,16 @@ mission scoped-prompt {
     expect(contract.scope.include).toContain("src/auth/**");
   });
 
+  it("exports a structural JSON Schema for strict contract IR", async () => {
+    const { agentfileJsonSchema, compileJsonSchema } = await import("../src/index.js");
+    const schema = JSON.parse(compileJsonSchema());
+
+    expect(schema).toEqual(agentfileJsonSchema);
+    expect(schema.properties.info.required).toEqual(["title"]);
+    expect(schema.properties.permissions.properties.network.properties.default.enum).toEqual(["allow", "deny"]);
+    expect(schema.properties.workflow.properties.steps.items.required).toEqual(["id", "do"]);
+  });
+
   it("compiles AGENTS.md instructions", async () => {
     const source = await readFile("examples/fix-login-race.agentfile", "utf8");
     const markdown = compileAgentfile(parseAgentfile(source), "agents-md");

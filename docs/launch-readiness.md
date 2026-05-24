@@ -74,5 +74,5 @@ The dry run executes `npm run check`, validates the benchmark plan, renders the 
 1. Repeat the completed `remove-shipping-label-pii` or `share-discount-calculation` four-way comparison so the first public evidence includes repeated data, not only first-run coverage.
 2. Add another compiled-output run on a new proof-sensitive task family and compare patch size, proof reporting, and test quality against hand-written `AGENTS.md`.
 3. Keep broad benchmark claims out of public docs until repeated comparative data exists across task families and agent runs.
-4. Add JSON Schema export or document why it is post-launch.
+4. Repeat compiled-output runs across more task families and keep the generated instruction fixtures synced with Pact source.
 5. Do a final public-readiness review from a clean clone.

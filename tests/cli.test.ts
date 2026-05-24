@@ -101,6 +101,24 @@ describe("agentfile targets", () => {
   });
 });
 
+describe("agentfile schema", () => {
+  it("prints the strict contract IR JSON Schema", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-schema-"));
+    tempDirs.push(cwd);
+
+    const { stdout } = await runCli(["schema"], cwd);
+    const schema = JSON.parse(stdout);
+
+    expect(schema.$schema).toBe("https://json-schema.org/draft/2020-12/schema");
+    expect(schema.title).toBe("Agentfile TaskContract");
+    expect(schema.required).toContain("agentfile");
+    expect(schema.properties.agentfile.const).toBe("0.1.0");
+    expect(schema.properties.kind.const).toBe("TaskContract");
+    expect(schema.properties.checks.items.oneOf).toHaveLength(2);
+    expect(schema.description).toContain("Use agentfile check for semantic invariants");
+  });
+});
+
 describe("agentfile file discovery", () => {
   it("resolves agentfile.agent when no file path is provided", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "agentfile-discovery-"));

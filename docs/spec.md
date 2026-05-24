@@ -211,3 +211,13 @@ ask approval for release_publish, destructive_write
 Pact lowering is conservative about risky authority. Source lines that grant secret access add `secret_access`, publish commands add `release_publish`, destructive shell commands add `destructive_write`, and dependency-changing commands retain `dependency_change` in the lowered IR.
 
 Approval identifiers use the same conservative shape as other ids: lowercase alphanumerics plus `.`, `_`, or `-`, starting with an alphanumeric character.
+
+## JSON Schema
+
+The CLI can export a structural JSON Schema for the strict YAML/JSON contract IR:
+
+```sh
+agentfile schema > agentfile.schema.json
+```
+
+The schema is designed for editor integration, generated forms, and lightweight preflight checks. It describes required fields, enums, identifier shapes, and object structure. It does not replace `agentfile check`, which remains the source of truth for semantic invariants such as `info.title` matching `task.id`, duplicate id detection, scope/permission consistency, and risky authority validation.

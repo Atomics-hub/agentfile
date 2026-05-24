@@ -16,7 +16,7 @@
 - Add formatter and golden fixtures for `.agent`.
 - Add trace format for agent actions and verification.
 - Add GitHub Actions integration.
-- Add JSON Schema export.
+- Expand the JSON Schema export with optional editor snippets and published schema hosting once the repository is public.
 - Add contract diff command.
 
 ## v0.3

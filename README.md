@@ -200,6 +200,12 @@ npm run launch:dry-run
 npm run launch:clean-clone
 ```
 
+Export the strict contract IR JSON Schema for editors or lightweight tooling:
+
+```sh
+node dist/cli.js schema > agentfile.schema.json
+```
+
 Run the end-to-end demo:
 
 ```sh

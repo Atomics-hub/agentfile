@@ -20,4 +20,5 @@ export { parseAgentfile } from "./parser.js";
 export { parsePactSource, parseSource } from "./source.js";
 export { findTarget, quotedTargetIds } from "./targets.js";
 export { agentfileSchema } from "./schema.js";
+export { agentfileJsonSchema, compileJsonSchema } from "./json-schema.js";
 export type { Agentfile } from "./schema.js";
