@@ -52,6 +52,7 @@ The repository is ready to go public when:
 - Package metadata points at the intended repository and package publishing is intentionally gated.
 - Security docs explain what Agentfile does and does not enforce.
 - The benchmark plan is framed as a plan unless data has actually been collected.
+- [Phase 1 Launch Packet](phase-1-launch-packet.md) has been read and still matches the intended launch posture.
 
 Generate the current local launch-review gate summary:
 

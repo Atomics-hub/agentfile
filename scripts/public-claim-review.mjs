@@ -14,6 +14,7 @@ const publicSurfaces = [
   "docs/security-model.md",
   "docs/benchmark-results.md",
   "docs/launch-readiness.md",
+  "docs/phase-1-launch-packet.md",
   "docs/language-thesis.md",
   "docs/roadmap.md",
   "benchmarks/README.md"

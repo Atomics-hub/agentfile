@@ -28,6 +28,7 @@ process.stdout.write(renderLaunchReview({
     "docs/roadmap.md",
     "docs/benchmark-results.md",
     "docs/public-claims.md",
+    "docs/phase-1-launch-packet.md",
     "examples/fix-login-race.agent",
     "examples/receipts/fix-login-passing.receipt.json",
     "examples/receipts/fix-login-pending.receipt.json",
@@ -122,8 +123,9 @@ function renderLaunchReview({ packageJson, benchmarkPlan, claimReview, currentCo
       `${benchmarkCoverage.completedFourConditionTasks.length} completed four-condition task families, ${benchmarkCoverage.missingConditionCount} missing condition receipts.`,
       "Claims must cite receipt-level evidence, not just aggregate scores."
     ]),
-    gate("Launch risk", claimReview.violationCount === 0 && files["docs/public-claims.md"], [
+    gate("Launch risk", claimReview.violationCount === 0 && files["docs/public-claims.md"] && files["docs/phase-1-launch-packet.md"], [
       `Automated public-claim review found ${claimReview.violationCount} blocked claim pattern(s) across ${claimReview.surfaceCount} launch-facing surfaces.`,
+      "Phase 1 launch packet is present for the final human go/no-go.",
       "Public copy must stay limited to reviewable contracts, compiled instruction surfaces, and auditable proof obligations."
     ])
   ];

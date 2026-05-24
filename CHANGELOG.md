@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added a Phase 1 launch packet and launch-review gate evidence for the final public go/no-go decision.
 - Added `npm run launch:metadata` and wired it into the pre-public dry run so package and GitHub description guidance stay aligned.
 - Tightened launch-facing package metadata and public-claim scanning to avoid implying safety guarantees.
 - Added an explicit "what this demonstrates" summary to the quick demo so Phase 1 evidence stays narrow and legible.
