@@ -1,0 +1,26 @@
+
+> agentfile-fulfillment-pii-fixture@0.0.0 test
+> node scripts/test.mjs fulfillment
+
+✔ builds a shipping label with destination details (0.346125ms)
+✔ omits raw customer contact details from shipping labels (0.067208ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 46.024542
+
+> agentfile-fulfillment-pii-fixture@0.0.0 lint
+> node scripts/lint.mjs
+
+
+> agentfile-fulfillment-pii-fixture@0.0.0 proof:check
+> node scripts/proof-check.mjs
+
+
+> agentfile-fulfillment-pii-fixture@0.0.0 scope:check
+> node scripts/scope-check.mjs
+
