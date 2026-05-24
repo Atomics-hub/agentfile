@@ -15,6 +15,7 @@ const { stdout } = await execFileAsync("node", [benchmarkRunnerPath], {
 process.stdout.write(renderReport(JSON.parse(stdout)));
 
 function renderReport(plan) {
+  const coverage = summarizeCoverage(plan);
   const lines = [
     "# Agentfile Benchmark Report",
     "",
@@ -30,6 +31,12 @@ function renderReport(plan) {
     `- Receipts scored: ${plan.scoreSummary?.receiptsScored ?? 0}`,
     `- Comparable pairs: ${plan.scoreSummary?.comparableConditionPairs ?? 0}`,
     `- Repeated pairs: ${plan.scoreSummary?.repeatedConditionPairs ?? 0}`,
+    "",
+    "## Coverage Summary",
+    "",
+    `- Fully covered tasks: ${coverage.fullyCoveredTaskCount} / ${coverage.taskCount}`,
+    `- Missing condition receipts: ${coverage.missingConditionCount}`,
+    `- Completed four-condition tasks: ${formatList(coverage.completedFourConditionTasks)}`,
     "",
     "## Condition Summary",
     "",
@@ -114,6 +121,27 @@ function renderReport(plan) {
   return `${lines.join("\n")}\n`;
 }
 
+function summarizeCoverage(plan) {
+  const tasks = plan.scoreSummary?.byTask ?? [];
+  const fullyCoveredTasks = tasks
+    .filter((task) => task.conditions.every((condition) => condition.receiptCount > 0))
+    .map((task) => task.taskId);
+  const completedFourConditionTasks = tasks
+    .filter((task) => task.conditions.length >= 4 && task.conditions.every((condition) => condition.receiptCount > 0))
+    .map((task) => task.taskId);
+  const missingConditionCount = tasks.reduce(
+    (count, task) => count + task.conditions.filter((condition) => condition.receiptCount === 0).length,
+    0
+  );
+
+  return {
+    taskCount: tasks.length,
+    fullyCoveredTaskCount: fullyCoveredTasks.length,
+    completedFourConditionTasks,
+    missingConditionCount
+  };
+}
+
 function missingEvidenceRows(plan) {
   const taskInputByCondition = new Map(
     (plan.tasks ?? []).map((task) => [
@@ -149,6 +177,10 @@ function table(headers, rows) {
 
 function code(value) {
   return `\`${String(value)}\``;
+}
+
+function formatList(values) {
+  return values.length > 0 ? values.map(code).join(", ") : "none";
 }
 
 function number(value) {

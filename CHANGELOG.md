@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- `npm run benchmark:report` now includes a coverage summary for fully covered tasks, missing condition receipts, and completed four-condition task families.
 - `npm run launch:review` now surfaces benchmark coverage, completed four-condition task families, and missing condition receipts.
 - Updated launch-facing claims and readiness docs to reflect the completed fulfillment four-way comparison while keeping public claims narrow.
 - Added the first fulfillment PII benchmark receipt for the `agentfile-pact` condition, increasing validated receipts to twenty-three and completing the four-way fulfillment comparison.

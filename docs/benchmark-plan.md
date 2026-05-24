@@ -60,7 +60,7 @@ Render the same validated data as a compact Markdown report:
 npm run benchmark:report
 ```
 
-When task/condition inputs have zero receipts, the report includes a `Missing Evidence` section, which keeps planned comparison work visible without presenting it as evidence.
+The report includes a coverage summary with fully covered tasks, missing condition receipts, and completed four-condition task families. When task/condition inputs have zero receipts, it also includes a `Missing Evidence` section, which keeps planned comparison work visible without presenting it as evidence.
 
 The current skeleton does not run agents or claim results. It records the first task, conditions, checks, metrics, receipt shape, and score summary so future benchmark runs can produce comparable receipts.
 
