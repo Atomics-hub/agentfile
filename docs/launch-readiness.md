@@ -58,7 +58,7 @@ npm run claims:review
 npm run launch:review
 ```
 
-The generated review is a decision aid. It does not replace private remote verification or manual claim review against [Public Claims Policy](public-claims.md). The fast-test gate becomes ready only when `npm run launch:clean-clone` has written a passing report for the current commit.
+The generated review is a decision aid. It summarizes benchmark receipt coverage, completed four-condition task families, launch gates, and claim-scan status. It does not replace private remote verification or manual claim review against [Public Claims Policy](public-claims.md). The fast-test gate becomes ready only when `npm run launch:clean-clone` has written a passing report for the current commit.
 
 Run the local pre-public dry run before treating the repository as launchable:
 

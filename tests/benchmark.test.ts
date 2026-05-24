@@ -230,6 +230,10 @@ describe("benchmark receipt scoring", () => {
     });
 
     expect(stdout).toContain("# Agentfile Launch Review");
+    expect(stdout).toContain("Fully covered tasks: 6 / 6");
+    expect(stdout).toContain("Missing condition receipts: 0");
+    expect(stdout).toContain("## Benchmark Coverage");
+    expect(stdout).toContain("Completed four-condition tasks: `redact-auth-logs`, `remove-shipping-label-pii`, `verify-webhook-raw-signature`");
     expect(stdout).toContain("## Gate Summary");
     expect(stdout).toContain("| Clear README/demo | ready |");
     expect(stdout).toContain("| Fast reliable tests | manual-check |");

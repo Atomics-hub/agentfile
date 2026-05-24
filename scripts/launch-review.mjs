@@ -85,6 +85,7 @@ async function exists(path) {
 
 function renderLaunchReview({ packageJson, benchmarkPlan, claimReview, currentCommit, cleanCloneReport, files }) {
   const cleanCloneReady = cleanCloneReport?.valid === true && cleanCloneReport.sourceHead === currentCommit;
+  const benchmarkCoverage = summarizeBenchmarkCoverage(benchmarkPlan);
   const gates = [
     gate("Clear README/demo", files["README.md"] && files["docs/demo.md"] && files["examples/fix-login-race.agent"], [
       "README, demo doc, and Pact example are present.",
@@ -125,6 +126,14 @@ function renderLaunchReview({ packageJson, benchmarkPlan, claimReview, currentCo
     `Benchmark conditions: ${benchmarkPlan.conditionCount}`,
     `Comparable pairs: ${benchmarkPlan.scoreSummary?.comparableConditionPairs ?? 0}`,
     `Repeated pairs: ${benchmarkPlan.scoreSummary?.repeatedConditionPairs ?? 0}`,
+    `Fully covered tasks: ${benchmarkCoverage.fullyCoveredTaskCount} / ${benchmarkCoverage.taskCount}`,
+    `Missing condition receipts: ${benchmarkCoverage.missingConditionCount}`,
+    "",
+    "## Benchmark Coverage",
+    "",
+    `Fully covered tasks: ${formatList(benchmarkCoverage.fullyCoveredTasks)}`,
+    `Completed four-condition tasks: ${formatList(benchmarkCoverage.completedFourConditionTasks)}`,
+    `Missing condition receipts: ${benchmarkCoverage.missingConditionCount}`,
     "",
     "## Gate Summary",
     "",
@@ -145,6 +154,32 @@ function renderLaunchReview({ packageJson, benchmarkPlan, claimReview, currentCo
     "- Keep package publishing disabled until an explicit release decision.",
     ""
   ].join("\n");
+}
+
+function summarizeBenchmarkCoverage(benchmarkPlan) {
+  const tasks = benchmarkPlan.scoreSummary?.byTask ?? [];
+  const fullyCoveredTasks = tasks
+    .filter((task) => task.conditions.every((condition) => condition.receiptCount > 0))
+    .map((task) => task.taskId);
+  const completedFourConditionTasks = tasks
+    .filter((task) => task.conditions.length >= 4 && task.conditions.every((condition) => condition.receiptCount > 0))
+    .map((task) => task.taskId);
+  const missingConditionCount = tasks.reduce(
+    (count, task) => count + task.conditions.filter((condition) => condition.receiptCount === 0).length,
+    0
+  );
+
+  return {
+    taskCount: tasks.length,
+    fullyCoveredTaskCount: fullyCoveredTasks.length,
+    fullyCoveredTasks,
+    completedFourConditionTasks,
+    missingConditionCount
+  };
+}
+
+function formatList(values) {
+  return values.length > 0 ? values.map((value) => `\`${value}\``).join(", ") : "none";
 }
 
 function gate(name, passed, evidence) {
