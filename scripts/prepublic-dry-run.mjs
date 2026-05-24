@@ -29,6 +29,11 @@ const commands = [
     name: "Full local checks",
     command: "npm run check",
     args: ["run", "check"]
+  },
+  {
+    name: "README quick loop",
+    command: "npm run demo:quick",
+    args: ["run", "demo:quick"]
   }]),
   {
     name: "Benchmark plan validation",

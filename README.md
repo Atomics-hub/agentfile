@@ -22,6 +22,14 @@ From a clean checkout, the current end-to-end proof is intentionally small:
 
 ```sh
 npm install
+npm run demo:quick
+```
+
+That script runs the same lifecycle by building the CLI, validating one `.agent` contract, projecting it into the instruction files current agent harnesses already read, then verifying a filled receipt against the original contract.
+
+The steps are intentionally plain CLI commands:
+
+```sh
 npm run build
 node dist/cli.js check examples/fix-login-race.agent
 mkdir -p /tmp/agentfile-demo
@@ -31,8 +39,6 @@ node dist/cli.js sync examples/fix-login-race.agent --target cursor-mdc --output
 node dist/cli.js sync examples/fix-login-race.agent --target copilot-md --output /tmp/agentfile-demo/copilot-instructions.md --force
 node dist/cli.js receipt verify examples/fix-login-race.agent examples/receipts/fix-login-passing.receipt.json
 ```
-
-That validates one `.agent` contract, projects it into the instruction files current agent harnesses already read, then verifies a filled receipt against the original contract.
 
 The failure mode is visible too:
 
@@ -264,6 +270,7 @@ node dist/cli.js schema > agentfile.schema.json
 Run the end-to-end demo:
 
 ```sh
+npm run demo:quick
 npm run build
 node dist/cli.js check examples/fix-login-race.agent
 node dist/cli.js compile examples/fix-login-race.agent --target yaml

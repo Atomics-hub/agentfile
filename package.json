@@ -44,6 +44,7 @@
     "benchmark:plan": "node benchmarks/run.mjs",
     "benchmark:baseline": "node benchmarks/baseline.mjs",
     "benchmark:report": "node benchmarks/report.mjs",
+    "demo:quick": "node scripts/readme-quick-loop.mjs",
     "claims:review": "node scripts/public-claim-review.mjs",
     "launch:review": "node scripts/launch-review.mjs",
     "launch:dry-run": "node scripts/prepublic-dry-run.mjs",

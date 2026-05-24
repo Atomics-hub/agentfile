@@ -29,10 +29,13 @@ process.stdout.write(renderLaunchReview({
     "docs/benchmark-results.md",
     "docs/public-claims.md",
     "examples/fix-login-race.agent",
+    "examples/receipts/fix-login-passing.receipt.json",
+    "examples/receipts/fix-login-pending.receipt.json",
     "src/cli.ts",
     "src/compiler.ts",
     "src/source.ts",
     "src/renderers/instructions.ts",
+    "scripts/readme-quick-loop.mjs",
     "benchmarks/report.mjs"
   ])
 }));
@@ -92,9 +95,9 @@ function renderLaunchReview({ packageJson, benchmarkPlan, claimReview, currentCo
     && benchmarkCoverage.missingConditionCount === 0
     && benchmarkCoverage.completedFourConditionTasks.length >= 2;
   const gates = [
-    gate("Clear README/demo", files["README.md"] && files["docs/demo.md"] && files["examples/fix-login-race.agent"], [
-      "README, demo doc, and Pact example are present.",
-      "Verify the demo from a clean clone before public launch."
+    gate("Clear README/demo", files["README.md"] && files["docs/demo.md"] && files["examples/fix-login-race.agent"] && files["examples/receipts/fix-login-passing.receipt.json"] && files["examples/receipts/fix-login-pending.receipt.json"] && files["scripts/readme-quick-loop.mjs"], [
+      "README, demo doc, Pact example, receipt lifecycle fixtures, and quick-loop script are present.",
+      "Clean-clone dry run executes the README quick loop before public launch."
     ]),
     gate("Clean compiler architecture", files["src/compiler.ts"] && files["src/source.ts"] && files["src/renderers/instructions.ts"], [
       "Compiler, source parser, and instruction renderer modules are separated.",

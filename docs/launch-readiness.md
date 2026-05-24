@@ -65,16 +65,17 @@ The generated review is a decision aid. It summarizes benchmark receipt coverage
 Run the local pre-public dry run before treating the repository as launchable:
 
 ```sh
+npm run demo:quick
 npm run launch:dry-run
 npm run launch:clean-clone
 ```
 
-The dry run executes `npm run check`, validates the benchmark plan, renders the benchmark report, renders the launch-review gate, and confirms `package.json` still has `private: true`. The clean-clone verifier clones the committed checkout into a temporary directory, runs `npm ci`, then runs the same dry run from that clean checkout. It writes `.agentfile/clean-clone-report.json`, which `npm run launch:review` uses to mark the fast-test gate ready when the report matches the current commit. Neither command publishes packages, pushes commits, or changes repository visibility. Remote privacy still requires a separate `gh repo view Atomics-hub/agentfile --json visibility` check.
+The quick demo script builds the CLI, validates the example contract, writes the generated instruction files into a temporary directory, verifies the passing receipt, and confirms the pending receipt fails with missing proof. The dry run executes `npm run check`, `npm run demo:quick`, validates the benchmark plan, renders the benchmark report, renders the launch-review gate, and confirms `package.json` still has `private: true`. The clean-clone verifier clones the committed checkout into a temporary directory, runs `npm ci`, then runs the same dry run from that clean checkout. It writes `.agentfile/clean-clone-report.json`, which `npm run launch:review` uses to mark the fast-test gate ready when the report matches the current commit. Neither command publishes packages, pushes commits, or changes repository visibility. Remote privacy still requires a separate `gh repo view Atomics-hub/agentfile --json visibility` check.
 
 ## Current Highest-Leverage Work
 
-1. Finalize the README and demo so the contract-to-instructions-to-receipt loop is copy-pasteable in under five minutes.
-2. Do a final public-readiness review from a clean clone, including the passing and pending receipt examples.
+1. Do a final public-readiness review from a clean clone, including `npm run demo:quick`.
+2. Keep the README, demo doc, and quick-loop script in sync whenever the public lifecycle changes.
 3. Keep broad benchmark claims out of public docs until repeated comparative data exists across task families and agent runs.
 4. Add another proof-sensitive task family only if it supports a specific launch claim or exposes a new failure mode.
 5. Keep generated instruction fixtures synced with Pact source.
