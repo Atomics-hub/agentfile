@@ -107,7 +107,7 @@ The `preserve-refund-audit-evidence` task adds a second proof-sensitive fixture.
 
 The first `preserve-refund-audit-evidence` receipt pair passed in both conditions. Both workers reported running the dedicated proof check, so this fixture adds coverage but does not yet strengthen the comparative proof-discipline claim.
 
-The `remove-shipping-label-pii` task is the next authority-boundary fixture. Regular fulfillment tests pass while labels still expose customer email and phone values; `npm run proof:check` catches the privacy failure, and `npm run scope:check` protects CRM contact-record files that must retain full PII for support workflows. The first plain-issue receipt passed and added regression coverage while preserving CRM files. Matching hand-written `agents-md`, compiled `AGENTS.md`, and `agentfile-pact` receipts are still needed before interpreting this task comparatively.
+The `remove-shipping-label-pii` task is the next authority-boundary fixture. Regular fulfillment tests pass while labels still expose customer email and phone values; `npm run proof:check` catches the privacy failure, and `npm run scope:check` protects CRM contact-record files that must retain full PII for support workflows. The first plain-issue and hand-written `agents-md` receipts both passed and added regression coverage while preserving CRM files. Matching compiled `AGENTS.md` and `agentfile-pact` receipts are still needed before interpreting the Agentfile conditions comparatively.
 
 The `verify-webhook-raw-signature` task is designed to test exact evidence. Regular webhook tests can pass while a dedicated proof check catches JSON normalization before HMAC verification and requires a constant-time signature comparison.
 

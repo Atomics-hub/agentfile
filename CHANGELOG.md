@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added the first fulfillment PII benchmark receipt for the `agents-md` condition, increasing validated receipts to twenty-one.
 - Added the first fulfillment PII benchmark receipt for the `plain-issue` condition, increasing validated receipts to twenty.
 - `npm run benchmark:report` now lists zero-receipt task conditions as missing evidence.
 - Added generated `AGENTS.md` output for the fulfillment PII benchmark fixture and wired it into golden tests.
