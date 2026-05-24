@@ -11,6 +11,8 @@ const execFileAsync = promisify(execFile);
 const cliPath = fileURLToPath(new URL("../dist/cli.js", import.meta.url));
 const examplePath = fileURLToPath(new URL("../examples/fix-login-race.agent", import.meta.url));
 const exampleContractPath = fileURLToPath(new URL("../examples/fix-login-race.agentfile", import.meta.url));
+const passingReceiptPath = fileURLToPath(new URL("../examples/receipts/fix-login-passing.receipt.json", import.meta.url));
+const pendingReceiptPath = fileURLToPath(new URL("../examples/receipts/fix-login-pending.receipt.json", import.meta.url));
 
 const tempDirs: string[] = [];
 
@@ -232,6 +234,20 @@ describe("agentfile receipt", () => {
 
     await expect(
       runCli(["receipt", "verify", examplePath, receiptPath], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining('requiredProof[npm-test-auth].status: expected "passed", got "pending"')
+    });
+  });
+
+  it("verifies checked-in lifecycle receipt examples", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-examples-"));
+    tempDirs.push(cwd);
+
+    const { stdout } = await runCli(["receipt", "verify", examplePath, passingReceiptPath], cwd);
+
+    expect(stdout).toContain(`OK ${passingReceiptPath} satisfies ${examplePath}`);
+    await expect(
+      runCli(["receipt", "verify", examplePath, pendingReceiptPath], cwd)
     ).rejects.toMatchObject({
       stderr: expect.stringContaining('requiredProof[npm-test-auth].status: expected "passed", got "pending"')
     });

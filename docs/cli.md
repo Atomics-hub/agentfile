@@ -117,3 +117,10 @@ The verifier checks that the receipt task, scope, authority, required proof, acc
 ```sh
 agentfile receipt verify examples/fix-login-race.agent receipts/fix-login.json
 ```
+
+Checked-in lifecycle examples:
+
+```sh
+agentfile receipt verify examples/fix-login-race.agent examples/receipts/fix-login-passing.receipt.json
+agentfile receipt verify examples/fix-login-race.agent examples/receipts/fix-login-pending.receipt.json
+```

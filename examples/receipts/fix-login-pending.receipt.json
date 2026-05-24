@@ -1,0 +1,142 @@
+{
+  "agentfile": "0.1.0",
+  "kind": "AgentfileReceiptTemplate",
+  "contract": {
+    "path": "examples/fix-login-race.agent",
+    "taskId": "fix-login-refresh-race",
+    "goal": "Share one in-flight refresh across concurrent auth calls"
+  },
+  "source": {
+    "contractSourceUsed": "examples/fix-login-race.agent",
+    "generatedInstructionSurfaceUsed": null
+  },
+  "scope": {
+    "include": [
+      "src/auth/**",
+      "tests/auth/**"
+    ],
+    "exclude": [
+      "src/billing/**",
+      "infra/**"
+    ],
+    "filesystem": {
+      "read": [
+        "src/auth/**",
+        "tests/auth/**"
+      ],
+      "write": [
+        "src/auth/**",
+        "tests/auth/**"
+      ],
+      "deny": [
+        "src/billing/**",
+        "infra/**"
+      ]
+    }
+  },
+  "authority": {
+    "shell": {
+      "allow": [
+        "npm test -- auth",
+        "npm run lint"
+      ],
+      "deny": []
+    },
+    "network": {
+      "default": "deny",
+      "allow": []
+    },
+    "secrets": {
+      "access": "deny",
+      "allow": []
+    },
+    "approvals": {
+      "requiredFor": [
+        "dependency_change",
+        "network_access",
+        "scope_expansion"
+      ]
+    }
+  },
+  "requiredProof": [
+    {
+      "id": "npm-test-auth",
+      "command": "npm test -- auth",
+      "description": null,
+      "required": true,
+      "status": "pending",
+      "evidence": null
+    },
+    {
+      "id": "npm-run-lint",
+      "command": "npm run lint",
+      "description": null,
+      "required": true,
+      "status": "pending",
+      "evidence": null
+    }
+  ],
+  "acceptanceEvidence": [
+    {
+      "item": "Concurrent refresh calls result in exactly one upstream token request",
+      "status": "pending",
+      "evidence": null
+    },
+    {
+      "item": "Failed refreshes clear the in-flight operation",
+      "status": "pending",
+      "evidence": null
+    }
+  ],
+  "handoffEvidence": [
+    {
+      "item": "Attach or link the transcript/tool log.",
+      "status": "pending",
+      "evidence": null
+    },
+    {
+      "item": "Attach or link the patch diff.",
+      "status": "pending",
+      "evidence": null
+    },
+    {
+      "item": "Attach or link the check log.",
+      "status": "pending",
+      "evidence": null
+    },
+    {
+      "item": "Note skipped checks, approvals, and policy limits.",
+      "status": "pending",
+      "evidence": null
+    },
+    {
+      "item": "Explain changed control flow.",
+      "status": "pending",
+      "evidence": null
+    },
+    {
+      "item": "Explain remaining race assumptions.",
+      "status": "pending",
+      "evidence": null
+    },
+    {
+      "item": "List changed files.",
+      "status": "pending",
+      "evidence": null
+    },
+    {
+      "item": "Note risks.",
+      "status": "pending",
+      "evidence": null
+    }
+  ],
+  "receiptFields": [
+    "contract source used",
+    "generated instruction surface used, if any",
+    "agent, model, and harness",
+    "started and ended timestamps",
+    "verification commands run",
+    "scope adherence notes",
+    "final handoff summary"
+  ]
+}

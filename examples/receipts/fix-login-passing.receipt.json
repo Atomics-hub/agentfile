@@ -1,0 +1,145 @@
+{
+  "agentfile": "0.1.0",
+  "kind": "AgentfileReceiptTemplate",
+  "contract": {
+    "path": "examples/fix-login-race.agent",
+    "taskId": "fix-login-refresh-race",
+    "goal": "Share one in-flight refresh across concurrent auth calls"
+  },
+  "source": {
+    "contractSourceUsed": "examples/fix-login-race.agent",
+    "generatedInstructionSurfaceUsed": "AGENTS.md"
+  },
+  "scope": {
+    "include": [
+      "src/auth/**",
+      "tests/auth/**"
+    ],
+    "exclude": [
+      "src/billing/**",
+      "infra/**"
+    ],
+    "filesystem": {
+      "read": [
+        "src/auth/**",
+        "tests/auth/**"
+      ],
+      "write": [
+        "src/auth/**",
+        "tests/auth/**"
+      ],
+      "deny": [
+        "src/billing/**",
+        "infra/**"
+      ]
+    }
+  },
+  "authority": {
+    "shell": {
+      "allow": [
+        "npm test -- auth",
+        "npm run lint"
+      ],
+      "deny": []
+    },
+    "network": {
+      "default": "deny",
+      "allow": []
+    },
+    "secrets": {
+      "access": "deny",
+      "allow": []
+    },
+    "approvals": {
+      "requiredFor": [
+        "dependency_change",
+        "network_access",
+        "scope_expansion"
+      ]
+    }
+  },
+  "requiredProof": [
+    {
+      "id": "npm-test-auth",
+      "command": "npm test -- auth",
+      "description": null,
+      "required": true,
+      "status": "passed",
+      "evidence": "logs/npm-test-auth.txt"
+    },
+    {
+      "id": "npm-run-lint",
+      "command": "npm run lint",
+      "description": null,
+      "required": true,
+      "status": "passed",
+      "evidence": "logs/npm-run-lint.txt"
+    }
+  ],
+  "acceptanceEvidence": [
+    {
+      "item": "Concurrent refresh calls result in exactly one upstream token request",
+      "status": "satisfied",
+      "evidence": "tests/auth/refresh-race.test.ts covers concurrent refresh coalescing"
+    },
+    {
+      "item": "Failed refreshes clear the in-flight operation",
+      "status": "satisfied",
+      "evidence": "tests/auth/refresh-race.test.ts covers retry after failed refresh"
+    }
+  ],
+  "handoffEvidence": [
+    {
+      "item": "Attach or link the transcript/tool log.",
+      "status": "satisfied",
+      "evidence": "receipts/fix-login/transcript.md"
+    },
+    {
+      "item": "Attach or link the patch diff.",
+      "status": "satisfied",
+      "evidence": "receipts/fix-login/patch.diff"
+    },
+    {
+      "item": "Attach or link the check log.",
+      "status": "satisfied",
+      "evidence": "receipts/fix-login/checks.txt"
+    },
+    {
+      "item": "Note skipped checks, approvals, and policy limits.",
+      "status": "satisfied",
+      "evidence": "No skipped checks; no approvals requested; network and secrets remained denied"
+    },
+    {
+      "item": "Explain changed control flow.",
+      "status": "satisfied",
+      "evidence": "Refresh calls now share one in-flight promise until it settles"
+    },
+    {
+      "item": "Explain remaining race assumptions.",
+      "status": "satisfied",
+      "evidence": "Assumes process-local refresh coalescing is sufficient for this auth client"
+    },
+    {
+      "item": "List changed files.",
+      "status": "satisfied",
+      "evidence": [
+        "src/auth/session.ts",
+        "tests/auth/refresh-race.test.ts"
+      ]
+    },
+    {
+      "item": "Note risks.",
+      "status": "satisfied",
+      "evidence": "No billing or infra files changed; remaining risk is distributed refresh duplication outside this process"
+    }
+  ],
+  "receiptFields": [
+    "contract source used",
+    "generated instruction surface used, if any",
+    "agent, model, and harness",
+    "started and ended timestamps",
+    "verification commands run",
+    "scope adherence notes",
+    "final handoff summary"
+  ]
+}

@@ -327,6 +327,7 @@ agentfile receipt examples/fix-login-race.agent
 agentfile receipt examples/fix-login-race.agent --output receipts/fix-login.md
 agentfile receipt examples/fix-login-race.agent --format json --output receipts/fix-login.json
 agentfile receipt verify examples/fix-login-race.agent receipts/fix-login.json
+agentfile receipt verify examples/fix-login-race.agent examples/receipts/fix-login-passing.receipt.json
 ```
 
 List compile and sync targets:

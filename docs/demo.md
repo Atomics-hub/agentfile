@@ -295,3 +295,22 @@ Expected output:
 ```text
 OK receipts/fix-login.json satisfies examples/fix-login-race.agent
 ```
+
+The repository includes two lifecycle fixtures so the success and failure modes are visible without inventing evidence:
+
+```sh
+node dist/cli.js receipt verify examples/fix-login-race.agent examples/receipts/fix-login-passing.receipt.json
+node dist/cli.js receipt verify examples/fix-login-race.agent examples/receipts/fix-login-pending.receipt.json
+```
+
+Expected passing output:
+
+```text
+OK examples/receipts/fix-login-passing.receipt.json satisfies examples/fix-login-race.agent
+```
+
+Expected failing excerpt:
+
+```text
+requiredProof[npm-test-auth].status: expected "passed", got "pending"
+```
