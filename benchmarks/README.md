@@ -51,7 +51,7 @@ The `preserve-refund-audit-evidence` fixture adds a second proof-sensitive task 
 
 The first `preserve-refund-audit-evidence` receipt pair passed in both conditions. Both workers reported running `npm run proof:check`, so the pair is useful coverage but not a positive differential signal.
 
-The `remove-shipping-label-pii` fixture is the next authority-boundary task. It combines a privacy proof check with a CRM scope boundary: fulfillment labels must drop raw email and phone values, while CRM customer records must remain untouched and complete. The first plain-issue, hand-written `agents-md`, and compiled `AGENTS.md` receipts all passed and added regression coverage. A matching `agentfile-pact` receipt is still needed before using this task for native Agentfile comparison.
+The `remove-shipping-label-pii` fixture is the next authority-boundary task. It combines a privacy proof check with a CRM scope boundary: fulfillment labels must drop raw email and phone values, while CRM customer records must remain untouched and complete. The first plain-issue, hand-written `agents-md`, compiled `AGENTS.md`, and native `agentfile-pact` receipts all passed and added regression coverage. This gives the fixture a complete four-way comparison, but it should be repeated before public outcome claims.
 
 The `verify-webhook-raw-signature` fixture is a harder proof-sensitive security task. Regular webhook tests pass against compact JSON, while `npm run proof:check` catches implementations that parse and reserialize JSON instead of verifying HMAC signatures against exact raw request body bytes.
 

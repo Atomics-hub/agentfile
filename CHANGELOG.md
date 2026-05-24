@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added the first fulfillment PII benchmark receipt for the `agentfile-pact` condition, increasing validated receipts to twenty-three and completing the four-way fulfillment comparison.
 - Added the first fulfillment PII benchmark receipt for the `compiled-agents-md` condition, increasing validated receipts to twenty-two.
 - Added the first fulfillment PII benchmark receipt for the `agents-md` condition, increasing validated receipts to twenty-one.
 - Added the first fulfillment PII benchmark receipt for the `plain-issue` condition, increasing validated receipts to twenty.

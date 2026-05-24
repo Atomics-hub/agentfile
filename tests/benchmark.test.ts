@@ -29,7 +29,7 @@ describe("benchmark receipt scoring", () => {
     expect(plan.metrics).toContain("independent_proof_check_success");
     expect(plan.metrics).toContain("proof_vector_regression_tests");
     expect(plan.metrics).toContain("evidence_quality");
-    expect(plan.scoreSummary.comparableConditionPairs).toBe(18);
+    expect(plan.scoreSummary.comparableConditionPairs).toBe(21);
     expect(plan.scoreSummary.repeatedConditionPairs).toBe(4);
 
     const agentfile = plan.scoreSummary.byCondition.find(
@@ -200,11 +200,11 @@ describe("benchmark receipt scoring", () => {
 
     expect(stdout).toContain("# Agentfile Benchmark Report");
     expect(stdout).toContain("## Condition Summary");
-    expect(stdout).toContain("## Missing Evidence");
+    expect(stdout).not.toContain("## Missing Evidence");
     expect(stdout).toContain("## Task Coverage");
-    expect(stdout).toContain("- Comparable pairs: 18");
+    expect(stdout).toContain("- Comparable pairs: 21");
     expect(stdout).toContain("- Repeated pairs: 4");
-    expect(stdout).toContain("| `remove-shipping-label-pii` | `agentfile-pact` | `benchmarks/tasks/fulfillment-pii/fulfillment-pii.agent` |");
+    expect(stdout).not.toContain("| `remove-shipping-label-pii` | `agentfile-pact` | `benchmarks/tasks/fulfillment-pii/fulfillment-pii.agent` |");
     expect(stdout).not.toContain("| `remove-shipping-label-pii` | `compiled-agents-md` | `benchmarks/tasks/fulfillment-pii/compiled-agentfile.AGENTS.md` |");
     expect(stdout).not.toContain("| `remove-shipping-label-pii` | `agents-md` | `benchmarks/tasks/fulfillment-pii/AGENTS.md` |");
     expect(stdout).not.toContain("| `remove-shipping-label-pii` | `plain-issue` | `benchmarks/tasks/fulfillment-pii/plain-issue.md` |");

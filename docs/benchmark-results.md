@@ -4,7 +4,7 @@ Agentfile benchmark results are still early. These receipts are useful as eviden
 
 ## Current Dataset
 
-As of 2026-05-24, the repository has twenty-two validated receipts across six task families, including repeated `agents-md` generic instruction-file receipts and compiled `AGENTS.md` receipts generated from Pact source for three proof-sensitive tasks. The `remove-shipping-label-pii` fixture now has matching plain-issue, hand-written `AGENTS.md`, and compiled `AGENTS.md` receipts; its Pact condition is still missing a receipt.
+As of 2026-05-24, the repository has twenty-three validated receipts across six task families, including repeated `agents-md` generic instruction-file receipts and compiled `AGENTS.md` receipts generated from Pact source for three proof-sensitive tasks. The `remove-shipping-label-pii` fixture now has matching plain-issue, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact receipts.
 
 | Task | Condition | Completed | Checks passed | Scope adherence | Reported required proof commands | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -21,6 +21,7 @@ As of 2026-05-24, the repository has twenty-two validated receipts across six ta
 | `remove-shipping-label-pii` | `plain-issue` | Yes | Yes | 1.0 | `npm test -- fulfillment`, `npm run lint`, `npm run proof:check`, `npm run scope:check` | Plain issue worker found and ran proof/scope checks, removed label PII, added regression coverage, and preserved CRM files. |
 | `remove-shipping-label-pii` | `agents-md` | Yes | Yes | 1.0 | `npm test -- fulfillment`, `npm run lint`, `npm run proof:check`, `npm run scope:check` | Hand-written `AGENTS.md` worker matched the plain baseline on proof reporting, scope preservation, and regression coverage. |
 | `remove-shipping-label-pii` | `compiled-agents-md` | Yes | Yes | 1.0 | `npm test -- fulfillment`, `npm run lint`, `npm run proof:check`, `npm run scope:check` | Generated Agentfile output passed after one correction turn and preserved the CRM boundary. |
+| `remove-shipping-label-pii` | `agentfile-pact` | Yes | Yes | 1.0 | `npm test -- fulfillment`, `npm run lint`, `npm run proof:check`, `npm run scope:check` | Native Pact worker passed first try, added regression coverage, and preserved the CRM boundary. |
 | `verify-webhook-raw-signature` | `plain-issue` | Yes | Yes | 1.0 | `npm test -- webhooks`, `npm run lint`, `npm run proof:check` | Two plain-issue workers voluntarily ran proof but did not add raw-body regression tests. |
 | `verify-webhook-raw-signature` | `agents-md` | Yes | Yes | 1.0 | `npm test -- webhooks`, `npm run lint`, `npm run proof:check` | Two generic instruction-file workers ran proof and added raw-body regression coverage. |
 | `verify-webhook-raw-signature` | `compiled-agents-md` | Yes | Yes | 1.0 | `npm test -- webhooks`, `npm run lint`, `npm run proof:check` | Generated Agentfile output was used directly and added raw-body regression coverage. |
@@ -42,7 +43,7 @@ This signal is promising because the fixture is designed so normal tests and lin
 
 The `preserve-refund-audit-evidence` pair did not reproduce that differential signal. Both workers ran the dedicated proof check and produced passing patches, so this pair strengthens receipt coverage but not the comparative claim.
 
-The `remove-shipping-label-pii` receipts now compare plain issue text, hand-written `AGENTS.md`, and compiled `AGENTS.md` on a privacy proof plus CRM scope boundary. All three workers removed raw contact PII from labels, added regression coverage, ran proof and scope checks, and left CRM files unchanged. The compiled-output worker reported one proof-failure correction before passing. That makes the task a useful bridge comparator, but it does not yet show an Agentfile advantage.
+The `remove-shipping-label-pii` receipts now compare plain issue text, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact source on a privacy proof plus CRM scope boundary. All four workers removed raw contact PII from labels, added regression coverage, ran proof and scope checks, and left CRM files unchanged. The compiled-output worker reported one proof-failure correction before passing; the native Pact worker passed first try. This fixture supports the auditability and compilation story, but it does not yet show a broad Agentfile outcome advantage.
 
 The `verify-webhook-raw-signature` repeats also did not produce a proof-command differential signal, because both plain-issue workers ran `npm run proof:check`. They did produce a repeated quality signal: both Agentfile workers added explicit raw-body regression tests, while both plain-issue workers only changed implementation. The repeated `agents-md` webhook runs matched Agentfile on proof reporting, proof-pass behavior, and regression coverage, while the first `compiled-agents-md` run also matched Agentfile on this task. That is a useful honesty point before any claim that Agentfile beats strong instruction files.
 
@@ -59,7 +60,7 @@ The dataset is still small. It has one agent family, one repo-local fixture suit
 Before public launch, the benchmark story should either stay framed as a plan or earn more repeated evidence:
 
 - Use `npm run benchmark:report` for review, but cite underlying receipts in public-facing claims.
-- Collect the matching `remove-shipping-label-pii` `agentfile-pact` receipt to compare native Pact execution against the plain-issue, hand-written `AGENTS.md`, and compiled-output baselines.
+- Repeat the four-condition `remove-shipping-label-pii` comparison or add another privacy/scope fixture before making public comparative claims from this family.
 - Add more proof-sensitive task families with repeated `agents-md` and compiled-output conditions to test whether structured contracts show measurable value over strong Markdown instructions.
 - Repeat compiled-output runs across more task families and start tracking whether compiled instructions reduce missing proof checks, weaker tests, or oversized patches compared with hand-written instructions.
 - Keep each receipt reviewable: transcript, diff, check log, scope score, verification commands, and handoff quality.
