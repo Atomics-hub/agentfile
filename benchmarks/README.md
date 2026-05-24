@@ -59,7 +59,7 @@ The repeated `preserve-refund-audit-evidence` four-condition set passed in nativ
 
 The `preserve-tenant-export-isolation` fixture adds a tenant-boundary proof task. Regular export tests and lint can pass while `npm run proof:check` still catches cross-tenant order leakage in generated exports.
 
-The first `preserve-tenant-export-isolation` four-condition set passed in native Pact, plain issue, hand-written `AGENTS.md`, and compiled `AGENTS.md` conditions. Every worker ran proof and added a cross-tenant regression test, so the fixture broadens proof-sensitive evidence without producing a positive differential signal yet.
+The repeated `preserve-tenant-export-isolation` four-condition set passed in native Pact, plain issue, hand-written `AGENTS.md`, and compiled `AGENTS.md` conditions. Every worker ran proof and added a cross-tenant regression test, so the fixture broadens proof-sensitive evidence and comparison discipline without producing a positive differential signal yet.
 
 The `remove-shipping-label-pii` fixture is the next authority-boundary task. It combines a privacy proof check with a CRM scope boundary: fulfillment labels must drop raw email and phone values, while CRM customer records must remain untouched and complete. Plain issue, hand-written `agents-md`, compiled `AGENTS.md`, and native `agentfile-pact` now each have two passing receipts with regression coverage, so every condition pair is repeated on this privacy/scope fixture. The result is useful launch evidence for comparison discipline, but not a positive differential signal because all four surfaces solved the task.
 

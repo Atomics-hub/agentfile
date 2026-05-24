@@ -1,0 +1,39 @@
+diff --git a/benchmarks/fixtures/tenant-export/src/exports/orders.js b/tmp/agentfile-tenant-export-compiled-repeat-HfhN7p/src/exports/orders.js
+index 43152c2..0e6c381 100644
+--- a/benchmarks/fixtures/tenant-export/src/exports/orders.js
++++ b/tmp/agentfile-tenant-export-compiled-repeat-HfhN7p/src/exports/orders.js
+@@ -1,6 +1,6 @@
+ export function exportOrdersForTenant(orders, tenantId) {
+   return orders
+-    .filter((order) => order.status !== "draft")
++    .filter((order) => order.tenantId === tenantId && order.status !== "draft")
+     .map((order) => ({
+       id: order.id,
+       tenantId: order.tenantId,
+diff --git a/benchmarks/fixtures/tenant-export/tests/exports/orders.test.js b/tmp/agentfile-tenant-export-compiled-repeat-HfhN7p/tests/exports/orders.test.js
+index 71d3fc7..e5ee793 100644
+--- a/benchmarks/fixtures/tenant-export/tests/exports/orders.test.js
++++ b/tmp/agentfile-tenant-export-compiled-repeat-HfhN7p/tests/exports/orders.test.js
+@@ -27,3 +27,22 @@ test("exports paid orders for a tenant", () => {
+     }
+   ]);
+ });
++
++test("does not export paid orders from other tenants", () => {
++  const exported = exportOrdersForTenant([
++    {
++      id: "order-1",
++      tenantId: "tenant-a",
++      status: "paid",
++      totalCents: 4200
++    },
++    {
++      id: "order-2",
++      tenantId: "tenant-b",
++      status: "paid",
++      totalCents: 9900
++    }
++  ], "tenant-a");
++
++  assert.deepEqual(exported.map((order) => order.id), ["order-1"]);
++});

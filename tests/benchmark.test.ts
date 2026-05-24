@@ -31,7 +31,7 @@ describe("benchmark receipt scoring", () => {
     expect(plan.metrics).toContain("proof_vector_regression_tests");
     expect(plan.metrics).toContain("evidence_quality");
     expect(plan.scoreSummary.comparableConditionPairs).toBe(38);
-    expect(plan.scoreSummary.repeatedConditionPairs).toBe(30);
+    expect(plan.scoreSummary.repeatedConditionPairs).toBe(36);
 
     const agentfile = plan.scoreSummary.byCondition.find(
       (condition: { conditionId: string }) => condition.conditionId === "agentfile-pact"
@@ -346,7 +346,7 @@ describe("benchmark receipt scoring", () => {
     expect(tenantExportTask.conditions).toEqual(expect.arrayContaining([
       expect.objectContaining({
         conditionId: "agentfile-pact",
-        receiptCount: 1,
+        receiptCount: 2,
         proofCommandReportRate: 1,
         independentProofCheckPassRate: 1,
         regressionTestRate: 1,
@@ -357,7 +357,7 @@ describe("benchmark receipt scoring", () => {
       }),
       expect.objectContaining({
         conditionId: "agents-md",
-        receiptCount: 1,
+        receiptCount: 2,
         proofCommandReportRate: 1,
         independentProofCheckPassRate: 1,
         regressionTestRate: 1,
@@ -368,7 +368,7 @@ describe("benchmark receipt scoring", () => {
       }),
       expect.objectContaining({
         conditionId: "compiled-agents-md",
-        receiptCount: 1,
+        receiptCount: 2,
         proofCommandReportRate: 1,
         independentProofCheckPassRate: 1,
         regressionTestRate: 1,
@@ -379,7 +379,7 @@ describe("benchmark receipt scoring", () => {
       }),
       expect.objectContaining({
         conditionId: "plain-issue",
-        receiptCount: 1,
+        receiptCount: 2,
         proofCommandReportRate: 1,
         independentProofCheckPassRate: 1,
         regressionTestRate: 1,
@@ -393,8 +393,8 @@ describe("benchmark receipt scoring", () => {
       expect.objectContaining({
         leftConditionId: "agentfile-pact",
         rightConditionId: "agents-md",
-        comparableReceiptCount: 1,
-        isRepeated: false,
+        comparableReceiptCount: 2,
+        isRepeated: true,
         normalizedQualityDelta: 0,
         proofCommandReportDelta: 0,
         independentProofCheckPassDelta: 0,
@@ -404,8 +404,8 @@ describe("benchmark receipt scoring", () => {
       expect.objectContaining({
         leftConditionId: "agentfile-pact",
         rightConditionId: "compiled-agents-md",
-        comparableReceiptCount: 1,
-        isRepeated: false,
+        comparableReceiptCount: 2,
+        isRepeated: true,
         normalizedQualityDelta: 0,
         proofCommandReportDelta: 0,
         independentProofCheckPassDelta: 0,
@@ -415,8 +415,8 @@ describe("benchmark receipt scoring", () => {
       expect.objectContaining({
         leftConditionId: "agentfile-pact",
         rightConditionId: "plain-issue",
-        comparableReceiptCount: 1,
-        isRepeated: false,
+        comparableReceiptCount: 2,
+        isRepeated: true,
         normalizedQualityDelta: 0,
         proofCommandReportDelta: 0,
         independentProofCheckPassDelta: 0,
@@ -551,7 +551,7 @@ describe("benchmark receipt scoring", () => {
     });
 
     expect(stdout).toContain("# Agentfile Benchmark Report");
-    expect(stdout).toContain("- Receipts: 48");
+    expect(stdout).toContain("- Receipts: 52");
     expect(stdout).toContain("## Coverage Summary");
     expect(stdout).toContain("- Fully covered tasks: 8 / 8");
     expect(stdout).toContain("- Missing condition receipts: 0");
@@ -564,7 +564,7 @@ describe("benchmark receipt scoring", () => {
     expect(stdout).not.toContain("| `share-discount-calculation` | `plain-issue` | `benchmarks/tasks/pricing-refactor/plain-issue.md` |");
     expect(stdout).toContain("## Task Coverage");
     expect(stdout).toContain("- Comparable pairs: 38");
-    expect(stdout).toContain("- Repeated pairs: 30");
+    expect(stdout).toContain("- Repeated pairs: 36");
     expect(stdout).not.toContain("| `remove-shipping-label-pii` | `agentfile-pact` | `benchmarks/tasks/fulfillment-pii/fulfillment-pii.agent` |");
     expect(stdout).not.toContain("| `remove-shipping-label-pii` | `compiled-agents-md` | `benchmarks/tasks/fulfillment-pii/compiled-agentfile.AGENTS.md` |");
     expect(stdout).not.toContain("| `remove-shipping-label-pii` | `agents-md` | `benchmarks/tasks/fulfillment-pii/AGENTS.md` |");

@@ -1,0 +1,21 @@
+
+> agentfile-tenant-export-fixture@0.0.0 test
+> node scripts/test.mjs exports
+
+✔ exports paid orders for a tenant (0.511875ms)
+✔ does not export paid orders from other tenants (0.065583ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 38.368583
+
+> agentfile-tenant-export-fixture@0.0.0 lint
+> node scripts/lint.mjs
+
+
+> agentfile-tenant-export-fixture@0.0.0 proof:check
+> node scripts/proof-check.mjs
