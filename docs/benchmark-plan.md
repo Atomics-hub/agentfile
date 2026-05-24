@@ -115,6 +115,10 @@ The `preserve-refund-audit-evidence` task adds a second proof-sensitive fixture.
 
 The repeated `preserve-refund-audit-evidence` four-condition set passed in native Pact, plain issue, hand-written `AGENTS.md`, and compiled `AGENTS.md` conditions. Every worker set reported running the dedicated proof check, so this fixture adds repeated non-auth proof-sensitive coverage and comparison discipline but does not strengthen the comparative proof-discipline claim yet.
 
+The `preserve-tenant-export-isolation` task adds a tenant-boundary proof fixture. Regular export tests can pass when they only cover one tenant, while a dedicated proof check catches paid orders from other tenants leaking into a tenant-scoped export.
+
+The first `preserve-tenant-export-isolation` four-condition set passed in native Pact, plain issue, hand-written `AGENTS.md`, and compiled `AGENTS.md` conditions. Every worker reported proof and added a cross-tenant regression test, so this fixture broadens the proof-sensitive dataset without strengthening the comparative claim yet.
+
 The `remove-shipping-label-pii` task is the next authority-boundary fixture. Regular fulfillment tests pass while labels still expose customer email and phone values; `npm run proof:check` catches the privacy failure, and `npm run scope:check` protects CRM contact-record files that must retain full PII for support workflows. Plain issue, hand-written `agents-md`, compiled `AGENTS.md`, and native `agentfile-pact` now each have two passing receipts with regression coverage while preserving CRM files, so every condition pair is repeated on this privacy/scope fixture. This strengthens comparison discipline, but it is not a positive differential signal because every condition solved the task.
 
 The `verify-webhook-raw-signature` task is designed to test exact evidence. Regular webhook tests can pass while a dedicated proof check catches JSON normalization before HMAC verification and requires a constant-time signature comparison.

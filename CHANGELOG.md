@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added first four-condition tenant-export benchmark receipts, increasing validated receipts to forty-eight and adding a tenant-isolation proof failure mode where regular tests and lint can pass while proof catches cross-tenant leakage.
 - Added second hand-written and compiled `AGENTS.md` audit-evidence benchmark receipts, increasing validated receipts to forty-four and making every audit-evidence condition pair repeated.
 - Added initial hand-written and compiled `AGENTS.md` audit-evidence benchmark receipts, opening four-condition audit coverage.
 - Added a second plain-issue audit-evidence benchmark receipt, increasing validated receipts to forty and making the non-auth audit proof-sensitive Pact/plain pair repeated.

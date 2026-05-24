@@ -1,0 +1,47 @@
+mission preserve-tenant-export-isolation {
+  goal "Preserve tenant isolation in order exports"
+  summary "Keep export behavior while preventing cross-tenant order leakage"
+  background "Order export tests can pass when fixtures only contain one tenant, while mixed-tenant proof vectors expose missing tenant filtering."
+  owner "platform-security"
+  label exports
+  label tenant-isolation
+  label proof
+
+  read src/exports/**, tests/exports/**, package.json, scripts/**
+  write src/exports/**, tests/exports/**
+
+  can run "npm test -- exports"
+  can run "npm run lint"
+  can run "npm run proof:check"
+
+  cannot use network
+  cannot read secrets
+  cannot add dependency
+
+  must preserve "Paid order export behavior"
+  must "Exports include only orders whose tenantId matches the requested tenant"
+  must "Draft orders remain excluded"
+  must_not "Leak orders from another tenant"
+
+  plan {
+    step "Inspect order export filtering and existing export tests"
+    step "Apply tenantId filtering before rendering export rows"
+    step "Add regression coverage with mixed-tenant paid orders"
+    step "Run proof check that verifies tenant isolation"
+  }
+
+  prove {
+    run "npm test -- exports"
+    run "npm run lint"
+    run "npm run proof:check"
+    expect "Requested tenant paid orders remain exported"
+    expect "Other tenant paid orders are excluded"
+    expect "Draft orders remain excluded"
+  }
+
+  handoff {
+    explain "tenant isolation behavior"
+    list changed_files
+    note risks
+  }
+}

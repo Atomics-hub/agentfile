@@ -25,6 +25,10 @@ const benchmarkCompiledAgentsFixtures = [
     "benchmarks/tasks/audit-evidence/compiled-agentfile.AGENTS.md"
   ],
   [
+    "benchmarks/tasks/tenant-export/tenant-export.agent",
+    "benchmarks/tasks/tenant-export/compiled-agentfile.AGENTS.md"
+  ],
+  [
     "benchmarks/tasks/fulfillment-pii/fulfillment-pii.agent",
     "benchmarks/tasks/fulfillment-pii/compiled-agentfile.AGENTS.md"
   ],

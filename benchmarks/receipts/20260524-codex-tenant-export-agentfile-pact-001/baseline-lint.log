@@ -1,0 +1,3 @@
+
+> agentfile-tenant-export-fixture@0.0.0 lint
+> node scripts/lint.mjs

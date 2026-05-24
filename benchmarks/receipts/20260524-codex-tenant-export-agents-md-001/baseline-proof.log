@@ -1,0 +1,29 @@
+
+> agentfile-tenant-export-fixture@0.0.0 proof:check
+> node scripts/proof-check.mjs
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
+  [
+    'order-1',
++   'order-2'
+  ]
+
+    at file:///private/tmp/agentfile-tenant-export-agents-5xhLCV/scripts/proof-check.mjs:25:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:371:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:702:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: [ 'order-1', 'order-2' ],
+  expected: [ 'order-1' ],
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.8.0
