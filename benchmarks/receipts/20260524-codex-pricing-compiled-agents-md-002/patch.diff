@@ -1,0 +1,64 @@
+diff --git a/src/invoices/summary.js b/src/invoices/summary.js
+index f559bc0..f5b99b1 100644
+--- a/src/invoices/summary.js
++++ b/src/invoices/summary.js
+@@ -1,18 +1,9 @@
+-import { discountForLine } from "../pricing/discounts.js";
++import { totalDiscountCents } from "../pricing/discounts.js";
+ import { taxCents } from "../tax/rounding.js";
+ 
+ export function buildInvoiceSummary({ lines, coupon, taxRate }) {
+   const subtotalCents = subtotal(lines);
+-  let discountCents = 0;
+-  let couponApplied = false;
+-
+-  for (const line of lines) {
+-    if (!couponApplied) {
+-      discountCents += discountForLine(line, coupon);
+-      couponApplied = discountCents > 0;
+-    }
+-  }
+-
++  const discountCents = totalDiscountCents(lines, coupon);
+   const taxableCents = subtotalCents - discountCents;
+ 
+   return {
+diff --git a/tests/pricing/discounts.test.js b/tests/pricing/discounts.test.js
+index 1100438..e8f1e8d 100644
+--- a/tests/pricing/discounts.test.js
++++ b/tests/pricing/discounts.test.js
+@@ -44,4 +44,34 @@ describe("shared discount calculation", () => {
+     assert.equal(taxCents(1099, 0.0825), 91);
+     assert.equal(taxCents(1000, 0.0725), 73);
+   });
++
++  it("applies coupon totals across every eligible invoice line", () => {
++    const multiSeatLines = [
++      {
++        sku: "starter-seat",
++        unitPriceCents: 1000,
++        quantity: 1,
++        discountable: true
++      },
++      {
++        sku: "team-seat",
++        unitPriceCents: 2000,
++        quantity: 1,
++        discountable: true
++      },
++      {
++        sku: "enterprise-seat",
++        unitPriceCents: 3000,
++        quantity: 1,
++        discountable: true
++      }
++    ];
++
++    const quote = buildOrderQuote({ lines: multiSeatLines, coupon, taxRate: 0.0825 });
++    const invoice = buildInvoiceSummary({ lines: multiSeatLines, coupon, taxRate: 0.0825 });
++
++    assert.equal(invoice.discountCents, 1500);
++    assert.equal(invoice.discountCents, quote.discountCents);
++    assert.deepEqual(invoice, quote);
++  });
+ });

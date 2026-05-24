@@ -1,0 +1,25 @@
+
+> agentfile-pricing-refactor-fixture@0.0.0 test
+> node scripts/test.mjs pricing
+
+▶ shared discount calculation
+  ✔ applies the same eligible-line coupon total to orders and invoices (3.137958ms)
+  ✔ preserves tax rounding behavior (0.197625ms)
+  ✔ applies coupon totals across every eligible invoice line (0.192958ms)
+✔ shared discount calculation (5.124958ms)
+ℹ tests 3
+ℹ suites 1
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 141.763959
+
+> agentfile-pricing-refactor-fixture@0.0.0 lint
+> node scripts/lint.mjs
+
+
+> agentfile-pricing-refactor-fixture@0.0.0 scope:check
+> node scripts/scope-check.mjs
+
