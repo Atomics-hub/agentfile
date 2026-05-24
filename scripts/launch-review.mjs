@@ -86,6 +86,11 @@ async function exists(path) {
 function renderLaunchReview({ packageJson, benchmarkPlan, claimReview, currentCommit, cleanCloneReport, files }) {
   const cleanCloneReady = cleanCloneReport?.valid === true && cleanCloneReport.sourceHead === currentCommit;
   const benchmarkCoverage = summarizeBenchmarkCoverage(benchmarkPlan);
+  const benchmarkProofReady = benchmarkPlan.receiptCount >= 24
+    && (benchmarkPlan.scoreSummary?.comparableConditionPairs ?? 0) >= 24
+    && (benchmarkPlan.scoreSummary?.repeatedConditionPairs ?? 0) >= 4
+    && benchmarkCoverage.missingConditionCount === 0
+    && benchmarkCoverage.completedFourConditionTasks.length >= 2;
   const gates = [
     gate("Clear README/demo", files["README.md"] && files["docs/demo.md"] && files["examples/fix-login-race.agent"], [
       "README, demo doc, and Pact example are present.",
@@ -109,8 +114,9 @@ function renderLaunchReview({ packageJson, benchmarkPlan, claimReview, currentCo
       "`package.json` is private and security docs are present.",
       "Remote visibility still requires `gh repo view Atomics-hub/agentfile --json visibility`."
     ]),
-    gate("Benchmark/demo proof", benchmarkPlan.receiptCount >= 16 && benchmarkPlan.scoreSummary?.repeatedConditionPairs >= 1, [
+    gate("Benchmark/demo proof", benchmarkProofReady, [
       `${benchmarkPlan.receiptCount} receipts, ${benchmarkPlan.scoreSummary?.comparableConditionPairs ?? 0} comparable pairs, ${benchmarkPlan.scoreSummary?.repeatedConditionPairs ?? 0} repeated pairs.`,
+      `${benchmarkCoverage.completedFourConditionTasks.length} completed four-condition task families, ${benchmarkCoverage.missingConditionCount} missing condition receipts.`,
       "Claims must cite receipt-level evidence, not just aggregate scores."
     ]),
     gate("Launch risk", claimReview.violationCount === 0 && files["docs/public-claims.md"], [

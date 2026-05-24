@@ -13,7 +13,7 @@ This checklist is the public gate. A release candidate should satisfy every requ
 | Stable CLI | Core commands have documented behavior, useful errors, and integration tests that exercise packaged output. | Mostly ready |
 | Fast reliable tests | `npm run check` passes locally, stays fast enough for frequent automation, and does not rely on stale generated files. | Mostly ready |
 | Private security posture | The remote remains private until launch, risky authority defaults are conservative, and broad permissions trigger diagnostics or lint warnings. | Mostly ready |
-| Benchmark/demo proof | At least one scripted or documented task shows where Agentfile improves reviewability, proof tracking, or generated instruction surfaces relative to plain issue text or scattered instruction files. | Mostly ready |
+| Benchmark/demo proof | Launch review requires at least 24 validated receipts, 24 comparable pairs, 4 repeated pairs, zero missing condition receipts, and at least two completed four-condition task families. Claims still need receipt-level citations. | Mostly ready |
 | Launch risk | Public package metadata, repo URLs, examples, contribution docs, and claims are reviewed for accuracy and restraint. | Mostly ready |
 
 ## Minimum Public Demo
@@ -58,7 +58,7 @@ npm run claims:review
 npm run launch:review
 ```
 
-The generated review is a decision aid. It summarizes benchmark receipt coverage, completed four-condition task families, launch gates, and claim-scan status. It does not replace private remote verification or manual claim review against [Public Claims Policy](public-claims.md). The fast-test gate becomes ready only when `npm run launch:clean-clone` has written a passing report for the current commit.
+The generated review is a decision aid. It summarizes benchmark receipt coverage, completed four-condition task families, launch gates, and claim-scan status. The benchmark proof gate becomes ready only when coverage has enough receipt count, comparable pairs, repeated pairs, completed four-condition task families, and no missing condition receipts. It does not replace private remote verification or manual claim review against [Public Claims Policy](public-claims.md). The fast-test gate becomes ready only when `npm run launch:clean-clone` has written a passing report for the current commit.
 
 Run the local pre-public dry run before treating the repository as launchable:
 

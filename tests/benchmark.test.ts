@@ -279,6 +279,8 @@ describe("benchmark receipt scoring", () => {
     expect(stdout).toContain("## Gate Summary");
     expect(stdout).toContain("| Clear README/demo | ready |");
     expect(stdout).toContain("| Fast reliable tests | manual-check |");
+    expect(stdout).toContain("| Benchmark/demo proof | ready |");
+    expect(stdout).toContain("4 completed four-condition task families, 0 missing condition receipts.");
     expect(stdout).toContain("| Launch risk | ready |");
     expect(stdout).toContain("Automated public-claim review found 0 blocked claim pattern(s)");
     expect(stdout).toContain("Verify GitHub remote visibility is private");
