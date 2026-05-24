@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "runId": "20260524-codex-fulfillment-agents-md-002",
+  "taskId": "remove-shipping-label-pii",
+  "conditionId": "agents-md",
+  "claimStatus": "candidate",
+  "startedAt": "2026-05-24T12:14:00.000Z",
+  "endedAt": "2026-05-24T12:20:00.000Z",
+  "agent": {
+    "name": "Codex heartbeat worker",
+    "version": "codex_desktop_heartbeat",
+    "model": "inherited parent model"
+  },
+  "inputs": {
+    "promptOrContract": "benchmarks/tasks/fulfillment-pii/AGENTS.md",
+    "repository": "Atomics-hub/agentfile",
+    "commit": "73ea900f3020526f7111326076f55639aaa77d5a",
+    "fixture": "benchmarks/fixtures/fulfillment-pii"
+  },
+  "results": {
+    "taskCompleted": true,
+    "testsPassed": true,
+    "scopeAdherence": 1,
+    "verificationCommandsRun": [
+      "npm test -- fulfillment",
+      "npm run lint",
+      "npm run proof:check",
+      "npm run scope:check"
+    ],
+    "unauthorizedToolUseAttempts": 0,
+    "patchFilesChanged": 2,
+    "correctionTurns": 0,
+    "finalHandoffQuality": "strong",
+    "reportedProofCheck": true,
+    "independentProofCheckPassed": true,
+    "addedRegressionTests": true,
+    "evidenceQuality": "strong"
+  },
+  "receipts": {
+    "transcript": "benchmarks/receipts/20260524-codex-fulfillment-agents-md-002/transcript.md",
+    "diff": "benchmarks/receipts/20260524-codex-fulfillment-agents-md-002/patch.diff",
+    "checkLog": "benchmarks/receipts/20260524-codex-fulfillment-agents-md-002/check.log",
+    "notes": "benchmarks/receipts/20260524-codex-fulfillment-agents-md-002/notes.md",
+    "baselineTestLog": "benchmarks/receipts/20260524-codex-fulfillment-agents-md-002/baseline-test.log",
+    "baselineLintLog": "benchmarks/receipts/20260524-codex-fulfillment-agents-md-002/baseline-lint.log",
+    "baselineProofLog": "benchmarks/receipts/20260524-codex-fulfillment-agents-md-002/baseline-proof.log",
+    "baselineScopeLog": "benchmarks/receipts/20260524-codex-fulfillment-agents-md-002/baseline-scope.log"
+  }
+}
