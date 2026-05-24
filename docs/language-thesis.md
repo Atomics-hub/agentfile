@@ -1,6 +1,6 @@
 # Language Thesis
 
-Agentfile should become a language of delegation, effects, evidence, and patches.
+Agentfile should become the contract/control-plane language for delegation, effects, evidence, and patches across coding-agent harnesses.
 
 ## Why Agents Need A Different Language
 
@@ -14,7 +14,9 @@ General-purpose programming languages optimize for describing runtime behavior. 
 - Which context is trusted.
 - How to hand work to the next agent or human.
 
-Today this layer is mostly natural language. Natural language is expressive, but it is too easy to ignore, contradict, overfit, or mis-scope.
+Today this layer is mostly natural language scattered across issue text, prompt snippets, repo instruction files, and chat history. Natural language is expressive, but it is too easy to ignore, contradict, overfit, or mis-scope.
+
+Agentfile's job is not to make agents smarter than the next model update. Its job is to make delegated work reviewable before execution and auditable afterward, regardless of which harness or model does the work.
 
 ## Design Shape
 
@@ -158,6 +160,8 @@ The language should lower to:
 - Audit trace schema.
 - Future agent runtime plans.
 
+That makes `.agent` source the authority, and the harness-specific files projections. Strong Markdown can be a good instruction surface; Agentfile earns its place when teams need the same scope, authority, proof, and handoff requirements to survive across multiple surfaces and receipts.
+
 ## What Would Make It Worth Using
 
 The language earns its place over ad hoc instructions if it improves:
@@ -171,4 +175,4 @@ The language earns its place over ad hoc instructions if it improves:
 - Human review speed.
 - Cross-agent portability.
 
-For this delegation layer, the language earns its place over general-purpose runtime languages only if agents make fewer planning, authority, and verification mistakes when using it.
+For this delegation layer, the first public bar is narrower: Agentfile must make the task contract easier to review, compile, run under existing harnesses, and audit with receipts. Outcome superiority over strong instruction files is a later claim and needs repeated receipt-level evidence.

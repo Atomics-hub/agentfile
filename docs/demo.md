@@ -4,6 +4,18 @@ This demo shows the current Agentfile wedge:
 
 > Write one `.agent` mission, validate it, lower it to strict contract IR, project it into policy JSON, and generate instruction files for multiple coding agents.
 
+Agentfile fits one layer above the agent harness:
+
+```text
+human intent
+  -> .agent contract
+  -> generated harness instructions and policy surfaces
+  -> agent work
+  -> checks, diff, transcript, notes, receipt
+```
+
+The demo stops before running a live coding agent. The point is to show the source-of-truth contract and the projections a harness can consume today.
+
 Run these commands from the repository root after installing dependencies.
 
 ```sh
@@ -206,3 +218,17 @@ The same `.agent` mission becomes:
 That is Agentfile's first public claim:
 
 > Agentfile turns a coding task into a reviewable contract that can compile into instructions and policy surfaces for multiple agents.
+
+## 8. Where Receipts Fit
+
+After a harness executes the generated instructions, a receipt should make the delegation auditable:
+
+```text
+contract: examples/fix-login-race.agent
+instructions: AGENTS.md / CLAUDE.md / Cursor / Copilot output
+work: transcript + patch diff
+proof: npm test -- auth, npm run lint
+handoff: changed files, verification, risks
+```
+
+Benchmark receipts in `benchmarks/receipts/` use that shape today: each run stores the task input, check log, patch diff, transcript, and notes needed to review whether the agent stayed inside the contract.

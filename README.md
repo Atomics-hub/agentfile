@@ -1,10 +1,22 @@
 # Agentfile
 
-Agentfile is an experimental language for agentic software work.
+Agentfile is the contract layer for delegated coding work.
 
-The goal is to build a language that helps coding agents understand, write, verify, and execute delegated software work through reviewable contracts instead of ad hoc prompts and scattered instruction files.
+Write one `.agent` contract, compile it into the instruction files and policy surfaces agents already use, then verify whether the work stayed in scope and produced the required proof.
 
-The current YAML format is the strict contract IR. The next layer is a source language that feels more like this:
+```text
+human intent
+  -> .agent contract
+  -> AGENTS.md / CLAUDE.md / Cursor / Copilot / policy JSON
+  -> agent harness executes with tools
+  -> checks, diff, transcript, and receipt
+```
+
+Agentfile is not trying to replace Codex, Cursor, Claude Code, IDEs, harnesses, or programming languages. It is the portable source of truth between human intent and agent execution: the place to review scope, authority, proof obligations, and handoff before work starts, and the artifact to audit after work lands.
+
+The current YAML format is the strict contract IR. Pact `.agent` source is the human-facing language that lowers into that IR and projects into existing agent surfaces.
+
+Pact source looks like this:
 
 ```agent
 mission fix-login-refresh-race {
@@ -143,7 +155,7 @@ workflow:
 
 ## Why This Exists
 
-Every AI coding tool wants instructions in a different place: `AGENTS.md`, `CLAUDE.md`, Cursor rules, Copilot instructions, MCP config, issue templates, and CI scripts.
+Every AI coding tool wants instructions in a different place: `AGENTS.md`, `CLAUDE.md`, Cursor rules, Copilot instructions, MCP config, issue templates, and CI scripts. Better models and better harnesses still need the same answers: what may be touched, which tools are allowed, which proof is required, and what evidence comes back.
 
 Agentfile turns scattered guidance into a durable contract:
 
@@ -153,10 +165,11 @@ Agentfile turns scattered guidance into a durable contract:
 - Policies: rules that must survive the change.
 - Checks and workflow: commands, acceptance criteria, and review requirements.
 - Traceability: a compact artifact that can compile into prompts, CI policy, and audit logs.
+- Receipts: the transcript, diff, checks, and notes that show whether delegated work followed the contract.
 
 Agentfile is not an agent framework, orchestration graph, or MCP replacement. It is the contract your agents run under.
 
-The long-term bet is bigger: Agentfile should become the language of delegation, effects, evidence, and patches for coding agents.
+The long-term bet is bigger: Agentfile should become the control plane for delegation, effects, evidence, and patches across coding-agent harnesses.
 
 ## Why Not Just AGENTS.md?
 
@@ -171,7 +184,19 @@ The difference is source versus projection:
 
 Current benchmark receipts are intentionally modest: strong `AGENTS.md` instructions can match Agentfile on some proof-sensitive tasks. That is good pressure on the project. The public claim Agentfile is earning is narrower and more useful: one typed contract can preserve the same scope, authority, proof, and handoff requirements across instruction files, policy JSON, and audit receipts without making humans reconcile scattered Markdown by hand.
 
-Current receipts include two completed four-way fixture sets across plain issue text, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact source: one privacy/scope task and one pricing refactor task. All eight first-run conditions solved their tasks, which supports the bridge and auditability story without yet supporting broad outcome superiority claims.
+Current receipts include repeated completed four-way fixture sets across plain issue text, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact source for redaction, audit evidence, tenant export, fulfillment privacy, and pricing refactor tasks. Those receipts support the bridge and auditability story without yet supporting broad outcome superiority claims.
+
+## Why Not Just Wait For Better Models?
+
+Better agents make the worker smarter. They do not automatically give a team a durable, vendor-portable task contract.
+
+Agentfile sits before the harness:
+
+- The same `.agent` source can feed Codex-style `AGENTS.md`, Claude project memory, Cursor rules, Copilot instructions, and policy JSON.
+- Reviewers can approve scope, command authority, network posture, secret access, proof commands, and handoff requirements before an agent starts.
+- Receipts can tie the finished patch back to the contract through logs, diffs, verification commands, and notes.
+
+For a one-off solo edit, a direct chat or IDE prompt may be enough. Agentfile is for work where delegation needs to be repeatable, governable, and auditable across tools.
 
 ## Install
 

@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Reframed launch-facing README and demo copy around Agentfile as the contract/control-plane layer between human intent and agent harness execution.
 - Added second tenant-export benchmark receipts across plain issue, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact conditions, increasing validated receipts to fifty-two and making every tenant-isolation condition pair repeated.
 - Added first four-condition tenant-export benchmark receipts, increasing validated receipts to forty-eight and adding a tenant-isolation proof failure mode where regular tests and lint can pass while proof catches cross-tenant leakage.
 - Added second hand-written and compiled `AGENTS.md` audit-evidence benchmark receipts, increasing validated receipts to forty-four and making every audit-evidence condition pair repeated.
