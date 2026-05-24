@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added a second native Pact audit-evidence benchmark receipt, increasing validated receipts to thirty-nine and starting repeated non-auth proof-sensitive coverage.
 - Added a second plain-issue redaction benchmark receipt, increasing validated receipts to thirty-eight and making every redaction proof-sensitive condition pair repeated.
 - Added a second plain-issue fulfillment PII benchmark receipt, increasing validated receipts to thirty-seven and making every fulfillment privacy/scope condition pair repeated.
 - Added a second native Pact fulfillment PII benchmark receipt, increasing validated receipts to thirty-six and making the fulfillment Pact/compiled and Pact/`AGENTS.md` privacy-scope pairs repeated.

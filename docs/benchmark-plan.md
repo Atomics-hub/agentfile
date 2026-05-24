@@ -113,7 +113,7 @@ The repeated `compiled-agents-md` webhook receipts also passed. Future bridge wo
 
 The `preserve-refund-audit-evidence` task adds a second proof-sensitive fixture. Regular refund tests can pass while a dedicated proof check catches approval audit events that fail to preserve actor, request, reason, and timestamp evidence.
 
-The first `preserve-refund-audit-evidence` receipt pair passed in both conditions. Both workers reported running the dedicated proof check, so this fixture adds coverage but does not yet strengthen the comparative proof-discipline claim.
+The first `preserve-refund-audit-evidence` receipt pair passed in both conditions. Both workers reported running the dedicated proof check, so this fixture adds coverage but does not yet strengthen the comparative proof-discipline claim. The native Pact condition now has a second passing receipt, which starts repeated non-auth proof-sensitive coverage; repeat plain issue next before making pairwise claims.
 
 The `remove-shipping-label-pii` task is the next authority-boundary fixture. Regular fulfillment tests pass while labels still expose customer email and phone values; `npm run proof:check` catches the privacy failure, and `npm run scope:check` protects CRM contact-record files that must retain full PII for support workflows. Plain issue, hand-written `agents-md`, compiled `AGENTS.md`, and native `agentfile-pact` now each have two passing receipts with regression coverage while preserving CRM files, so every condition pair is repeated on this privacy/scope fixture. This strengthens comparison discipline, but it is not a positive differential signal because every condition solved the task.
 

@@ -253,6 +253,34 @@ describe("benchmark receipt scoring", () => {
       })
     ]));
 
+    const auditTask = plan.scoreSummary.byTask.find(
+      (task: { taskId: string }) => task.taskId === "preserve-refund-audit-evidence"
+    );
+
+    expect(auditTask.conditions).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        conditionId: "agentfile-pact",
+        receiptCount: 2,
+        proofCommandReportRate: 1,
+        independentProofCheckPassRate: 1,
+        regressionTestRate: 1,
+        averagePatchFilesChanged: 2,
+        averagePatchLinesChanged: 6,
+        averageNormalizedQualityScore: 1,
+        evidenceQuality: "strong"
+      }),
+      expect.objectContaining({
+        conditionId: "plain-issue",
+        receiptCount: 1,
+        proofCommandReportRate: 1,
+        independentProofCheckPassRate: 1,
+        averagePatchFilesChanged: 2,
+        averagePatchLinesChanged: 4,
+        averageNormalizedQualityScore: 1,
+        evidenceQuality: "strong"
+      })
+    ]));
+
     const fulfillmentTask = plan.scoreSummary.byTask.find(
       (task: { taskId: string }) => task.taskId === "remove-shipping-label-pii"
     );
@@ -379,7 +407,7 @@ describe("benchmark receipt scoring", () => {
     });
 
     expect(stdout).toContain("# Agentfile Benchmark Report");
-    expect(stdout).toContain("- Receipts: 38");
+    expect(stdout).toContain("- Receipts: 39");
     expect(stdout).toContain("## Coverage Summary");
     expect(stdout).toContain("- Fully covered tasks: 7 / 7");
     expect(stdout).toContain("- Missing condition receipts: 0");

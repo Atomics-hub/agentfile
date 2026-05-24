@@ -1,0 +1,22 @@
+
+> agentfile-audit-evidence-fixture@0.0.0 test
+> node scripts/test.mjs refunds
+
+✔ approves a pending refund (0.961583ms)
+✔ records an approval audit event (0.090042ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 40.327375
+
+> agentfile-audit-evidence-fixture@0.0.0 lint
+> node scripts/lint.mjs
+
+
+> agentfile-audit-evidence-fixture@0.0.0 proof:check
+> node scripts/proof-check.mjs
+

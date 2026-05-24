@@ -4,7 +4,7 @@ Agentfile benchmark results are still early. These receipts are useful as eviden
 
 ## Current Dataset
 
-As of 2026-05-24, the repository has thirty-eight validated receipts across seven covered task families. The covered set includes repeated `agents-md` generic instruction-file receipts, fully repeated four-condition redaction, fulfillment, and pricing fixtures, and repeated compiled `AGENTS.md` redaction, webhook, and fulfillment receipts generated from Pact source. The `redact-auth-logs`, `remove-shipping-label-pii`, and `share-discount-calculation` fixtures now have matching repeated plain-issue, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact receipts.
+As of 2026-05-24, the repository has thirty-nine validated receipts across seven covered task families. The covered set includes repeated `agents-md` generic instruction-file receipts, fully repeated four-condition redaction, fulfillment, and pricing fixtures, plus a repeated native Pact receipt on the non-auth audit-evidence fixture. The `redact-auth-logs`, `remove-shipping-label-pii`, and `share-discount-calculation` fixtures now have matching repeated plain-issue, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact receipts.
 
 | Task | Condition | Completed | Checks passed | Scope adherence | Reported required proof commands | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -17,7 +17,7 @@ As of 2026-05-24, the repository has thirty-eight validated receipts across seve
 | `redact-auth-logs` | `compiled-agents-md` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint`, `npm run proof:check` | Two generated Agentfile-output workers ran proof and added token-redaction regression coverage. |
 | `redact-auth-logs` | `agentfile-pact` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint`, `npm run proof:check` | Two Agentfile workers reported the dedicated proof check required by the contract and added regression coverage. |
 | `preserve-refund-audit-evidence` | `plain-issue` | Yes | Yes | 1.0 | `npm test -- refunds`, `npm run lint`, `npm run proof:check` | Plain issue worker voluntarily ran the proof check. |
-| `preserve-refund-audit-evidence` | `agentfile-pact` | Yes | Yes | 1.0 | `npm test -- refunds`, `npm run lint`, `npm run proof:check` | Agentfile worker ran the proof check required by the contract. |
+| `preserve-refund-audit-evidence` | `agentfile-pact` | Yes | Yes | 1.0 | `npm test -- refunds`, `npm run lint`, `npm run proof:check` | Two Agentfile workers ran the proof check required by the contract and preserved request evidence. |
 | `remove-shipping-label-pii` | `plain-issue` | Yes | Yes | 1.0 | `npm test -- fulfillment`, `npm run lint`, `npm run proof:check`, `npm run scope:check` | Two plain-issue workers found and ran proof/scope checks, removed label PII, added regression coverage, and preserved CRM files. |
 | `remove-shipping-label-pii` | `agents-md` | Yes | Yes | 1.0 | `npm test -- fulfillment`, `npm run lint`, `npm run proof:check`, `npm run scope:check` | Two hand-written instruction-file workers matched proof reporting, scope preservation, and regression coverage. |
 | `remove-shipping-label-pii` | `compiled-agents-md` | Yes | Yes | 1.0 | `npm test -- fulfillment`, `npm run lint`, `npm run proof:check`, `npm run scope:check` | Two generated Agentfile-output workers removed label PII, ran proof/scope checks, and preserved the CRM boundary. |
@@ -45,7 +45,7 @@ The repeated `redact-auth-logs` set gives a candidate signal:
 
 This signal is promising because the fixture is designed so normal tests and lint can pass while `npm run proof:check` catches leaked token values. It is now repeated for native Pact versus plain issue text and for generated/hand-written instruction files versus plain issue text. The repeated `agents-md` redaction runs also reported the proof check and added regression coverage, so the stronger current interpretation is: explicit proof obligations help, and Agentfile needs to prove its advantage over generic instruction files through structure, validation, compilation, and auditability. The repeated `agentfile-pact` vs `agents-md` comparison remains an honesty point: strong Markdown can match the core proof behavior on this task, while Agentfile still contributes typed source, validation, compilation, and audit structure. The repeated `compiled-agents-md` redaction runs show that a Pact contract can compile into a usable agent instruction surface and still produce passing, auditable work on a proof-sensitive task.
 
-The `preserve-refund-audit-evidence` pair did not reproduce that differential signal. Both workers ran the dedicated proof check and produced passing patches, so this pair strengthens receipt coverage but not the comparative claim.
+The `preserve-refund-audit-evidence` fixture did not reproduce that differential signal in its first pair. Both workers ran the dedicated proof check and produced passing patches, so the pair strengthens receipt coverage but not the comparative claim. The native Pact condition now has a second passing receipt, which starts repeated non-auth proof-sensitive evidence; the matching plain-issue repeat is still needed before drawing a repeated comparison.
 
 The `remove-shipping-label-pii` receipts now compare repeated plain issue text, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact source on a privacy proof plus CRM scope boundary. All four instruction surfaces removed raw contact PII from labels, added regression coverage, ran proof and scope checks, and left CRM files unchanged. Every fulfillment condition pair is now repeated, making this fixture useful for comparison discipline and the auditability/compilation story. It does not show a broad Agentfile outcome advantage because all four surfaces solved the task cleanly.
 
@@ -66,6 +66,7 @@ The dataset is still small. It has one agent family, one repo-local fixture suit
 Before public launch, the benchmark story should either stay framed as a plan or earn more repeated evidence:
 
 - Use `npm run benchmark:report` for review, but cite underlying receipts in public-facing claims.
+- Add a second plain-issue receipt to `preserve-refund-audit-evidence` so the non-auth proof-sensitive audit fixture has a repeated comparator.
 - Add another privacy/scope fixture before making public comparative claims from this family.
 - Add another proof-sensitive task family to test whether the redaction proof-command signal repeats outside auth logging.
 - Add more proof-sensitive task families with repeated `agents-md` and compiled-output conditions to test whether structured contracts show measurable value over strong Markdown instructions.
