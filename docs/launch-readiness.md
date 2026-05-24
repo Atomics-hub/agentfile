@@ -71,8 +71,8 @@ The dry run executes `npm run check`, validates the benchmark plan, renders the 
 
 ## Current Highest-Leverage Work
 
-1. Repeat `redact-auth-logs` and `verify-webhook-raw-signature` under both `agents-md` and `agentfile-pact`.
-2. Repeat compiled-output runs across another task family and compare patch size/test quality against hand-written instruction files.
-3. Keep broad benchmark claims out of public docs until comparative data exists.
+1. Repeat the completed `remove-shipping-label-pii` four-way comparison or add another privacy/scope fixture before making outcome claims from that family.
+2. Add another compiled-output run on a new proof-sensitive task family and compare patch size, proof reporting, and test quality against hand-written `AGENTS.md`.
+3. Keep broad benchmark claims out of public docs until repeated comparative data exists across task families and agent runs.
 4. Add JSON Schema export or document why it is post-launch.
 5. Do a final public-readiness review from a clean clone.

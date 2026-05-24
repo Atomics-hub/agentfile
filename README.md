@@ -171,6 +171,8 @@ The difference is source versus projection:
 
 Current benchmark receipts are intentionally modest: strong `AGENTS.md` instructions can match Agentfile on some proof-sensitive tasks. That is good pressure on the project. The public claim Agentfile is earning is narrower and more useful: one typed contract can preserve the same scope, authority, proof, and handoff requirements across instruction files, policy JSON, and audit receipts without making humans reconcile scattered Markdown by hand.
 
+Current receipts include one completed four-way privacy/scope comparison across plain issue text, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact source. All four solved the task, which supports the bridge and auditability story without yet supporting broad outcome superiority claims.
+
 ## Install
 
 Agentfile is pre-public and not published to npm yet. For now, run it from source:

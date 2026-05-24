@@ -47,7 +47,7 @@ The `remove-shipping-label-pii` receipts now compare plain issue text, hand-writ
 
 The `verify-webhook-raw-signature` repeats also did not produce a proof-command differential signal, because both plain-issue workers ran `npm run proof:check`. They did produce a repeated quality signal: both Agentfile workers added explicit raw-body regression tests, while both plain-issue workers only changed implementation. The repeated `agents-md` webhook runs matched Agentfile on proof reporting, proof-pass behavior, and regression coverage, while the first `compiled-agents-md` run also matched Agentfile on this task. That is a useful honesty point before any claim that Agentfile beats strong instruction files.
 
-The compiled-output bridge now has passing receipts on both redaction and webhook proof tasks. That supports a narrow implementation claim: Pact source can compile into existing agent instruction surfaces that are concrete enough for agents to execute and for humans to audit.
+The compiled-output bridge now has passing receipts on redaction, webhook, and fulfillment proof-sensitive tasks. That supports a narrow implementation claim: Pact source can compile into existing agent instruction surfaces that are concrete enough for agents to execute and for humans to audit.
 
 ## What This Does Not Support Yet
 
