@@ -694,7 +694,7 @@ describe("benchmark receipt scoring", () => {
     const review = JSON.parse(stdout);
 
     expect(review.surfaceCount).toBeGreaterThanOrEqual(8);
-    expect(review.blockedClaimCount).toBeGreaterThanOrEqual(6);
+    expect(review.blockedClaimCount).toBeGreaterThanOrEqual(8);
     expect(review.violationCount).toBe(0);
   });
 

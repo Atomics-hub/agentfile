@@ -51,6 +51,16 @@ const blockedClaims = [
     reason: "Use receipt-backed metric language instead of broad win/loss language."
   },
   {
+    id: "safe-reviewable",
+    pattern: /\bsafe,\s*reviewable\b/iu,
+    reason: "Use reviewable or governable language instead of implying safety guarantees."
+  },
+  {
+    id: "safety-guarantee",
+    pattern: /\bguarantee(?:s|d)?\s+(?:safe|safer|safety)\b|\bguarantees?\s+safer\s+agent\s+behavior\b/iu,
+    reason: "Do not imply Agentfile guarantees safe or safer agent behavior."
+  },
+  {
     id: "reliability-superiority",
     pattern: /\bmore\s+reliably\s+than\s+today'?s\s+ad\s+hoc\b/iu,
     reason: "Frame this as the project goal until broader evidence exists."

@@ -1,7 +1,7 @@
 {
   "name": "agentfile-contract",
   "version": "0.1.0",
-  "description": "The Agentfile Contract Language for safe, reviewable AI coding agent work.",
+  "description": "Contract language for reviewable AI coding agent delegation.",
   "type": "module",
   "private": true,
   "license": "MIT",
