@@ -200,9 +200,14 @@ describe("benchmark receipt scoring", () => {
 
     expect(stdout).toContain("# Agentfile Benchmark Report");
     expect(stdout).toContain("## Condition Summary");
+    expect(stdout).toContain("## Missing Evidence");
     expect(stdout).toContain("## Task Coverage");
     expect(stdout).toContain("- Comparable pairs: 15");
     expect(stdout).toContain("- Repeated pairs: 4");
+    expect(stdout).toContain("| `remove-shipping-label-pii` | `plain-issue` | `benchmarks/tasks/fulfillment-pii/plain-issue.md` |");
+    expect(stdout).toContain("| `remove-shipping-label-pii` | `agents-md` | `benchmarks/tasks/fulfillment-pii/AGENTS.md` |");
+    expect(stdout).toContain("| `remove-shipping-label-pii` | `compiled-agents-md` | `benchmarks/tasks/fulfillment-pii/compiled-agentfile.AGENTS.md` |");
+    expect(stdout).toContain("| `remove-shipping-label-pii` | `agentfile-pact` | `benchmarks/tasks/fulfillment-pii/fulfillment-pii.agent` |");
     expect(stdout).toContain("| Pair | Matched | Repeated | Delta Quality | Delta Proof | Delta Proof Pass | Delta Regression | Delta Evidence |");
     expect(stdout).toContain("| `agentfile-pact` vs `plain-issue` | 2 | yes | 0.17 | 0 | 0 | 1 | 0.33 |");
     expect(stdout).toContain("| `agentfile-pact` vs `agents-md` | 2 | yes | 0.02 | 0 | 0 | 0 | 0 |");

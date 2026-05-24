@@ -48,10 +48,26 @@ function renderReport(plan) {
         nullableNumber(condition.averageEvidenceQuality)
       ])
     ),
-    "",
-    "## Task Coverage",
     ""
   ];
+
+  const missingEvidence = missingEvidenceRows(plan);
+  if (missingEvidence.length > 0) {
+    lines.push("## Missing Evidence");
+    lines.push("");
+    lines.push(table(
+      ["Task", "Condition", "Input"],
+      missingEvidence.map((row) => [
+        code(row.taskId),
+        code(row.conditionId),
+        code(row.input)
+      ])
+    ));
+    lines.push("");
+  }
+
+  lines.push("## Task Coverage");
+  lines.push("");
 
   for (const task of plan.scoreSummary?.byTask ?? []) {
     lines.push(`### ${code(task.taskId)}`);
@@ -96,6 +112,31 @@ function renderReport(plan) {
   lines.push("");
 
   return `${lines.join("\n")}\n`;
+}
+
+function missingEvidenceRows(plan) {
+  const taskInputByCondition = new Map(
+    (plan.tasks ?? []).map((task) => [
+      task.id,
+      new Map((task.conditions ?? []).map((condition) => [condition.id, condition.input]))
+    ])
+  );
+  const rows = [];
+
+  for (const task of plan.scoreSummary?.byTask ?? []) {
+    for (const condition of task.conditions ?? []) {
+      if (condition.receiptCount !== 0) {
+        continue;
+      }
+      rows.push({
+        taskId: task.taskId,
+        conditionId: condition.conditionId,
+        input: taskInputByCondition.get(task.taskId)?.get(condition.conditionId) ?? "unknown"
+      });
+    }
+  }
+
+  return rows;
 }
 
 function table(headers, rows) {

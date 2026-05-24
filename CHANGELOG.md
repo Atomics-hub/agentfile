@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- `npm run benchmark:report` now lists zero-receipt task conditions as missing evidence.
 - Added generated `AGENTS.md` output for the fulfillment PII benchmark fixture and wired it into golden tests.
 - Added a planned fulfillment privacy benchmark fixture that combines shipping-label PII proof with a protected CRM scope boundary.
 - Added a README section explaining why Agentfile is source authority for generated instruction files rather than a replacement for strong `AGENTS.md`.
