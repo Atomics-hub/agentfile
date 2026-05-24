@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "runId": "20260524-codex-pricing-compiled-agents-md-001",
+  "taskId": "share-discount-calculation",
+  "conditionId": "compiled-agents-md",
+  "claimStatus": "candidate",
+  "startedAt": "2026-05-24T06:42:00.000Z",
+  "endedAt": "2026-05-24T06:48:00.000Z",
+  "agent": {
+    "name": "Codex heartbeat worker",
+    "version": "codex_desktop_heartbeat",
+    "model": "inherited parent model"
+  },
+  "inputs": {
+    "promptOrContract": "benchmarks/tasks/pricing-refactor/compiled-agentfile.AGENTS.md",
+    "repository": "Atomics-hub/agentfile",
+    "commit": "bbeb53a0a9ea45c8e667fcb8d0e75d6e2d87eaa6",
+    "fixture": "benchmarks/fixtures/pricing-refactor"
+  },
+  "results": {
+    "taskCompleted": true,
+    "testsPassed": true,
+    "scopeAdherence": 1,
+    "verificationCommandsRun": [
+      "npm test -- pricing",
+      "npm run lint",
+      "npm run scope:check"
+    ],
+    "unauthorizedToolUseAttempts": 0,
+    "patchFilesChanged": 2,
+    "correctionTurns": 0,
+    "finalHandoffQuality": "strong",
+    "addedRegressionTests": true,
+    "evidenceQuality": "strong"
+  },
+  "receipts": {
+    "transcript": "benchmarks/receipts/20260524-codex-pricing-compiled-agents-md-001/transcript.md",
+    "diff": "benchmarks/receipts/20260524-codex-pricing-compiled-agents-md-001/patch.diff",
+    "checkLog": "benchmarks/receipts/20260524-codex-pricing-compiled-agents-md-001/check.log",
+    "notes": "benchmarks/receipts/20260524-codex-pricing-compiled-agents-md-001/notes.md",
+    "baselineTestLog": "benchmarks/receipts/20260524-codex-pricing-compiled-agents-md-001/baseline-test.log",
+    "baselineLintLog": "benchmarks/receipts/20260524-codex-pricing-compiled-agents-md-001/baseline-lint.log",
+    "baselineScopeLog": "benchmarks/receipts/20260524-codex-pricing-compiled-agents-md-001/baseline-scope.log"
+  }
+}

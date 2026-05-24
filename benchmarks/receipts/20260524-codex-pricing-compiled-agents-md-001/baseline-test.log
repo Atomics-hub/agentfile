@@ -1,0 +1,42 @@
+
+> agentfile-pricing-refactor-fixture@0.0.0 test
+> node scripts/test.mjs pricing
+
+▶ shared discount calculation
+  ✖ applies the same eligible-line coupon total to orders and invoices (1.128833ms)
+  ✔ preserves tax rounding behavior (0.06275ms)
+✖ shared discount calculation (1.59375ms)
+ℹ tests 2
+ℹ suites 1
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 47.558208
+
+✖ failing tests:
+
+test at tests/pricing/discounts.test.js:34:3
+✖ applies the same eligible-line coupon total to orders and invoices (1.128833ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  500 !== 1000
+  
+      at TestContext.<anonymous> (file:///private/tmp/agentfile-pricing-compiled-agents-gDseTN/tests/pricing/discounts.test.js:39:12)
+      at Test.runInAsyncScope (node:async_hooks:214:14)
+      at Test.run (node:internal/test_runner/test:1106:25)
+      at Test.start (node:internal/test_runner/test:1003:17)
+      at node:internal/test_runner/test:1514:71
+      at node:internal/per_context/primordials:464:82
+      at new Promise (<anonymous>)
+      at new SafePromise (node:internal/per_context/primordials:433:3)
+      at node:internal/per_context/primordials:464:9
+      at Array.map (<anonymous>) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 1000,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

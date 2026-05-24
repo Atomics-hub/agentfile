@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added the first pricing refactor benchmark receipt for the `compiled-agents-md` condition, increasing validated receipts to twenty-seven and completing the pricing four-way comparison.
 - Added the first pricing refactor benchmark receipt for the `agents-md` condition, increasing validated receipts to twenty-six.
 - Added the first pricing refactor benchmark receipt for the `plain-issue` condition, increasing validated receipts to twenty-five.
 - Added the first pricing refactor benchmark receipt for the `agentfile-pact` condition, increasing validated receipts to twenty-four.
