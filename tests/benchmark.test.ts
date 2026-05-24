@@ -202,14 +202,14 @@ describe("benchmark receipt scoring", () => {
     expect(stdout).toContain("# Agentfile Benchmark Report");
     expect(stdout).toContain("## Coverage Summary");
     expect(stdout).toContain("- Fully covered tasks: 6 / 7");
-    expect(stdout).toContain("- Missing condition receipts: 4");
+    expect(stdout).toContain("- Missing condition receipts: 3");
     expect(stdout).toContain("- Completed four-condition tasks: `redact-auth-logs`, `remove-shipping-label-pii`, `verify-webhook-raw-signature`");
     expect(stdout).toContain("## Condition Summary");
     expect(stdout).toContain("## Missing Evidence");
-    expect(stdout).toContain("| `share-discount-calculation` | `agentfile-pact` | `benchmarks/tasks/pricing-refactor/pricing-refactor.agent` |");
     expect(stdout).toContain("| `share-discount-calculation` | `compiled-agents-md` | `benchmarks/tasks/pricing-refactor/compiled-agentfile.AGENTS.md` |");
     expect(stdout).toContain("| `share-discount-calculation` | `agents-md` | `benchmarks/tasks/pricing-refactor/AGENTS.md` |");
     expect(stdout).toContain("| `share-discount-calculation` | `plain-issue` | `benchmarks/tasks/pricing-refactor/plain-issue.md` |");
+    expect(stdout).not.toContain("| `share-discount-calculation` | `agentfile-pact` | `benchmarks/tasks/pricing-refactor/pricing-refactor.agent` |");
     expect(stdout).toContain("## Task Coverage");
     expect(stdout).toContain("- Comparable pairs: 21");
     expect(stdout).toContain("- Repeated pairs: 4");
@@ -273,7 +273,7 @@ describe("benchmark receipt scoring", () => {
 
     expect(stdout).toContain("# Agentfile Launch Review");
     expect(stdout).toContain("Fully covered tasks: 6 / 7");
-    expect(stdout).toContain("Missing condition receipts: 4");
+    expect(stdout).toContain("Missing condition receipts: 3");
     expect(stdout).toContain("## Benchmark Coverage");
     expect(stdout).toContain("Completed four-condition tasks: `redact-auth-logs`, `remove-shipping-label-pii`, `verify-webhook-raw-signature`");
     expect(stdout).toContain("## Gate Summary");

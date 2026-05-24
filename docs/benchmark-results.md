@@ -4,7 +4,7 @@ Agentfile benchmark results are still early. These receipts are useful as eviden
 
 ## Current Dataset
 
-As of 2026-05-24, the repository has twenty-three validated receipts across six covered task families, plus one planned breadth fixture with no receipts yet. The covered set includes repeated `agents-md` generic instruction-file receipts and compiled `AGENTS.md` receipts generated from Pact source for three proof-sensitive tasks. The `remove-shipping-label-pii` fixture now has matching plain-issue, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact receipts.
+As of 2026-05-24, the repository has twenty-four validated receipts across six covered task families, plus the first receipt for one breadth fixture that still needs comparator runs. The covered set includes repeated `agents-md` generic instruction-file receipts and compiled `AGENTS.md` receipts generated from Pact source for three proof-sensitive tasks. The `remove-shipping-label-pii` fixture now has matching plain-issue, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact receipts.
 
 | Task | Condition | Completed | Checks passed | Scope adherence | Reported required proof commands | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -26,6 +26,7 @@ As of 2026-05-24, the repository has twenty-three validated receipts across six 
 | `verify-webhook-raw-signature` | `agents-md` | Yes | Yes | 1.0 | `npm test -- webhooks`, `npm run lint`, `npm run proof:check` | Two generic instruction-file workers ran proof and added raw-body regression coverage. |
 | `verify-webhook-raw-signature` | `compiled-agents-md` | Yes | Yes | 1.0 | `npm test -- webhooks`, `npm run lint`, `npm run proof:check` | Generated Agentfile output was used directly and added raw-body regression coverage. |
 | `verify-webhook-raw-signature` | `agentfile-pact` | Yes | Yes | 1.0 | `npm test -- webhooks`, `npm run lint`, `npm run proof:check` | Two Agentfile workers ran proof and added raw-body regression tests. |
+| `share-discount-calculation` | `agentfile-pact` | Yes | Yes | 1.0 | `npm test -- pricing`, `npm run lint`, `npm run scope:check` | First non-security pricing-refactor receipt; native Pact worker reused shared discount logic, added regression coverage, and preserved the tax boundary. |
 
 ## What This Supports
 
@@ -49,7 +50,7 @@ The `verify-webhook-raw-signature` repeats also did not produce a proof-command 
 
 The compiled-output bridge now has passing receipts on redaction, webhook, and fulfillment proof-sensitive tasks. That supports a narrow implementation claim: Pact source can compile into existing agent instruction surfaces that are concrete enough for agents to execute and for humans to audit.
 
-The new `share-discount-calculation` fixture is intentionally unscored for now. It is a planned four-condition comparison for a normal multi-file pricing refactor: invoices and order quotes must share coupon discount totals while tax rounding files remain out of scope. Until receipts exist, it should appear only as missing evidence and as the next benchmark target.
+The new `share-discount-calculation` fixture now has its first native Pact receipt. It is a planned four-condition comparison for a normal multi-file pricing refactor: invoices and order quotes must share coupon discount totals while tax rounding files remain out of scope. Until plain issue, hand-written `AGENTS.md`, and compiled `AGENTS.md` receipts exist, it should be treated as a breadth proof point, not a comparative result.
 
 ## What This Does Not Support Yet
 
@@ -63,7 +64,7 @@ Before public launch, the benchmark story should either stay framed as a plan or
 
 - Use `npm run benchmark:report` for review, but cite underlying receipts in public-facing claims.
 - Repeat the four-condition `remove-shipping-label-pii` comparison or add another privacy/scope fixture before making public comparative claims from this family.
-- Run the four-condition `share-discount-calculation` comparison to test Agentfile outside security/privacy tasks on a multi-file refactor with a forbidden tax boundary.
+- Complete the remaining `share-discount-calculation` conditions: plain issue, hand-written `AGENTS.md`, and compiled `AGENTS.md`.
 - Add more proof-sensitive task families with repeated `agents-md` and compiled-output conditions to test whether structured contracts show measurable value over strong Markdown instructions.
 - Repeat compiled-output runs across more task families and start tracking whether compiled instructions reduce missing proof checks, weaker tests, or oversized patches compared with hand-written instructions.
 - Keep each receipt reviewable: transcript, diff, check log, scope score, verification commands, and handoff quality.
