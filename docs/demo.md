@@ -263,6 +263,7 @@ Generate a machine-readable receipt template when a harness wants to attach evid
 
 ```sh
 node dist/cli.js receipt examples/fix-login-race.agent --format json
+node dist/cli.js receipt examples/fix-login-race.agent --format json --output receipts/fix-login.json
 ```
 
 Expected excerpt:
@@ -281,4 +282,16 @@ Expected excerpt:
     }
   ]
 }
+```
+
+After the harness fills the JSON receipt with evidence, verify it against the source contract:
+
+```sh
+node dist/cli.js receipt verify examples/fix-login-race.agent receipts/fix-login.json
+```
+
+Expected output:
+
+```text
+OK receipts/fix-login.json satisfies examples/fix-login-race.agent
 ```

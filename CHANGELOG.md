@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added `agentfile receipt verify` to validate filled JSON receipts against their source contract before handoff.
 - Added `agentfile receipt --format json --output <file>` so harnesses can create durable Markdown or machine-readable receipt artifacts.
 - Added `agentfile receipt` to print a contract-derived audit checklist for completed harness runs.
 - Reframed launch-facing README and demo copy around Agentfile as the contract/control-plane layer between human intent and agent harness execution.

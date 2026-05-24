@@ -107,3 +107,13 @@ agentfile receipt examples/fix-login-race.agent
 agentfile receipt examples/fix-login-race.agent --output receipts/fix-login.md
 agentfile receipt examples/fix-login-race.agent --format json --output receipts/fix-login.json
 ```
+
+## `agentfile receipt verify <contract> <receipt>`
+
+Verify a filled JSON receipt against its source contract.
+
+The verifier checks that the receipt task, scope, authority, required proof, acceptance evidence, and handoff evidence still match the contract. Required proof items must have `status: "passed"` and non-empty evidence. Acceptance and handoff items must have `status: "satisfied"` and non-empty evidence.
+
+```sh
+agentfile receipt verify examples/fix-login-race.agent receipts/fix-login.json
+```

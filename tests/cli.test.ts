@@ -191,6 +191,51 @@ describe("agentfile receipt", () => {
 
     expect(jsonReceipt.kind).toBe("AgentfileReceiptTemplate");
   });
+
+  it("verifies a filled JSON receipt against its contract", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-verify-"));
+    tempDirs.push(cwd);
+
+    const { stdout: templateJson } = await runCli(["receipt", examplePath, "--format", "json"], cwd);
+    const receipt = JSON.parse(templateJson);
+
+    for (const proof of receipt.requiredProof) {
+      proof.status = "passed";
+      proof.evidence = `logs/${proof.id}.txt`;
+    }
+
+    for (const acceptance of receipt.acceptanceEvidence) {
+      acceptance.status = "satisfied";
+      acceptance.evidence = `verified: ${acceptance.item}`;
+    }
+
+    for (const handoff of receipt.handoffEvidence) {
+      handoff.status = "satisfied";
+      handoff.evidence = `attached: ${handoff.item}`;
+    }
+
+    const receiptPath = join(cwd, "receipt.json");
+    await writeFile(receiptPath, JSON.stringify(receipt, null, 2), "utf8");
+
+    const { stdout } = await runCli(["receipt", "verify", examplePath, receiptPath], cwd);
+
+    expect(stdout).toContain(`OK ${receiptPath} satisfies ${examplePath}`);
+  });
+
+  it("rejects pending JSON receipts", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-pending-"));
+    tempDirs.push(cwd);
+
+    const { stdout: templateJson } = await runCli(["receipt", examplePath, "--format", "json"], cwd);
+    const receiptPath = join(cwd, "pending-receipt.json");
+    await writeFile(receiptPath, templateJson, "utf8");
+
+    await expect(
+      runCli(["receipt", "verify", examplePath, receiptPath], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining('requiredProof[npm-test-auth].status: expected "passed", got "pending"')
+    });
+  });
 });
 
 describe("agentfile file discovery", () => {
