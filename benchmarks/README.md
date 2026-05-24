@@ -71,7 +71,7 @@ The repeated `agents-md` webhook receipts passed and matched the Agentfile webho
 
 The first `compiled-agents-md` webhook receipt also passed and added raw-body regression coverage, giving a second proof-sensitive bridge receipt for compiled Agentfile output.
 
-The `share-discount-calculation` fixture is the next breadth test. It moves beyond proof-sensitive security/privacy work into a normal multi-file pricing refactor: invoices and order quotes must share eligible-line coupon totals while the tax rounding module remains out of scope. It has plain issue, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact inputs. All four first receipts passed with regression coverage and preserved the tax boundary, and the native Pact and plain-issue conditions now have second passing receipts. The remaining hand-written and compiled `AGENTS.md` pricing conditions still need second receipts before this fixture can support repeated four-way outcome claims.
+The `share-discount-calculation` fixture is the next breadth test. It moves beyond proof-sensitive security/privacy work into a normal multi-file pricing refactor: invoices and order quotes must share eligible-line coupon totals while the tax rounding module remains out of scope. It has plain issue, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact inputs. All four first receipts passed with regression coverage and preserved the tax boundary, and the native Pact, plain-issue, and hand-written `AGENTS.md` conditions now have second passing receipts. The compiled `AGENTS.md` pricing condition still needs a second receipt before this fixture can support repeated four-way outcome claims.
 
 ## First Claim To Test
 
