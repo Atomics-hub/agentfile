@@ -25,7 +25,7 @@ npm install
 npm run demo:quick
 ```
 
-That script runs the same lifecycle by building the CLI, validating one `.agent` contract, projecting it into the instruction files current agent harnesses already read, then verifying a filled receipt against the original contract.
+That script runs the same lifecycle by building the CLI, validating one `.agent` contract, projecting it into the instruction files current agent harnesses already read, showing excerpts from those generated files, then verifying a filled receipt against the original contract.
 
 The steps are intentionally plain CLI commands:
 
@@ -297,13 +297,13 @@ agentfile init agentfile.agent
 Validate a contract:
 
 ```sh
-agentfile check examples/fix-login-race.agentfile
+agentfile check examples/fix-login-race.agent
 ```
 
 Lint a contract for risky broad authority:
 
 ```sh
-agentfile lint examples/fix-login-race.agentfile
+agentfile lint examples/fix-login-race.agent
 ```
 
 The linter warns on missing proof obligations, manual-only proof without an executable check, repo-wide mission scope, overly broad filesystem access, risky network or secret authority, high-risk shell commands such as publish, dependency-changing, or destructive operations, and missing approval gates for risky network, secret, or shell authority without rejecting the contract.
@@ -311,19 +311,19 @@ The linter warns on missing proof obligations, manual-only proof without an exec
 Compile to a prompt for a coding agent:
 
 ```sh
-agentfile compile examples/fix-login-race.agentfile --target prompt
+agentfile compile examples/fix-login-race.agent --target prompt
 ```
 
 Compile to strict JSON contract IR for automation:
 
 ```sh
-agentfile compile examples/fix-login-race.agentfile --target json
+agentfile compile examples/fix-login-race.agent --target json
 ```
 
 Compile to normalized policy JSON for policy engines and audit tooling:
 
 ```sh
-agentfile compile examples/fix-login-race.agentfile --target policy-json
+agentfile compile examples/fix-login-race.agent --target policy-json
 ```
 
 Compile to canonical YAML contract IR:
@@ -335,13 +335,13 @@ agentfile compile examples/fix-login-race.agent --target yaml
 Compile a YAML/JSON contract back into canonical Pact source:
 
 ```sh
-agentfile compile examples/fix-login-race.agentfile --target agent
+agentfile compile examples/fix-login-race.agent --target agent
 ```
 
 Generate an `AGENTS.md` instruction file:
 
 ```sh
-agentfile sync examples/fix-login-race.agentfile --output AGENTS.md
+agentfile sync examples/fix-login-race.agent --output AGENTS.md
 ```
 
 Generate other instruction surfaces from the same contract:
@@ -355,7 +355,7 @@ agentfile sync examples/fix-login-race.agent --target copilot-md
 Explain the contract:
 
 ```sh
-agentfile explain examples/fix-login-race.agentfile
+agentfile explain examples/fix-login-race.agent
 ```
 
 Print the receipt checklist a harness run should satisfy:

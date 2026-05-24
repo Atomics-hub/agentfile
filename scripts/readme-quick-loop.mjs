@@ -1,17 +1,25 @@
 #!/usr/bin/env node
 
 import { execFile } from "node:child_process";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
-const root = resolve(new URL("..", import.meta.url).pathname);
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const maxBuffer = 20 * 1024 * 1024;
 const expectedPendingFailure = 'requiredProof[npm-test-auth].status: expected "passed", got "pending"';
+const generatedArtifacts = [
+  { name: "AGENTS.md", target: "agents-md", outputName: "AGENTS.md" },
+  { name: "CLAUDE.md", target: "claude-md", outputName: "CLAUDE.md" },
+  { name: "Cursor rule", target: "cursor-mdc", outputName: "agentfile.mdc" },
+  { name: "Copilot instructions", target: "copilot-md", outputName: "copilot-instructions.md" }
+];
 
 const results = [];
+const artifactPreviews = [];
 let tempRoot;
 
 try {
@@ -36,25 +44,25 @@ try {
   await runStep({
     name: "Generate AGENTS.md",
     command: "node dist/cli.js sync examples/fix-login-race.agent --target agents-md --output <temp>/AGENTS.md --force",
-    run: () => sync("agents-md", "AGENTS.md")
+    run: () => sync(generatedArtifacts[0])
   });
 
   await runStep({
     name: "Generate CLAUDE.md",
     command: "node dist/cli.js sync examples/fix-login-race.agent --target claude-md --output <temp>/CLAUDE.md --force",
-    run: () => sync("claude-md", "CLAUDE.md")
+    run: () => sync(generatedArtifacts[1])
   });
 
   await runStep({
     name: "Generate Cursor rule",
     command: "node dist/cli.js sync examples/fix-login-race.agent --target cursor-mdc --output <temp>/agentfile.mdc --force",
-    run: () => sync("cursor-mdc", "agentfile.mdc")
+    run: () => sync(generatedArtifacts[2])
   });
 
   await runStep({
     name: "Generate Copilot instructions",
     command: "node dist/cli.js sync examples/fix-login-race.agent --target copilot-md --output <temp>/copilot-instructions.md --force",
-    run: () => sync("copilot-md", "copilot-instructions.md")
+    run: () => sync(generatedArtifacts[3])
   });
 
   await runStep({
@@ -77,6 +85,8 @@ try {
       expectedPendingFailure
     )
   });
+
+  artifactPreviews.push(...await collectArtifactPreviews());
 } finally {
   if (tempRoot) {
     await rm(tempRoot, { recursive: true, force: true });
@@ -84,23 +94,41 @@ try {
 }
 
 const failed = results.some((result) => result.status === "fail");
-process.stdout.write(renderReport(failed));
+process.stdout.write(renderReport({ failed, artifactPreviews }));
 
 if (failed) {
   process.exitCode = 1;
 }
 
-function sync(target, outputName) {
+function sync(artifact) {
   return execFileAsync("node", [
     "dist/cli.js",
     "sync",
     "examples/fix-login-race.agent",
     "--target",
-    target,
+    artifact.target,
     "--output",
-    join(tempRoot, outputName),
+    join(tempRoot, artifact.outputName),
     "--force"
   ], { cwd: root, env: process.env, maxBuffer });
+}
+
+async function collectArtifactPreviews() {
+  const previews = [];
+
+  for (const artifact of generatedArtifacts) {
+    try {
+      const content = await readFile(join(tempRoot, artifact.outputName), "utf8");
+      previews.push({
+        ...artifact,
+        excerpt: excerpt(content, 32)
+      });
+    } catch {
+      // Failed generation is already captured in the step table.
+    }
+  }
+
+  return previews;
 }
 
 async function expectFailureWith(args, expectedText) {
@@ -146,7 +174,7 @@ async function runStep(step) {
   }
 }
 
-function renderReport(failed) {
+function renderReport({ failed, artifactPreviews }) {
   return [
     "# Agentfile README Quick Loop",
     "",
@@ -164,6 +192,7 @@ function renderReport(failed) {
       ])
     ),
     "",
+    ...renderArtifactPreviews(artifactPreviews),
     ...results.filter((result) => result.status === "fail").flatMap((result) => [
       `## ${result.name}`,
       "",
@@ -172,6 +201,25 @@ function renderReport(failed) {
     ]),
     ""
   ].join("\n");
+}
+
+function renderArtifactPreviews(previews) {
+  if (previews.length === 0) {
+    return [];
+  }
+
+  return [
+    "## Generated Instruction Excerpts",
+    "",
+    "The files are rendered in a temporary directory during this run; the excerpts show what each harness receives from the same `.agent` source.",
+    "",
+    ...previews.flatMap((preview) => [
+      `### ${preview.name}`,
+      "",
+      fence(preview.excerpt),
+      ""
+    ])
+  ];
 }
 
 function table(headers, rows) {
@@ -194,6 +242,10 @@ function summarizeOutput(stdout, stderr) {
 function tail(value, lineCount) {
   const lines = String(value).split(/\r?\n/);
   return lines.slice(Math.max(0, lines.length - lineCount)).join("\n");
+}
+
+function excerpt(value, lineCount) {
+  return String(value).trimEnd().split(/\r?\n/).slice(0, lineCount).join("\n");
 }
 
 function fence(value) {
