@@ -31,7 +31,7 @@ describe("benchmark receipt scoring", () => {
     expect(plan.metrics).toContain("proof_vector_regression_tests");
     expect(plan.metrics).toContain("evidence_quality");
     expect(plan.scoreSummary.comparableConditionPairs).toBe(27);
-    expect(plan.scoreSummary.repeatedConditionPairs).toBe(13);
+    expect(plan.scoreSummary.repeatedConditionPairs).toBe(15);
 
     const agentfile = plan.scoreSummary.byCondition.find(
       (condition: { conditionId: string }) => condition.conditionId === "agentfile-pact"
@@ -170,10 +170,11 @@ describe("benchmark receipt scoring", () => {
       }),
       expect.objectContaining({
         conditionId: "compiled-agents-md",
+        receiptCount: 2,
         proofCommandReportRate: 1,
         independentProofCheckPassRate: 1,
         averagePatchFilesChanged: 2,
-        averagePatchLinesChanged: 12,
+        averagePatchLinesChanged: 20.5,
         averageNormalizedQualityScore: 1,
         evidenceQuality: "strong"
       })
@@ -186,6 +187,28 @@ describe("benchmark receipt scoring", () => {
         comparableReceiptCount: 2,
         isRepeated: true,
         normalizedQualityDelta: 0.02,
+        proofCommandReportDelta: 0,
+        independentProofCheckPassDelta: 0,
+        regressionTestDelta: 0,
+        evidenceQualityDelta: 0
+      }),
+      expect.objectContaining({
+        leftConditionId: "agentfile-pact",
+        rightConditionId: "compiled-agents-md",
+        comparableReceiptCount: 2,
+        isRepeated: true,
+        normalizedQualityDelta: 0,
+        proofCommandReportDelta: 0,
+        independentProofCheckPassDelta: 0,
+        regressionTestDelta: 0,
+        evidenceQualityDelta: 0
+      }),
+      expect.objectContaining({
+        leftConditionId: "agents-md",
+        rightConditionId: "compiled-agents-md",
+        comparableReceiptCount: 2,
+        isRepeated: true,
+        normalizedQualityDelta: -0.02,
         proofCommandReportDelta: 0,
         independentProofCheckPassDelta: 0,
         regressionTestDelta: 0,
@@ -212,7 +235,7 @@ describe("benchmark receipt scoring", () => {
     expect(stdout).not.toContain("| `share-discount-calculation` | `plain-issue` | `benchmarks/tasks/pricing-refactor/plain-issue.md` |");
     expect(stdout).toContain("## Task Coverage");
     expect(stdout).toContain("- Comparable pairs: 27");
-    expect(stdout).toContain("- Repeated pairs: 13");
+    expect(stdout).toContain("- Repeated pairs: 15");
     expect(stdout).not.toContain("| `remove-shipping-label-pii` | `agentfile-pact` | `benchmarks/tasks/fulfillment-pii/fulfillment-pii.agent` |");
     expect(stdout).not.toContain("| `remove-shipping-label-pii` | `compiled-agents-md` | `benchmarks/tasks/fulfillment-pii/compiled-agentfile.AGENTS.md` |");
     expect(stdout).not.toContain("| `remove-shipping-label-pii` | `agents-md` | `benchmarks/tasks/fulfillment-pii/AGENTS.md` |");

@@ -1,0 +1,22 @@
+
+> agentfile-redact-logs-fixture@0.0.0 proof:check
+> node scripts/proof-check.mjs
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: refresh token leaked into auth log
+    at file:///private/tmp/agentfile-redact-compiled-repeat-mqPm51/scripts/proof-check.mjs:14:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:371:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:702:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.8.0

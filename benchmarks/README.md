@@ -51,7 +51,7 @@ The second redaction repeat now has both `agentfile-pact` and `agents-md` receip
 
 The task also includes a `compiled-agents-md` condition that uses `agentfile compile --target agents-md` output as the actual worker input. This tests the language-to-agent bridge directly instead of treating Pact source and hand-written Markdown as separate worlds.
 
-The first `compiled-agents-md` redaction receipt passed with all proof commands reported, showing generated Agentfile output can function as the actual agent instruction surface.
+The repeated `compiled-agents-md` redaction receipts passed with all proof commands reported and token-redaction regression coverage, showing generated Agentfile output can function as the actual agent instruction surface on a proof-sensitive task.
 
 The `preserve-refund-audit-evidence` fixture adds a second proof-sensitive task in a different domain. Regular refund tests can pass while `npm run proof:check` still catches missing request evidence in the approval audit trail.
 

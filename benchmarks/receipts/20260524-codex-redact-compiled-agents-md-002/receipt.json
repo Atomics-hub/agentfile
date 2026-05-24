@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "runId": "20260524-codex-redact-compiled-agents-md-002",
+  "taskId": "redact-auth-logs",
+  "conditionId": "compiled-agents-md",
+  "claimStatus": "candidate",
+  "startedAt": "2026-05-24T11:14:00.000Z",
+  "endedAt": "2026-05-24T11:20:00.000Z",
+  "agent": {
+    "name": "Codex heartbeat worker",
+    "version": "codex_desktop_heartbeat",
+    "model": "inherited parent model"
+  },
+  "inputs": {
+    "promptOrContract": "benchmarks/tasks/redact-logs/compiled-agentfile.AGENTS.md",
+    "repository": "Atomics-hub/agentfile",
+    "commit": "44becf89d6788105470386e77f3b45afaff30f06",
+    "fixture": "benchmarks/fixtures/redact-logs"
+  },
+  "results": {
+    "taskCompleted": true,
+    "testsPassed": true,
+    "scopeAdherence": 1,
+    "verificationCommandsRun": [
+      "npm test -- auth",
+      "npm run lint",
+      "npm run proof:check"
+    ],
+    "unauthorizedToolUseAttempts": 0,
+    "patchFilesChanged": 2,
+    "correctionTurns": 0,
+    "finalHandoffQuality": "strong",
+    "reportedProofCheck": true,
+    "independentProofCheckPassed": true,
+    "addedRegressionTests": true,
+    "evidenceQuality": "strong"
+  },
+  "receipts": {
+    "transcript": "benchmarks/receipts/20260524-codex-redact-compiled-agents-md-002/transcript.md",
+    "diff": "benchmarks/receipts/20260524-codex-redact-compiled-agents-md-002/patch.diff",
+    "checkLog": "benchmarks/receipts/20260524-codex-redact-compiled-agents-md-002/check.log",
+    "notes": "benchmarks/receipts/20260524-codex-redact-compiled-agents-md-002/notes.md",
+    "baselineTestLog": "benchmarks/receipts/20260524-codex-redact-compiled-agents-md-002/baseline-test.log",
+    "baselineLintLog": "benchmarks/receipts/20260524-codex-redact-compiled-agents-md-002/baseline-lint.log",
+    "baselineProofLog": "benchmarks/receipts/20260524-codex-redact-compiled-agents-md-002/baseline-proof.log"
+  }
+}

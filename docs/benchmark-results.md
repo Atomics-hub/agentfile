@@ -4,7 +4,7 @@ Agentfile benchmark results are still early. These receipts are useful as eviden
 
 ## Current Dataset
 
-As of 2026-05-24, the repository has thirty-two validated receipts across seven covered task families. The covered set includes repeated `agents-md` generic instruction-file receipts, a fully repeated four-condition pricing fixture, and repeated compiled `AGENTS.md` webhook receipts generated from Pact source. The `remove-shipping-label-pii` and `share-discount-calculation` fixtures now have matching plain-issue, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact receipts.
+As of 2026-05-24, the repository has thirty-three validated receipts across seven covered task families. The covered set includes repeated `agents-md` generic instruction-file receipts, a fully repeated four-condition pricing fixture, and repeated compiled `AGENTS.md` redaction and webhook receipts generated from Pact source. The `remove-shipping-label-pii` and `share-discount-calculation` fixtures now have matching plain-issue, hand-written `AGENTS.md`, compiled `AGENTS.md`, and native Pact receipts.
 
 | Task | Condition | Completed | Checks passed | Scope adherence | Reported required proof commands | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -14,7 +14,7 @@ As of 2026-05-24, the repository has thirty-two validated receipts across seven 
 | `preserve-session-claims` | `agentfile-pact` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint`, `npm run scope:check` | Both conditions preserved the billing boundary. |
 | `redact-auth-logs` | `plain-issue` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint` | Independent `proof:check` passed, but the worker did not report running it. |
 | `redact-auth-logs` | `agents-md` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint`, `npm run proof:check` | Two generic instruction-file workers ran proof and added token-redaction regression coverage. |
-| `redact-auth-logs` | `compiled-agents-md` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint`, `npm run proof:check` | Generated Agentfile output was used directly as the worker instruction file and passed. |
+| `redact-auth-logs` | `compiled-agents-md` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint`, `npm run proof:check` | Two generated Agentfile-output workers ran proof and added token-redaction regression coverage. |
 | `redact-auth-logs` | `agentfile-pact` | Yes | Yes | 1.0 | `npm test -- auth`, `npm run lint`, `npm run proof:check` | Two Agentfile workers reported the dedicated proof check required by the contract and added regression coverage. |
 | `preserve-refund-audit-evidence` | `plain-issue` | Yes | Yes | 1.0 | `npm test -- refunds`, `npm run lint`, `npm run proof:check` | Plain issue worker voluntarily ran the proof check. |
 | `preserve-refund-audit-evidence` | `agentfile-pact` | Yes | Yes | 1.0 | `npm test -- refunds`, `npm run lint`, `npm run proof:check` | Agentfile worker ran the proof check required by the contract. |
@@ -43,7 +43,7 @@ The original `redact-auth-logs` pair also gives a candidate signal:
 
 > When a dedicated proof command was explicit in the Agentfile contract, the Agentfile-condition worker reported running it; the plain-issue worker did not report running it.
 
-This signal is promising because the fixture is designed so normal tests and lint can pass while `npm run proof:check` catches leaked token values. The repeated `agents-md` redaction runs also reported the proof check and added regression coverage, so the stronger current interpretation is: explicit proof obligations help, and Agentfile needs to prove its advantage over generic instruction files through structure, validation, compilation, and auditability. The repeated `agentfile-pact` vs `agents-md` comparison is now an honesty point: strong Markdown can match the core proof behavior on this task, while Agentfile still contributes typed source, validation, compilation, and audit structure. The first `compiled-agents-md` run shows that a Pact contract can compile into a usable agent instruction surface and still produce a passing, auditable run.
+This signal is promising because the fixture is designed so normal tests and lint can pass while `npm run proof:check` catches leaked token values. The repeated `agents-md` redaction runs also reported the proof check and added regression coverage, so the stronger current interpretation is: explicit proof obligations help, and Agentfile needs to prove its advantage over generic instruction files through structure, validation, compilation, and auditability. The repeated `agentfile-pact` vs `agents-md` comparison is now an honesty point: strong Markdown can match the core proof behavior on this task, while Agentfile still contributes typed source, validation, compilation, and audit structure. The repeated `compiled-agents-md` redaction runs show that a Pact contract can compile into a usable agent instruction surface and still produce passing, auditable work on a proof-sensitive task.
 
 The `preserve-refund-audit-evidence` pair did not reproduce that differential signal. Both workers ran the dedicated proof check and produced passing patches, so this pair strengthens receipt coverage but not the comparative claim.
 
@@ -51,7 +51,7 @@ The `remove-shipping-label-pii` receipts now compare plain issue text, hand-writ
 
 The `verify-webhook-raw-signature` repeats also did not produce a proof-command differential signal, because both plain-issue workers ran `npm run proof:check`. They did produce a repeated quality signal: both Agentfile workers added explicit raw-body regression tests, while both plain-issue workers only changed implementation. The repeated `agents-md` and compiled `AGENTS.md` webhook runs matched Agentfile on proof reporting, proof-pass behavior, and regression coverage. That is a useful honesty point before any claim that Agentfile beats strong instruction files.
 
-The compiled-output bridge now has passing receipts on redaction, webhook, fulfillment, and pricing refactor tasks, with repeated compiled-output evidence on webhook proof work and pricing breadth work. That supports a narrow implementation claim: Pact source can compile into existing agent instruction surfaces that are concrete enough for agents to execute and for humans to audit.
+The compiled-output bridge now has passing receipts on redaction, webhook, fulfillment, and pricing refactor tasks, with repeated compiled-output evidence on redaction proof work, webhook proof work, and pricing breadth work. That supports a narrow implementation claim: Pact source can compile into existing agent instruction surfaces that are concrete enough for agents to execute and for humans to audit.
 
 The new `share-discount-calculation` fixture now has native Pact, plain-issue, hand-written `AGENTS.md`, and compiled `AGENTS.md` receipts. All four conditions now have two passing receipts with focused regression coverage, making every pricing condition-pair repeated. This is useful breadth and bridge evidence, but not a positive differential signal: all four instruction surfaces solved the task, preserved the tax boundary, and added regression coverage.
 
@@ -67,7 +67,7 @@ Before public launch, the benchmark story should either stay framed as a plan or
 
 - Use `npm run benchmark:report` for review, but cite underlying receipts in public-facing claims.
 - Repeat the four-condition `remove-shipping-label-pii` comparison or add another privacy/scope fixture before making public comparative claims from this family.
-- Add a second compiled `AGENTS.md` receipt to redaction or fulfillment so the compiled bridge is repeated across more than one proof-sensitive family.
+- Add a second compiled `AGENTS.md` receipt to fulfillment or another privacy/scope fixture so the compiled bridge is repeated beyond security proof tasks and pricing breadth work.
 - Add more proof-sensitive task families with repeated `agents-md` and compiled-output conditions to test whether structured contracts show measurable value over strong Markdown instructions.
 - Repeat compiled-output runs across more task families and start tracking whether compiled instructions reduce missing proof checks, weaker tests, or oversized patches compared with hand-written instructions.
 - Keep each receipt reviewable: transcript, diff, check log, scope score, verification commands, and handoff quality.
