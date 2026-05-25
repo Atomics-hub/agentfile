@@ -1,8 +1,8 @@
 # Public Launch Readiness
 
-Agentfile should stay private until the project can explain its wedge quickly, prove the CLI works reliably, and show one convincing end-to-end demo.
+Agentfile is public as a Phase 1 launch candidate. This checklist keeps the first public impression crisp, evidence-backed, and aligned with the narrow contract-layer claim the project has earned.
 
-This checklist is the public gate. A release candidate should satisfy every required item before the repository is made public.
+Use this as the public stewardship gate. A release candidate should keep satisfying every required item before broader claims, tags, packages, or launch amplification.
 
 ## Required Gate
 
@@ -12,7 +12,7 @@ This checklist is the public gate. A release candidate should satisfy every requ
 | Clean compiler architecture | Parse, validate, lower, compile target selection, and renderers have obvious ownership boundaries and focused tests. | Mostly ready |
 | Stable CLI | Core commands have documented behavior, useful errors, and integration tests that exercise packaged output. | Mostly ready |
 | Fast reliable tests | `npm run check` passes locally, stays fast enough for frequent automation, and does not rely on stale generated files. | Mostly ready |
-| Private security posture | The remote remains private until launch, risky authority defaults are conservative, and broad permissions trigger diagnostics or lint warnings. | Mostly ready |
+| Package/security posture | Package publishing remains gated, risky authority defaults are conservative, and broad permissions trigger diagnostics or lint warnings. | Ready |
 | Benchmark/demo proof | Launch review requires at least 24 validated receipts, 24 comparable pairs, 4 repeated pairs, zero missing condition receipts, and at least two completed four-condition task families. Claims still need receipt-level citations. | Mostly ready |
 | Launch risk | Public package metadata, repo URLs, examples, contribution docs, and claims are reviewed for accuracy and restraint. | Mostly ready |
 
@@ -40,9 +40,9 @@ That demo earns the claim:
 
 It does not yet earn broader claims about replacing programming languages or outperforming every agent framework.
 
-## Go-Public Definition
+## Public Stewardship Definition
 
-The repository is ready to go public when:
+The repository stays public-ready when:
 
 - `npm run check` passes from a clean clone.
 - The README can get a new user from install to generated agent instruction files in under five minutes.
@@ -52,7 +52,7 @@ The repository is ready to go public when:
 - Package metadata points at the intended repository and package publishing is intentionally gated.
 - Security docs explain what Agentfile does and does not enforce.
 - The benchmark plan is framed as a plan unless data has actually been collected.
-- [Phase 1 Launch Packet](phase-1-launch-packet.md) has been read and still matches the intended launch posture.
+- [Phase 1 Launch Packet](phase-1-launch-packet.md) has been read and still matches the current public Phase 1 posture.
 
 Generate the current local launch-review gate summary:
 
@@ -62,9 +62,9 @@ npm run claims:review
 npm run launch:review
 ```
 
-The metadata review checks package identity, repository URLs, private package posture, and the intended private GitHub description: `Contract language for reviewable AI coding agent delegation.` The generated launch review is a decision aid. It summarizes benchmark receipt coverage, completed four-condition task families, launch gates, and claim-scan status. The benchmark proof gate becomes ready only when coverage has enough receipt count, comparable pairs, repeated pairs, completed four-condition task families, and no missing condition receipts. It does not replace private remote verification or manual claim review against [Public Claims Policy](public-claims.md). The fast-test gate becomes ready only when `npm run launch:clean-clone` has written a passing report for the current commit.
+The metadata review checks package identity, repository URLs, package publishing posture, and the intended GitHub description: `Contract language for reviewable AI coding agent delegation.` The generated launch review is a decision aid. It summarizes benchmark receipt coverage, completed four-condition task families, launch gates, and claim-scan status. The benchmark proof gate becomes ready only when coverage has enough receipt count, comparable pairs, repeated pairs, completed four-condition task families, and no missing condition receipts. It does not replace GitHub metadata verification or manual claim review against [Public Claims Policy](public-claims.md). The fast-test gate becomes ready only when `npm run launch:clean-clone` has written a passing report for the current commit.
 
-Run the local pre-public dry run before treating the repository as launchable:
+Run the local launch dry run before treating the repository as launchable or changing release posture:
 
 ```sh
 npm run demo:quick
@@ -72,11 +72,11 @@ npm run launch:dry-run
 npm run launch:clean-clone
 ```
 
-The quick demo script builds the CLI, validates the example contract, writes the generated instruction files into a temporary directory, prints short excerpts from those files, explains what the loop does and does not prove, verifies the passing receipt, and confirms the pending receipt fails with missing proof. The dry run executes `npm run check`, `npm run demo:quick`, `npm run launch:metadata`, validates the benchmark plan, renders the benchmark report, renders the launch-review gate, and confirms `package.json` still has `private: true`. The clean-clone verifier clones the committed checkout into a temporary directory, runs `npm ci`, then runs the same dry run from that clean checkout. It writes `.agentfile/clean-clone-report.json`, which `npm run launch:review` uses to mark the fast-test gate ready when the report matches the current commit. Neither command publishes packages, pushes commits, or changes repository visibility. Remote privacy still requires a separate `gh repo view Atomics-hub/agentfile --json visibility,description` check.
+The quick demo script builds the CLI, validates the example contract, writes the generated instruction files into a temporary directory, prints short excerpts from those files, explains what the loop does and does not prove, verifies the passing receipt, and confirms the pending receipt fails with missing proof. The dry run executes `npm run check`, `npm run demo:quick`, `npm run launch:metadata`, validates the benchmark plan, renders the benchmark report, renders the launch-review gate, and confirms `package.json` still has `private: true`. The clean-clone verifier clones the committed checkout into a temporary directory, runs `npm ci`, then runs the same dry run from that clean checkout. It writes `.agentfile/clean-clone-report.json`, which `npm run launch:review` uses to mark the fast-test gate ready when the report matches the current commit. Neither command publishes packages, pushes commits, or changes repository visibility. Current GitHub visibility and description should still be checked with `gh repo view Atomics-hub/agentfile --json visibility,description`.
 
 ## Current Highest-Leverage Work
 
-1. Do a final public-readiness review from a clean clone, including `npm run demo:quick`.
+1. Watch first public reactions for confusion around "contract layer" versus harness, framework, or programming-language replacement.
 2. Keep the README, demo doc, and quick-loop script in sync whenever the public lifecycle changes.
 3. Keep broad benchmark claims out of public docs until repeated comparative data exists across task families and agent runs.
 4. Add another proof-sensitive task family only if it supports a specific launch claim or exposes a new failure mode.

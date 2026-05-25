@@ -98,7 +98,7 @@ function renderLaunchReview({ packageJson, benchmarkPlan, claimReview, currentCo
   const gates = [
     gate("Clear README/demo", files["README.md"] && files["docs/demo.md"] && files["examples/fix-login-race.agent"] && files["examples/receipts/fix-login-passing.receipt.json"] && files["examples/receipts/fix-login-pending.receipt.json"] && files["scripts/readme-quick-loop.mjs"], [
       "README, demo doc, Pact example, receipt lifecycle fixtures, and quick-loop script are present.",
-      "Clean-clone dry run executes the README quick loop before public launch."
+      "Clean-clone dry run executes the README quick loop before release posture changes."
     ]),
     gate("Clean compiler architecture", files["src/compiler.ts"] && files["src/source.ts"] && files["src/renderers/instructions.ts"], [
       "Compiler, source parser, and instruction renderer modules are separated.",
@@ -114,9 +114,9 @@ function renderLaunchReview({ packageJson, benchmarkPlan, claimReview, currentCo
         : "No current clean-clone verification report found.",
       "Run `npm run launch:clean-clone` after committing launch-gate changes."
     ]),
-    gate("Private security posture", packageJson.private === true && files["docs/security-model.md"], [
-      "`package.json` is private and security docs are present.",
-      "Remote visibility still requires `gh repo view Atomics-hub/agentfile --json visibility`."
+    gate("Package/security posture", packageJson.private === true && files["docs/security-model.md"], [
+      "`package.json` keeps package publishing disabled and security docs are present.",
+      "GitHub visibility and description should match the current Phase 1 posture."
     ]),
     gate("Benchmark/demo proof", benchmarkProofReady, [
       `${benchmarkPlan.receiptCount} receipts, ${benchmarkPlan.scoreSummary?.comparableConditionPairs ?? 0} comparable pairs, ${benchmarkPlan.scoreSummary?.repeatedConditionPairs ?? 0} repeated pairs.`,
@@ -125,7 +125,7 @@ function renderLaunchReview({ packageJson, benchmarkPlan, claimReview, currentCo
     ]),
     gate("Launch risk", claimReview.violationCount === 0 && files["docs/public-claims.md"] && files["docs/phase-1-launch-packet.md"], [
       `Automated public-claim review found ${claimReview.violationCount} blocked claim pattern(s) across ${claimReview.surfaceCount} launch-facing surfaces.`,
-      "Phase 1 launch packet is present for the final human go/no-go.",
+      "Phase 1 launch packet is present for post-launch restraint and future release decisions.",
       "Public copy must stay limited to reviewable contracts, compiled instruction surfaces, and auditable proof obligations."
     ])
   ];
@@ -160,7 +160,7 @@ function renderLaunchReview({ packageJson, benchmarkPlan, claimReview, currentCo
     "## Required Manual Checks",
     "",
     "- Run `npm run launch:clean-clone` after launch-gate changes.",
-    "- Verify GitHub remote visibility is private before any push or launch review.",
+    "- Verify GitHub remote visibility and description match the current Phase 1 posture before release decisions.",
     "- Review public README, package metadata, and docs against `docs/public-claims.md`.",
     "- Keep package publishing disabled until an explicit release decision.",
     ""

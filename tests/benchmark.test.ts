@@ -645,9 +645,9 @@ describe("benchmark receipt scoring", () => {
     expect(stdout).toContain("| Benchmark/demo proof | ready |");
     expect(stdout).toContain("6 completed four-condition task families, 0 missing condition receipts.");
     expect(stdout).toContain("| Launch risk | ready |");
-    expect(stdout).toContain("Phase 1 launch packet is present for the final human go/no-go.");
+    expect(stdout).toContain("Phase 1 launch packet is present for post-launch restraint and future release decisions.");
     expect(stdout).toContain("Automated public-claim review found 0 blocked claim pattern(s)");
-    expect(stdout).toContain("Verify GitHub remote visibility is private");
+    expect(stdout).toContain("Verify GitHub remote visibility and description match the current Phase 1 posture");
   });
 
   it("marks fast tests ready when a current clean-clone report is available", async () => {
@@ -708,16 +708,16 @@ describe("benchmark receipt scoring", () => {
     expect(stdout).toContain("# Agentfile Launch Metadata Review");
     expect(stdout).toContain("Status: pass");
     expect(stdout).toContain("| Package description | pass |");
-    expect(stdout).toContain("Expected private repo description: Contract language for reviewable AI coding agent delegation.");
+    expect(stdout).toContain("Expected GitHub repo description: Contract language for reviewable AI coding agent delegation.");
     expect(stdout).toContain("does not publish packages, push commits, or change repository visibility");
   });
 
-  it("renders a pre-public dry-run gate without recursively running full checks", async () => {
+  it("renders a launch stewardship dry-run gate without recursively running full checks", async () => {
     const { stdout } = await execFileAsync("node", [prepublicDryRunPath, "--skip-check"], {
       maxBuffer: 20 * 1024 * 1024
     });
 
-    expect(stdout).toContain("# Agentfile Pre-Public Dry Run");
+    expect(stdout).toContain("# Agentfile Launch Stewardship Dry Run");
     expect(stdout).toContain("Status: pass");
     expect(stdout).toContain("Mode: skip-check");
     expect(stdout).toContain("| Package remains private | pass |");

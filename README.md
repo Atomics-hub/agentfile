@@ -245,7 +245,7 @@ For a one-off solo edit, a direct chat or IDE prompt may be enough. Agentfile is
 
 ## Install
 
-Agentfile is pre-public and not published to npm yet. For now, run it from source:
+Agentfile is public, but the npm package is not published yet. For now, run it from source:
 
 ```sh
 npm install
@@ -399,7 +399,7 @@ Agentfile is early. The v0.1 goal is intentionally narrow:
 - Compiler targets for `AGENTS.md`, `CLAUDE.md`, Cursor rules, and GitHub Copilot instructions.
 - A benchmark skeleton that can compare plain issue text against Agentfile-guided tasks without claiming results before data exists.
 
-Before this repository is made public, the launch gate is tracked in [Public Launch Readiness](docs/launch-readiness.md). The short version: the README/demo must be obvious, the CLI must stay stable and tested against packaged output, compiler ownership boundaries must stay clean, risky authority defaults must stay conservative, and claims must be backed by the [end-to-end demo](docs/demo.md) or benchmark evidence.
+Public launch stewardship is tracked in [Public Launch Readiness](docs/launch-readiness.md). The short version: the README/demo must stay obvious, the CLI must stay stable and tested against packaged output, compiler ownership boundaries must stay clean, risky authority defaults must stay conservative, package publishing must remain intentionally gated, and claims must be backed by the [end-to-end demo](docs/demo.md) or benchmark evidence.
 
 ## Design Principles
 

@@ -96,7 +96,7 @@ async function runStep(step) {
 
 function renderReport({ failed, results, skipCheck }) {
   return [
-    "# Agentfile Pre-Public Dry Run",
+    "# Agentfile Launch Stewardship Dry Run",
     "",
     `Status: ${failed ? "blocked" : "pass"}`,
     `Mode: ${skipCheck ? "skip-check" : "full"}`,
@@ -116,7 +116,7 @@ function renderReport({ failed, results, skipCheck }) {
     "## Guardrails",
     "",
     "- This command does not publish packages, push commits, or change repository visibility.",
-    "- Verify GitHub visibility separately before any push or public launch decision.",
+    "- Verify GitHub visibility and description separately before visibility changes or release decisions.",
     "- Treat a passing dry run as necessary but not sufficient; broad public claims still require manual review.",
     "",
     ...results.flatMap((result) => renderDetail(result)),

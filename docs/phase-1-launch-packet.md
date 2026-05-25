@@ -1,6 +1,6 @@
 # Phase 1 Launch Packet
 
-This is the human go/no-go packet for making the repository public. It should stay boring, specific, and evidence-backed.
+This is the human go/no-go packet used for the Phase 1 public launch. After launch, it doubles as the post-launch restraint checklist: keep the public story boring, specific, and evidence-backed.
 
 ## Launch Positioning
 
@@ -33,9 +33,9 @@ Do not claim any of the following:
 - Do not claim Agentfile broadly outperforms prompts, issue text, Python, TypeScript, `AGENTS.md`, or agent frameworks.
 - Do not claim Agentfile has proven general outcome superiority.
 
-## Final Private Checks
+## Final Launch Checks
 
-Run these immediately before any public visibility change:
+Run these before any future visibility, release, or launch-amplification change:
 
 ```sh
 npm run launch:metadata
@@ -46,9 +46,9 @@ npm run launch:review
 gh repo view Atomics-hub/agentfile --json visibility,description
 ```
 
-Expected remote state before launch:
+Current expected remote state:
 
-- `visibility`: `PRIVATE`
+- `visibility`: `PUBLIC`
 - `description`: `Contract language for reviewable AI coding agent delegation.`
 
 Expected local state:
@@ -59,7 +59,9 @@ Expected local state:
 
 ## Launch Action
 
-Only after the checks above pass and the final README read feels credible:
+The Phase 1 GitHub visibility launch has already been completed. Do not run the visibility command again unless there is a new explicit visibility decision.
+
+Historical command used for the Phase 1 launch:
 
 ```sh
 gh repo edit Atomics-hub/agentfile --visibility public

@@ -71,7 +71,7 @@ The dataset is still small. It has one agent family, one repo-local fixture suit
 
 ## Next Evidence To Earn
 
-Before public launch, the benchmark story should either stay framed as a plan or earn more repeated evidence:
+Before broader post-launch claims, the benchmark story should either stay framed as a plan or earn more repeated evidence:
 
 - Use `npm run benchmark:report` for review, but cite underlying receipts in public-facing claims.
 - Add another proof-sensitive task family with a different failure mode so the benchmark does not overfit to redaction, webhook, audit metadata, and tenant export proofs.
