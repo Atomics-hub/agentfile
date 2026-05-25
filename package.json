@@ -45,6 +45,7 @@
     "benchmark:baseline": "node benchmarks/baseline.mjs",
     "benchmark:report": "node benchmarks/report.mjs",
     "demo:quick": "node scripts/readme-quick-loop.mjs",
+    "surfaces:check": "npm run build && node scripts/check-generated-surfaces.mjs",
     "claims:review": "node scripts/public-claim-review.mjs",
     "launch:metadata": "node scripts/launch-metadata-review.mjs",
     "launch:review": "node scripts/launch-review.mjs",

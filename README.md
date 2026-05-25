@@ -264,6 +264,7 @@ Review current benchmark and launch readiness evidence:
 
 ```sh
 npm run benchmark:report
+npm run surfaces:check
 npm run claims:review
 npm run launch:review
 npm run launch:dry-run
@@ -365,6 +366,7 @@ Verify a generated instruction file is still up to date:
 
 ```sh
 agentfile sync examples/fix-login-race.agent --target agents-md --output AGENTS.md --check
+npm run surfaces:check
 ```
 
 Explain the contract:

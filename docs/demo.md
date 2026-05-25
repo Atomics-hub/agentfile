@@ -189,6 +189,12 @@ node dist/cli.js sync examples/fix-login-race.agent --target copilot-md --output
 
 Each generated instruction file carries the same mission, scope, authority, policies, checks, and handoff requirements.
 
+CI can also verify that checked-in generated surfaces still match their `.agent` source without rewriting files:
+
+```sh
+npm run surfaces:check
+```
+
 Expected `AGENTS.md` excerpt:
 
 ```md

@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added `npm run surfaces:check` and wired CI to verify generated instruction surfaces stay synced with `.agent` source.
 - Added `agentfile sync --check` so generated instruction files can be verified in CI without rewriting them.
 - Added `agentfile diff` to compare normalized contract changes in text or JSON form.
 - Updated launch gates and docs for the public Phase 1 posture while keeping npm package publishing disabled.

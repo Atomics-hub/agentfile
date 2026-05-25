@@ -94,6 +94,7 @@ Pass `--check` to verify an existing generated file is up to date without writin
 
 ```sh
 agentfile sync examples/fix-login-race.agent --target agents-md --output AGENTS.md --check
+npm run surfaces:check
 ```
 
 ## `agentfile explain [file]`
