@@ -5,20 +5,16 @@ mission fix-login-refresh-race {
   summary "Prevent duplicate token refresh requests during concurrent auth calls"
   background "Several API calls can receive 401 responses at the same time and trigger duplicate refresh requests"
   owner "auth-team"
-  label auth
-  label concurrency
+  label "auth"
+  label "concurrency"
 
-  read src/auth/**, tests/auth/**
-  write src/auth/**, tests/auth/**
+  touch src/auth/**, tests/auth/**
   never src/billing/**, infra/**
-
-  can run "npm test -- auth"
-  can run "npm run lint"
 
   cannot use network
   cannot read secrets
   cannot add dependency
-
+  ask approval for dependency_change, network_access, scope_expansion
   must preserve "Public auth APIs"
   must_not leak "Refresh tokens"
 
@@ -39,6 +35,6 @@ mission fix-login-refresh-race {
     explain "changed control flow"
     explain "remaining race assumptions"
     list changed_files
-    note risks
+    note "risks"
   }
 }

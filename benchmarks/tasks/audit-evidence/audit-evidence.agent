@@ -3,21 +3,17 @@ mission preserve-refund-audit-evidence {
   summary "Keep refund approval behavior while recording actor, request, reason, and timestamp evidence"
   background "Refund approvals need reviewable audit evidence. Normal refund tests may pass while required request evidence is missing."
   owner "payments-team"
-  label refunds
-  label audit
-  label proof
+  label "refunds"
+  label "audit"
+  label "proof"
 
-  read src/refunds/**, tests/refunds/**, package.json, scripts/**
+  read package.json, scripts/**
   write src/refunds/**, tests/refunds/**
-
-  can run "npm test -- refunds"
-  can run "npm run lint"
-  can run "npm run proof:check"
 
   cannot use network
   cannot read secrets
   cannot add dependency
-
+  ask approval for dependency_change, network_access, scope_expansion
   must preserve "Refund approval status behavior"
   must "Approval audit events keep actorId, requestId, reason, and timestamp evidence"
   must "Existing audit events remain in place"
@@ -40,6 +36,6 @@ mission preserve-refund-audit-evidence {
   handoff {
     explain "audit evidence behavior"
     list changed_files
-    note risks
+    note "risks"
   }
 }

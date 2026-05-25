@@ -19,7 +19,7 @@ Shipping label tests can pass while labels still expose contact PII. CRM records
 - Run proof and scope checks
 
 ## Scope
-Included paths: src/fulfillment/**, tests/fulfillment/**, package.json, scripts/**
+Included paths: package.json, scripts/**, src/fulfillment/**, tests/fulfillment/**
 Excluded paths: src/crm/**, tests/crm/**
 
 ## Tool Policy
@@ -29,7 +29,7 @@ Network: deny
 Network allowlist: none
 Secrets: deny
 Secret allowlist: none
-Filesystem read: src/fulfillment/**, tests/fulfillment/**, package.json, scripts/**
+Filesystem read: package.json, scripts/**, src/fulfillment/**, tests/fulfillment/**
 Filesystem write: src/fulfillment/**, tests/fulfillment/**
 Filesystem deny: src/crm/**, tests/crm/**
 Approval required for: dependency_change, network_access, scope_expansion

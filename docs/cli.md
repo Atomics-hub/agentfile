@@ -62,6 +62,24 @@ Missing generated files are reported as `not found` without failing, so projects
 agentfile doctor examples/fix-login-race.agent
 ```
 
+## `agentfile format [file]`
+
+Print canonical Pact `.agent` source for a contract:
+
+```sh
+agentfile format examples/fix-login-race.agent
+```
+
+Pass `--write` to update a `.agent` source file in place, or `--check` to fail when the file is not already canonical:
+
+```sh
+agentfile format agentfile.agent --write
+agentfile format agentfile.agent --check
+npm run source:format:check
+```
+
+`format` can print Pact source from a representable YAML/JSON contract, but `--write` and `--check` are limited to Pact source files so the command does not replace IR files with source text by accident.
+
 ## `agentfile compile [file] --target <target>`
 
 Compile a contract.

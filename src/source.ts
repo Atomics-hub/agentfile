@@ -13,7 +13,7 @@ import { agentfileSchema, type Agentfile } from "./schema.js";
 type Section = "mission" | "plan" | "prove" | "handoff";
 
 export function parseSource(source: string, filePath?: string): Agentfile {
-  if (filePath?.endsWith(".agent") || looksLikePact(source)) {
+  if (filePath?.endsWith(".agent") || looksLikePactSource(source)) {
     return parsePactSource(source, filePath);
   }
 
@@ -1343,7 +1343,7 @@ function isNoDependencyChangePolicy(policy: Agentfile["policies"][number]): bool
   );
 }
 
-function looksLikePact(source: string): boolean {
+export function looksLikePactSource(source: string): boolean {
   for (const rawLine of source.split(/\r?\n/)) {
     const line = stripComment(rawLine).trim();
     if (line.length === 0) {

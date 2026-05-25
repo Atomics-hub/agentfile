@@ -19,7 +19,7 @@ Order quotes already discount every eligible line item, but invoice summaries on
 - Verify tax rounding files remain unchanged
 
 ## Scope
-Included paths: src/pricing/**, src/orders/**, src/invoices/**, tests/pricing/**, package.json, scripts/**
+Included paths: package.json, scripts/**, src/pricing/**, src/orders/**, src/invoices/**, tests/pricing/**
 Excluded paths: src/tax/**, tests/tax/**
 
 ## Tool Policy
@@ -29,7 +29,7 @@ Network: deny
 Network allowlist: none
 Secrets: deny
 Secret allowlist: none
-Filesystem read: src/pricing/**, src/orders/**, src/invoices/**, tests/pricing/**, package.json, scripts/**
+Filesystem read: package.json, scripts/**, src/pricing/**, src/orders/**, src/invoices/**, tests/pricing/**
 Filesystem write: src/pricing/**, src/orders/**, src/invoices/**, tests/pricing/**
 Filesystem deny: src/tax/**, tests/tax/**
 Approval required for: dependency_change, network_access, scope_expansion

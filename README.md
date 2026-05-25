@@ -266,6 +266,7 @@ Review current benchmark and launch readiness evidence:
 ```sh
 npm run benchmark:report
 npm run surfaces:check
+npm run source:format:check
 npm run claims:review
 npm run launch:review
 npm run launch:dry-run
@@ -329,6 +330,13 @@ agentfile doctor examples/fix-login-race.agent
 ```
 
 `doctor` validates the contract, reports lint warnings, and checks adopted default instruction surfaces like `AGENTS.md`, `CLAUDE.md`, Cursor rules, and Copilot instructions for stale generated content.
+
+Check or write canonical Pact source formatting:
+
+```sh
+agentfile format examples/fix-login-race.agent --check
+agentfile format examples/fix-login-race.agent --write
+```
 
 Compile to a prompt for a coding agent:
 
@@ -425,6 +433,7 @@ Agentfile is early. The v0.1 goal is intentionally narrow:
 - `agentfile init` can scaffold either YAML IR or Pact `.agent` source.
 - Compiler targets for `AGENTS.md`, `CLAUDE.md`, Cursor rules, and GitHub Copilot instructions.
 - `agentfile doctor` for contract health and generated instruction-surface freshness checks.
+- `agentfile format --check` and `--write` for canonical Pact source hygiene.
 - A benchmark skeleton that can compare plain issue text against Agentfile-guided tasks without claiming results before data exists.
 
 Public launch stewardship is tracked in [Public Launch Readiness](docs/launch-readiness.md). The short version: the README/demo must stay obvious, the CLI must stay stable and tested against packaged output, compiler ownership boundaries must stay clean, risky authority defaults must stay conservative, package publishing must remain intentionally gated, and claims must be backed by the [end-to-end demo](docs/demo.md) or benchmark evidence.

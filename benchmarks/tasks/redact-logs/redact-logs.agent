@@ -3,21 +3,17 @@ mission redact-auth-logs {
   summary "Keep auth logs useful without leaking refresh or access tokens"
   background "Auth logs should retain event metadata for debugging, but raw credential material must never be serialized."
   owner "auth-team"
-  label auth
-  label security
-  label proof
+  label "auth"
+  label "security"
+  label "proof"
 
-  read src/auth/**, tests/auth/**, package.json, scripts/**
+  read package.json, scripts/**
   write src/auth/**, tests/auth/**
-
-  can run "npm test -- auth"
-  can run "npm run lint"
-  can run "npm run proof:check"
 
   cannot use network
   cannot read secrets
   cannot add dependency
-
+  ask approval for dependency_change, network_access, scope_expansion
   must preserve "Auth log JSON format"
   must "Auth log events keep type and userId metadata"
   must_not leak "refresh tokens"
@@ -40,7 +36,6 @@ mission redact-auth-logs {
   handoff {
     explain "token redaction behavior"
     list changed_files
-    note risks
+    note "risks"
   }
 }
-

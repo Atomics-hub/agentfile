@@ -3,21 +3,17 @@ mission verify-webhook-raw-signature {
   summary "Accept valid webhook signatures without normalizing JSON before HMAC verification"
   background "Webhook providers sign the exact raw request body bytes. Normal webhook tests can pass while implementations incorrectly parse and reserialize JSON before verifying the signature."
   owner "platform-team"
-  label webhooks
-  label security
-  label proof
+  label "webhooks"
+  label "security"
+  label "proof"
 
-  read src/webhooks/**, tests/webhooks/**, package.json, scripts/**
+  read package.json, scripts/**
   write src/webhooks/**, tests/webhooks/**
-
-  can run "npm test -- webhooks"
-  can run "npm run lint"
-  can run "npm run proof:check"
 
   cannot use network
   cannot read secrets
   cannot add dependency
-
+  ask approval for dependency_change, network_access, scope_expansion
   must preserve "Valid compact webhook bodies continue to verify"
   must "HMAC verification uses exact raw request body bytes"
   must "Equivalent JSON with different whitespace is verified against its own raw bytes"
@@ -44,6 +40,6 @@ mission verify-webhook-raw-signature {
   handoff {
     explain "raw body signature verification behavior"
     list changed_files
-    note risks
+    note "risks"
   }
 }

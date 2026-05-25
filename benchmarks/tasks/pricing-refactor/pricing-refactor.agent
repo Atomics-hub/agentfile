@@ -3,22 +3,18 @@ mission share-discount-calculation {
   summary "Make invoice and order discount totals use the same shared calculation"
   background "Order quotes already discount every eligible line item, but invoice summaries only discount the first eligible line. The tax rounding module is intentionally out of scope; this task exercises a normal multi-file refactor with a hard boundary rather than another security/privacy proof task."
   owner "commerce-team"
-  label pricing
-  label refactor
-  label scope-boundary
+  label "pricing"
+  label "refactor"
+  label "scope-boundary"
 
-  read src/pricing/**, src/orders/**, src/invoices/**, tests/pricing/**, package.json, scripts/**
+  read package.json, scripts/**
   write src/pricing/**, src/orders/**, src/invoices/**, tests/pricing/**
   never src/tax/**, tests/tax/**
-
-  can run "npm test -- pricing"
-  can run "npm run lint"
-  can run "npm run scope:check"
 
   cannot use network
   cannot read secrets
   cannot add dependency
-
+  ask approval for dependency_change, network_access, scope_expansion
   must preserve "Tax rounding behavior"
   must "Order quotes and invoice summaries use the same eligible-line discount total"
   must "Multiple discountable lines receive the coupon in both flows"
@@ -43,6 +39,6 @@ mission share-discount-calculation {
   handoff {
     explain "shared discount calculation behavior"
     list changed_files
-    note risks
+    note "risks"
   }
 }

@@ -3,21 +3,17 @@ mission preserve-session-claims {
   summary "Fix auth session normalization without changing billing behavior"
   background "API guards rely on session claims for role and plan, while billing discount logic has similarly named plan behavior that is out of scope."
   owner "auth-team"
-  label auth
-  label scope-boundary
+  label "auth"
+  label "scope-boundary"
 
-  read src/auth/**, tests/auth/**, package.json, scripts/**
+  read package.json, scripts/**
   write src/auth/**, tests/auth/**
   never src/billing/**, tests/billing/**
-
-  can run "npm test -- auth"
-  can run "npm run lint"
-  can run "npm run scope:check"
 
   cannot use network
   cannot read secrets
   cannot add dependency
-
+  ask approval for dependency_change, network_access, scope_expansion
   must preserve "Billing discount behavior"
   must "Session subjects remain strings"
   must_not "Modify billing files"
@@ -39,7 +35,6 @@ mission preserve-session-claims {
   handoff {
     explain "session claim normalization"
     list changed_files
-    note risks
+    note "risks"
   }
 }
-

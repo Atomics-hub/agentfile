@@ -15,7 +15,7 @@ import { diffContracts, renderContractDiff, type ContractDiffFormat } from "./di
 import { compileJsonSchema } from "./json-schema.js";
 import { parseReceiptFormat, renderReceipt, verifyReceipt } from "./receipt.js";
 import type { Agentfile } from "./schema.js";
-import { parseSource } from "./source.js";
+import { looksLikePactSource, parseSource } from "./source.js";
 import { findTarget, quotedTargetIds } from "./targets.js";
 
 const program = new Command();
@@ -80,6 +80,33 @@ program
     if (result.surfaces.some((surface) => surface.status === "stale")) {
       process.exitCode = 1;
     }
+  });
+
+program
+  .command("format")
+  .description("Print, write, or check canonical Pact .agent source formatting.")
+  .argument("[file]", "Agentfile path")
+  .option("--check", "verify the source is already formatted without writing", false)
+  .option("-w, --write", "write formatted Pact source back to the .agent file", false)
+  .action(async (file: string, options: { check: boolean; write: boolean }) => {
+    const result = await runFormat(file, options);
+
+    if (result.status === "printed") {
+      process.stdout.write(result.formatted);
+      return;
+    }
+
+    if (result.status === "checked") {
+      console.log(`OK ${result.filePath} is formatted`);
+      return;
+    }
+
+    if (result.status === "unchanged") {
+      console.log(`OK ${result.filePath} is formatted`);
+      return;
+    }
+
+    console.log(`Wrote ${result.filePath}`);
   });
 
 program
@@ -307,6 +334,68 @@ interface DoctorResult {
   contractPath: string;
   lintDiagnostics: ReturnType<typeof lintAgentfile>;
   surfaces: DoctorSurface[];
+}
+
+type FormatResult =
+  | { status: "printed"; formatted: string }
+  | { status: "checked"; filePath: string }
+  | { status: "unchanged"; filePath: string }
+  | { status: "written"; filePath: string };
+
+async function runFormat(
+  file: string | undefined,
+  options: { check: boolean; write: boolean }
+): Promise<FormatResult> {
+  if (options.check && options.write) {
+    throw new AgentfileError("format cannot use --check and --write together");
+  }
+
+  const filePath = await resolveFile(file);
+  const source = await readFile(filePath, "utf8").catch((error: NodeJS.ErrnoException) => {
+    throw new AgentfileError(error.message, filePath);
+  });
+  const isPactSource = filePath.endsWith(".agent") || looksLikePactSource(source);
+
+  if ((options.check || options.write) && !isPactSource) {
+    throw new AgentfileError(
+      `format ${options.check ? "--check" : "--write"} only applies to Pact .agent source; use compile --target agent to convert YAML/JSON IR`,
+      filePath
+    );
+  }
+
+  const agentfile = parseSource(source, filePath);
+  const formatted = compileAgentfile(agentfile, "agent");
+
+  if (options.check) {
+    if (source !== formatted) {
+      throw new AgentfileError(`format check failed: ${filePath}; run agentfile format ${filePath} --write`, filePath);
+    }
+
+    return {
+      status: "checked",
+      filePath
+    };
+  }
+
+  if (options.write) {
+    if (source === formatted) {
+      return {
+        status: "unchanged",
+        filePath
+      };
+    }
+
+    await writeFile(filePath, formatted, "utf8");
+    return {
+      status: "written",
+      filePath
+    };
+  }
+
+  return {
+    status: "printed",
+    formatted
+  };
 }
 
 async function runDoctor(file?: string): Promise<DoctorResult> {

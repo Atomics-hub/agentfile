@@ -31,6 +31,11 @@ const commands = [
     args: ["run", "check"]
   },
   {
+    name: "Pact source format check",
+    command: "npm run source:format:check",
+    args: ["run", "source:format:check"]
+  },
+  {
     name: "README quick loop",
     command: "npm run demo:quick",
     args: ["run", "demo:quick"]

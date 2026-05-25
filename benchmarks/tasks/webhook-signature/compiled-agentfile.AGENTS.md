@@ -19,7 +19,7 @@ Webhook providers sign the exact raw request body bytes. Normal webhook tests ca
 - Run proof vectors for whitespace-sensitive raw bodies
 
 ## Scope
-Included paths: src/webhooks/**, tests/webhooks/**, package.json, scripts/**
+Included paths: package.json, scripts/**, src/webhooks/**, tests/webhooks/**
 Excluded paths: none
 
 ## Tool Policy
@@ -29,7 +29,7 @@ Network: deny
 Network allowlist: none
 Secrets: deny
 Secret allowlist: none
-Filesystem read: src/webhooks/**, tests/webhooks/**, package.json, scripts/**
+Filesystem read: package.json, scripts/**, src/webhooks/**, tests/webhooks/**
 Filesystem write: src/webhooks/**, tests/webhooks/**
 Filesystem deny: none
 Approval required for: dependency_change, network_access, scope_expansion

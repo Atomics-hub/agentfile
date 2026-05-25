@@ -18,7 +18,7 @@ Auth logs should retain event metadata for debugging, but raw credential materia
 - Run proof check that searches serialized logs for raw token values
 
 ## Scope
-Included paths: src/auth/**, tests/auth/**, package.json, scripts/**
+Included paths: package.json, scripts/**, src/auth/**, tests/auth/**
 Excluded paths: none
 
 ## Tool Policy
@@ -28,7 +28,7 @@ Network: deny
 Network allowlist: none
 Secrets: deny
 Secret allowlist: none
-Filesystem read: src/auth/**, tests/auth/**, package.json, scripts/**
+Filesystem read: package.json, scripts/**, src/auth/**, tests/auth/**
 Filesystem write: src/auth/**, tests/auth/**
 Filesystem deny: none
 Approval required for: dependency_change, network_access, scope_expansion

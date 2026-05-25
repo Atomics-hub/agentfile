@@ -18,7 +18,7 @@ Refund approvals need reviewable audit evidence. Normal refund tests may pass wh
 - Run proof check that verifies actor, request, reason, and timestamp evidence
 
 ## Scope
-Included paths: src/refunds/**, tests/refunds/**, package.json, scripts/**
+Included paths: package.json, scripts/**, src/refunds/**, tests/refunds/**
 Excluded paths: none
 
 ## Tool Policy
@@ -28,7 +28,7 @@ Network: deny
 Network allowlist: none
 Secrets: deny
 Secret allowlist: none
-Filesystem read: src/refunds/**, tests/refunds/**, package.json, scripts/**
+Filesystem read: package.json, scripts/**, src/refunds/**, tests/refunds/**
 Filesystem write: src/refunds/**, tests/refunds/**
 Filesystem deny: none
 Approval required for: dependency_change, network_access, scope_expansion

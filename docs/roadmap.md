@@ -14,10 +14,11 @@
 - Add CI freshness checks for generated instruction surfaces.
 - Document source-checkout GitHub Actions adoption before npm publishing.
 - Add `agentfile doctor` for local contract health and generated-surface freshness checks.
+- Add `agentfile format --check` and `--write` plus CI coverage for canonical Pact source hygiene.
 
 ## v0.2
 
-- Add formatter and golden fixtures for `.agent`.
+- Add richer formatter controls and golden fixtures for `.agent`.
 - Add trace format for agent actions and verification.
 - Expand the JSON Schema export with optional editor snippets and published schema hosting once the repository is public.
 

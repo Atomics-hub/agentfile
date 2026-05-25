@@ -175,6 +175,76 @@ describe("agentfile doctor", () => {
   });
 });
 
+describe("agentfile format", () => {
+  it("prints canonical Pact source without writing", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-format-print-"));
+    tempDirs.push(cwd);
+
+    const { stdout } = await runCli(["format", examplePath], cwd);
+
+    expect(stdout).toContain("mission fix-login-refresh-race {");
+    expect(stdout).toContain('  label "auth"');
+    expect(stdout).toContain("  touch src/auth/**, tests/auth/**");
+    expect(stdout).toContain('    note "risks"');
+  });
+
+  it("checks canonical Pact source formatting", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-format-check-"));
+    tempDirs.push(cwd);
+
+    const { stdout: canonical } = await runCli(["format", examplePath], cwd);
+    const contractPath = join(cwd, "agentfile.agent");
+    await writeFile(contractPath, canonical, "utf8");
+
+    const { stdout } = await runCli(["format", contractPath, "--check"], cwd);
+
+    expect(stdout).toContain(`OK ${contractPath} is formatted`);
+  });
+
+  it("fails check mode when Pact source is not canonical", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-format-check-fail-"));
+    tempDirs.push(cwd);
+
+    const contractPath = join(cwd, "agentfile.agent");
+    const source = (await readFile(examplePath, "utf8")).replace('  label "auth"', "  label auth");
+    await writeFile(contractPath, source, "utf8");
+
+    await expect(
+      runCli(["format", contractPath, "--check"], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining(`format check failed: ${contractPath}`)
+    });
+  });
+
+  it("writes canonical Pact source back to .agent files", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-format-write-"));
+    tempDirs.push(cwd);
+
+    const contractPath = join(cwd, "agentfile.agent");
+    const source = (await readFile(examplePath, "utf8")).replace('    note "risks"', "    note risks");
+    await writeFile(contractPath, source, "utf8");
+
+    const { stdout } = await runCli(["format", contractPath, "--write"], cwd);
+    const formatted = await readFile(contractPath, "utf8");
+
+    expect(stdout).toContain(`Wrote ${contractPath}`);
+    expect(formatted).toContain('  label "auth"');
+    expect(formatted).toContain("  touch src/auth/**, tests/auth/**");
+    expect(formatted).toContain('    note "risks"');
+  });
+
+  it("does not write Pact source over YAML contract files", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-format-yaml-write-"));
+    tempDirs.push(cwd);
+
+    await expect(
+      runCli(["format", exampleContractPath, "--write"], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("format --write only applies to Pact .agent source")
+    });
+  });
+});
+
 describe("agentfile targets", () => {
   it("lists compile targets and file-backed output paths", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "agentfile-targets-"));

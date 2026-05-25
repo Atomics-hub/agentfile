@@ -19,7 +19,7 @@ Order export tests can pass when fixtures only contain one tenant, while mixed-t
 - Run proof check that verifies tenant isolation
 
 ## Scope
-Included paths: src/exports/**, tests/exports/**, package.json, scripts/**
+Included paths: package.json, scripts/**, src/exports/**, tests/exports/**
 Excluded paths: none
 
 ## Tool Policy
@@ -29,7 +29,7 @@ Network: deny
 Network allowlist: none
 Secrets: deny
 Secret allowlist: none
-Filesystem read: src/exports/**, tests/exports/**, package.json, scripts/**
+Filesystem read: package.json, scripts/**, src/exports/**, tests/exports/**
 Filesystem write: src/exports/**, tests/exports/**
 Filesystem deny: none
 Approval required for: dependency_change, network_access, scope_expansion
