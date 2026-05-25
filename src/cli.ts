@@ -13,7 +13,7 @@ import {
 import { AgentfileError, lintAgentfile } from "./diagnostics.js";
 import { diffContracts, renderContractDiff, type ContractDiffFormat } from "./diff.js";
 import { compileJsonSchema } from "./json-schema.js";
-import { parseReceiptFormat, renderReceipt, verifyReceipt } from "./receipt.js";
+import { parseReceiptFormat, renderReceipt, renderReceiptReview, reviewReceipt, verifyReceipt } from "./receipt.js";
 import type { Agentfile } from "./schema.js";
 import { looksLikePactSource, parseSource } from "./source.js";
 import { findTarget, quotedTargetIds } from "./targets.js";
@@ -266,6 +266,23 @@ receiptCommand
     }
 
     console.log(`OK ${receiptPath} satisfies ${contract}`);
+  });
+
+receiptCommand
+  .command("review")
+  .description("Print a human review summary for a filled JSON receipt.")
+  .argument("<contract>", "Agentfile contract path")
+  .argument("<receipt>", "JSON receipt path")
+  .action(async (contract: string, receiptPath: string) => {
+    const agentfile = await load(contract);
+    const receipt = await loadReceipt(receiptPath);
+    const review = reviewReceipt(agentfile, receipt, receiptPath);
+
+    process.stdout.write(renderReceiptReview(review));
+
+    if (review.status === "fail") {
+      process.exitCode = 1;
+    }
   });
 
 program.parseAsync().catch((error: unknown) => {

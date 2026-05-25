@@ -469,6 +469,46 @@ describe("agentfile receipt", () => {
       stderr: expect.stringContaining('requiredProof[npm-test-auth].status: expected "passed", got "pending"')
     });
   });
+
+  it("reviews checked-in lifecycle receipt evidence", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-review-"));
+    tempDirs.push(cwd);
+
+    const { stdout } = await runCli(["receipt", "review", examplePath, passingReceiptPath], cwd);
+
+    expect(stdout).toContain("# Agentfile Receipt Review");
+    expect(stdout).toContain(`Receipt: \`${passingReceiptPath}\``);
+    expect(stdout).toContain("Task: `fix-login-refresh-race`");
+    expect(stdout).toContain("Status: pass");
+    expect(stdout).toContain("Generated surface: AGENTS.md");
+    expect(stdout).toContain("- Required proof: 2/2 passed");
+    expect(stdout).toContain("- Acceptance evidence: 2/2 satisfied");
+    expect(stdout).toContain("- Handoff evidence: 8/8 satisfied");
+    expect(stdout).not.toContain("## Issues");
+  });
+
+  it("reviews pending receipt evidence before failing", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-review-pending-"));
+    tempDirs.push(cwd);
+
+    await expect(
+      runCli(["receipt", "review", examplePath, pendingReceiptPath], cwd)
+    ).rejects.toMatchObject({
+      stdout: expect.stringContaining("Status: fail")
+    });
+
+    await expect(
+      runCli(["receipt", "review", examplePath, pendingReceiptPath], cwd)
+    ).rejects.toMatchObject({
+      stdout: expect.stringContaining("- Required proof: 0/2 passed")
+    });
+
+    await expect(
+      runCli(["receipt", "review", examplePath, pendingReceiptPath], cwd)
+    ).rejects.toMatchObject({
+      stdout: expect.stringContaining('requiredProof[npm-test-auth].status: expected "passed", got "pending"')
+    });
+  });
 });
 
 describe("agentfile file discovery", () => {

@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added `agentfile receipt review` to print human-readable completion summaries for filled receipt JSON.
 - Added `agentfile format` with `--check` and `--write`, canonicalized checked-in `.agent` sources, and wired a source-format check into CI.
 - Added `agentfile doctor` to validate a contract, surface lint warnings, and fail on stale adopted instruction files.
 - Added GitHub Actions integration docs for validating contracts, generated surfaces, and receipts from source.

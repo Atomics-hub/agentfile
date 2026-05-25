@@ -3,6 +3,24 @@ import type { Agentfile } from "./schema.js";
 
 export type ReceiptFormat = "markdown" | "json";
 
+export interface ReceiptReview {
+  receiptPath: string;
+  status: "pass" | "fail";
+  taskId: string;
+  generatedInstructionSurfaceUsed: string;
+  requiredProof: ReceiptReviewCount;
+  optionalProof: ReceiptReviewCount;
+  acceptanceEvidence: ReceiptReviewCount;
+  handoffEvidence: ReceiptReviewCount;
+  issues: string[];
+}
+
+interface ReceiptReviewCount {
+  passed: number;
+  total: number;
+  expectedStatus: string;
+}
+
 export function parseReceiptFormat(value: string): ReceiptFormat {
   if (value === "markdown" || value === "json") {
     return value;
@@ -103,6 +121,59 @@ export function verifyReceipt(agentfile: Agentfile, receipt: unknown): string[] 
   }
 
   return issues;
+}
+
+export function reviewReceipt(agentfile: Agentfile, receipt: unknown, receiptPath: string): ReceiptReview {
+  const receiptObject = asRecord(receipt);
+  const source = asRecord(receiptObject?.source);
+  const requiredProofEntries = recordArray(receiptObject?.requiredProof);
+  const requiredProof = requiredProofEntries.filter((entry) => entry.required !== false);
+  const optionalProof = requiredProofEntries.filter((entry) => entry.required === false);
+  const acceptanceEvidence = recordArray(receiptObject?.acceptanceEvidence);
+  const handoffEvidence = recordArray(receiptObject?.handoffEvidence);
+  const issues = verifyReceipt(agentfile, receipt);
+
+  return {
+    receiptPath,
+    status: issues.length === 0 ? "pass" : "fail",
+    taskId: agentfile.task.id,
+    generatedInstructionSurfaceUsed: stringOrNone(source?.generatedInstructionSurfaceUsed),
+    requiredProof: countStatus(requiredProof, "passed"),
+    optionalProof: countStatus(optionalProof, "passed"),
+    acceptanceEvidence: countStatus(acceptanceEvidence, "satisfied"),
+    handoffEvidence: countStatus(handoffEvidence, "satisfied"),
+    issues
+  };
+}
+
+export function renderReceiptReview(review: ReceiptReview): string {
+  const lines = [
+    "# Agentfile Receipt Review",
+    "",
+    `Receipt: \`${review.receiptPath}\``,
+    `Task: \`${review.taskId}\``,
+    `Status: ${review.status}`,
+    `Generated surface: ${review.generatedInstructionSurfaceUsed}`,
+    "",
+    "## Evidence",
+    "",
+    `- Required proof: ${formatCount(review.requiredProof)}`,
+    `- Acceptance evidence: ${formatCount(review.acceptanceEvidence)}`,
+    `- Handoff evidence: ${formatCount(review.handoffEvidence)}`
+  ];
+
+  if (review.optionalProof.total > 0) {
+    lines.push(`- Optional proof: ${formatCount(review.optionalProof)}`);
+  }
+
+  if (review.issues.length > 0) {
+    lines.push("", "## Issues", "");
+    for (const issue of review.issues) {
+      lines.push(`- ${issue}`);
+    }
+  }
+
+  return `${lines.join("\n")}\n`;
 }
 
 function renderReceiptChecklist(agentfile: Agentfile, contractPath: string): string {
@@ -302,6 +373,33 @@ function expectRecordArray(value: unknown, path: string, issues: string[]): Reco
   });
 
   return records;
+}
+
+function recordArray(value: unknown): Record<string, unknown>[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((item) => {
+    const record = asRecord(item);
+    return record ? [record] : [];
+  });
+}
+
+function countStatus(records: Record<string, unknown>[], expectedStatus: string): ReceiptReviewCount {
+  return {
+    passed: records.filter((record) => record.status === expectedStatus).length,
+    total: records.length,
+    expectedStatus
+  };
+}
+
+function formatCount(count: ReceiptReviewCount): string {
+  return `${count.passed}/${count.total} ${count.expectedStatus}`;
+}
+
+function stringOrNone(value: unknown): string {
+  return typeof value === "string" && value.trim().length > 0 ? value : "none";
 }
 
 function hasEvidence(value: unknown): boolean {

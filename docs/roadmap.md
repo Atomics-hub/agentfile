@@ -15,6 +15,7 @@
 - Document source-checkout GitHub Actions adoption before npm publishing.
 - Add `agentfile doctor` for local contract health and generated-surface freshness checks.
 - Add `agentfile format --check` and `--write` plus CI coverage for canonical Pact source hygiene.
+- Add `agentfile receipt review` for readable receipt completion summaries.
 
 ## v0.2
 

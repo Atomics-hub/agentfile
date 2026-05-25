@@ -408,6 +408,7 @@ Print the receipt checklist a harness run should satisfy:
 agentfile receipt examples/fix-login-race.agent
 agentfile receipt examples/fix-login-race.agent --output receipts/fix-login.md
 agentfile receipt examples/fix-login-race.agent --format json --output receipts/fix-login.json
+agentfile receipt review examples/fix-login-race.agent examples/receipts/fix-login-passing.receipt.json
 agentfile receipt verify examples/fix-login-race.agent receipts/fix-login.json
 agentfile receipt verify examples/fix-login-race.agent examples/receipts/fix-login-passing.receipt.json
 ```
@@ -434,6 +435,7 @@ Agentfile is early. The v0.1 goal is intentionally narrow:
 - Compiler targets for `AGENTS.md`, `CLAUDE.md`, Cursor rules, and GitHub Copilot instructions.
 - `agentfile doctor` for contract health and generated instruction-surface freshness checks.
 - `agentfile format --check` and `--write` for canonical Pact source hygiene.
+- `agentfile receipt review` for human-readable receipt completion and verification summaries.
 - A benchmark skeleton that can compare plain issue text against Agentfile-guided tasks without claiming results before data exists.
 
 Public launch stewardship is tracked in [Public Launch Readiness](docs/launch-readiness.md). The short version: the README/demo must stay obvious, the CLI must stay stable and tested against packaged output, compiler ownership boundaries must stay clean, risky authority defaults must stay conservative, package publishing must remain intentionally gated, and claims must be backed by the [end-to-end demo](docs/demo.md) or benchmark evidence.
