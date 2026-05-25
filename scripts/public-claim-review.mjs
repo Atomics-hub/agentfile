@@ -11,6 +11,7 @@ const publicSurfaces = [
   "package.json",
   "docs/demo.md",
   "docs/cli.md",
+  "docs/github-actions.md",
   "docs/security-model.md",
   "docs/benchmark-results.md",
   "docs/launch-readiness.md",

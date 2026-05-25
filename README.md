@@ -290,6 +290,8 @@ node dist/cli.js receipt verify examples/fix-login-race.agent examples/receipts/
 
 See [End-to-End Demo](docs/demo.md) for the full path from Pact source to YAML IR, policy JSON, generated agent instruction files, and receipt verification.
 
+Use [GitHub Actions Integration](docs/github-actions.md) to validate contracts, generated instruction surfaces, and receipts in CI while Agentfile is still run from source.
+
 ## CLI
 
 Create a starter contract:

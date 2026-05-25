@@ -77,6 +77,8 @@ agentfile schema > agentfile.schema.json
 
 The exported schema is useful for editor integration, forms, and lightweight structural validation. It intentionally does not replace `agentfile check`, which still enforces semantic invariants such as duplicate ids, scope/permission consistency, and risky authority diagnostics.
 
+For CI setup, see [GitHub Actions Integration](github-actions.md).
+
 ## `agentfile sync [file] --target <target> --output <file>`
 
 Generate an agent instruction file.

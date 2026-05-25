@@ -12,6 +12,7 @@
 - Keep golden fixtures for generated demo outputs aligned with the public demo.
 - Add `agentfile diff` so reviewers can compare normalized contract changes.
 - Add CI freshness checks for generated instruction surfaces.
+- Document source-checkout GitHub Actions adoption before npm publishing.
 
 ## v0.2
 
