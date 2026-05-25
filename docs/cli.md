@@ -94,6 +94,22 @@ The command creates parent directories for nested default targets and refuses to
 
 Print a short human-readable summary of the contract.
 
+## `agentfile diff <before> <after>`
+
+Compare two contracts after parsing and normalization.
+
+This is useful during review when a `.agent` source change needs to be understood as a contract change instead of only a text diff. By default the command prints a text report:
+
+```sh
+agentfile diff examples/fix-login-race.agent changed.agent
+```
+
+Pass `--format json` for automation:
+
+```sh
+agentfile diff examples/fix-login-race.agent changed.agent --format json
+```
+
 ## `agentfile receipt [file]`
 
 Print a receipt artifact for auditing a completed harness run against the contract.

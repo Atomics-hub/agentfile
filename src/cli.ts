@@ -11,6 +11,7 @@ import {
   type CompileTarget
 } from "./compiler.js";
 import { AgentfileError, lintAgentfile } from "./diagnostics.js";
+import { diffContracts, renderContractDiff, type ContractDiffFormat } from "./diff.js";
 import { compileJsonSchema } from "./json-schema.js";
 import { parseReceiptFormat, renderReceipt, verifyReceipt } from "./receipt.js";
 import { parseSource } from "./source.js";
@@ -148,6 +149,19 @@ program
     console.log(`Checks: ${agentfile.checks.length}`);
   });
 
+program
+  .command("diff")
+  .description("Compare two Agentfile contracts after parsing and normalization.")
+  .argument("<before>", "base Agentfile contract path")
+  .argument("<after>", "changed Agentfile contract path")
+  .option("--format <format>", "text or json", "text")
+  .action(async (beforePath: string, afterPath: string, options: { format: string }) => {
+    const format = parseDiffFormat(options.format);
+    const before = await load(beforePath);
+    const after = await load(afterPath);
+    process.stdout.write(renderContractDiff(diffContracts(before, after), format));
+  });
+
 const receiptCommand = program
   .command("receipt")
   .description("Print a receipt checklist for auditing an agent run against a contract.")
@@ -249,6 +263,14 @@ function syncTargetHelp(): string {
 
 function syncTargetList(): string {
   return quotedTargetIds(syncTargets());
+}
+
+function parseDiffFormat(value: string): ContractDiffFormat {
+  if (value === "text" || value === "json") {
+    return value;
+  }
+
+  throw new AgentfileError(`unknown diff format "${value}". Expected "text" or "json".`);
 }
 
 type InitFormat = "yaml" | "agent";

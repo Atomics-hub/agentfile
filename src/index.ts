@@ -16,6 +16,8 @@ export {
 export type { CompileTarget, CompileTargetDefinition, JsonContract, NormalizedPolicy, SyncTarget } from "./compiler.js";
 export { AgentfileError, lintAgentfile } from "./diagnostics.js";
 export type { LintDiagnostic } from "./diagnostics.js";
+export { diffContracts, renderContractDiff } from "./diff.js";
+export type { ContractDiffEntry, ContractDiffFormat, ContractDiffKind } from "./diff.js";
 export { parseAgentfile } from "./parser.js";
 export { parsePactSource, parseSource } from "./source.js";
 export { findTarget, quotedTargetIds } from "./targets.js";

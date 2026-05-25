@@ -367,6 +367,13 @@ Explain the contract:
 agentfile explain examples/fix-login-race.agent
 ```
 
+Compare two contracts after parsing and normalization:
+
+```sh
+agentfile diff examples/fix-login-race.agent changed.agent
+agentfile diff examples/fix-login-race.agent changed.agent --format json
+```
+
 Print the receipt checklist a harness run should satisfy:
 
 ```sh

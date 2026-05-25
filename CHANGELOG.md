@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added `agentfile diff` to compare normalized contract changes in text or JSON form.
 - Updated launch gates and docs for the public Phase 1 posture while keeping npm package publishing disabled.
 - Added a Phase 1 launch packet and launch-review gate evidence for the final public go/no-go decision.
 - Added `npm run launch:metadata` and wired it into the pre-public dry run so package and GitHub description guidance stay aligned.

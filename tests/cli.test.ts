@@ -121,6 +121,67 @@ describe("agentfile schema", () => {
   });
 });
 
+describe("agentfile diff", () => {
+  it("prints normalized contract differences", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-diff-"));
+    tempDirs.push(cwd);
+
+    const changedPath = join(cwd, "changed.agent");
+    const source = await readFile(examplePath, "utf8");
+    await writeFile(
+      changedPath,
+      source.replace(
+        'goal "Share one in-flight refresh across concurrent auth calls"',
+        'goal "Share one safe in-flight refresh across concurrent auth calls"'
+      ),
+      "utf8"
+    );
+
+    const { stdout } = await runCli(["diff", examplePath, changedPath], cwd);
+
+    expect(stdout).toContain("# Agentfile Contract Diff");
+    expect(stdout).toContain("- changed task.goal");
+    expect(stdout).toContain('from: "Share one in-flight refresh across concurrent auth calls"');
+    expect(stdout).toContain('to: "Share one safe in-flight refresh across concurrent auth calls"');
+  });
+
+  it("prints machine-readable contract differences", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-diff-json-"));
+    tempDirs.push(cwd);
+
+    const changedPath = join(cwd, "changed.agent");
+    const source = await readFile(examplePath, "utf8");
+    await writeFile(
+      changedPath,
+      source.replace(
+        'summary "Prevent duplicate token refresh requests during concurrent auth calls"',
+        'summary "Prevent duplicate refresh requests and keep review scope explicit"'
+      ),
+      "utf8"
+    );
+
+    const { stdout } = await runCli(["diff", examplePath, changedPath, "--format", "json"], cwd);
+    const result = JSON.parse(stdout);
+
+    expect(result.status).toBe("different");
+    expect(result.differences).toContainEqual({
+      kind: "changed",
+      path: "info.summary",
+      before: "Prevent duplicate token refresh requests during concurrent auth calls",
+      after: "Prevent duplicate refresh requests and keep review scope explicit"
+    });
+  });
+
+  it("reports when two contracts normalize to the same content", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-diff-same-"));
+    tempDirs.push(cwd);
+
+    const { stdout } = await runCli(["diff", examplePath, examplePath], cwd);
+
+    expect(stdout).toContain("No contract differences.");
+  });
+});
+
 describe("agentfile receipt", () => {
   it("prints an audit checklist for a completed harness run", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-"));

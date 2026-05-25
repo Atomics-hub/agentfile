@@ -10,6 +10,7 @@
 - Publish examples and spec.
 - Document the public launch gate and one copy-pasteable end-to-end demo.
 - Keep golden fixtures for generated demo outputs aligned with the public demo.
+- Add `agentfile diff` so reviewers can compare normalized contract changes.
 
 ## v0.2
 
@@ -17,7 +18,6 @@
 - Add trace format for agent actions and verification.
 - Add GitHub Actions integration.
 - Expand the JSON Schema export with optional editor snippets and published schema hosting once the repository is public.
-- Add contract diff command.
 
 ## v0.3
 
