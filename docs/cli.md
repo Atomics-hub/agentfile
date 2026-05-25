@@ -47,6 +47,21 @@ The initial lint pass flags:
 - Repository-wide filesystem write patterns such as `**`.
 - Publish, dependency-changing, or destructive shell commands without matching approval gates such as `release_publish`, `dependency_change`, or `destructive_write`.
 
+## `agentfile doctor [file]`
+
+Run the adoption health check for a contract. `doctor` validates the contract, reports lint warnings, and checks the default generated instruction-file locations for freshness:
+
+- `AGENTS.md`
+- `CLAUDE.md`
+- `.cursor/rules/agentfile.mdc`
+- `.github/copilot-instructions.md`
+
+Missing generated files are reported as `not found` without failing, so projects can adopt one surface at a time. Existing generated files must match the current contract output; stale surfaces make the command exit non-zero and print the matching `agentfile sync ... --force` command.
+
+```sh
+agentfile doctor examples/fix-login-race.agent
+```
+
 ## `agentfile compile [file] --target <target>`
 
 Compile a contract.

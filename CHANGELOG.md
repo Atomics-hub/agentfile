@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added `agentfile doctor` to validate a contract, surface lint warnings, and fail on stale adopted instruction files.
 - Added GitHub Actions integration docs for validating contracts, generated surfaces, and receipts from source.
 - Added `npm run surfaces:check` and wired CI to verify generated instruction surfaces stay synced with `.agent` source.
 - Added `agentfile sync --check` so generated instruction files can be verified in CI without rewriting them.

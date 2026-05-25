@@ -41,6 +41,7 @@ The steps are intentionally plain CLI commands:
 ```sh
 npm run build
 node dist/cli.js check examples/fix-login-race.agent
+node dist/cli.js doctor examples/fix-login-race.agent
 mkdir -p /tmp/agentfile-demo
 node dist/cli.js sync examples/fix-login-race.agent --target agents-md --output /tmp/agentfile-demo/AGENTS.md --force
 node dist/cli.js sync examples/fix-login-race.agent --target claude-md --output /tmp/agentfile-demo/CLAUDE.md --force
@@ -283,6 +284,7 @@ Run the end-to-end demo:
 npm run demo:quick
 npm run build
 node dist/cli.js check examples/fix-login-race.agent
+node dist/cli.js doctor examples/fix-login-race.agent
 node dist/cli.js compile examples/fix-login-race.agent --target yaml
 node dist/cli.js compile examples/fix-login-race.agent --target agents-md
 node dist/cli.js receipt verify examples/fix-login-race.agent examples/receipts/fix-login-passing.receipt.json
@@ -319,6 +321,14 @@ agentfile lint examples/fix-login-race.agent
 ```
 
 The linter warns on missing proof obligations, manual-only proof without an executable check, repo-wide mission scope, overly broad filesystem access, risky network or secret authority, high-risk shell commands such as publish, dependency-changing, or destructive operations, and missing approval gates for risky network, secret, or shell authority without rejecting the contract.
+
+Run a project adoption check:
+
+```sh
+agentfile doctor examples/fix-login-race.agent
+```
+
+`doctor` validates the contract, reports lint warnings, and checks adopted default instruction surfaces like `AGENTS.md`, `CLAUDE.md`, Cursor rules, and Copilot instructions for stale generated content.
 
 Compile to a prompt for a coding agent:
 
@@ -414,6 +424,7 @@ Agentfile is early. The v0.1 goal is intentionally narrow:
 - `agentfile init` for fast adoption.
 - `agentfile init` can scaffold either YAML IR or Pact `.agent` source.
 - Compiler targets for `AGENTS.md`, `CLAUDE.md`, Cursor rules, and GitHub Copilot instructions.
+- `agentfile doctor` for contract health and generated instruction-surface freshness checks.
 - A benchmark skeleton that can compare plain issue text against Agentfile-guided tasks without claiming results before data exists.
 
 Public launch stewardship is tracked in [Public Launch Readiness](docs/launch-readiness.md). The short version: the README/demo must stay obvious, the CLI must stay stable and tested against packaged output, compiler ownership boundaries must stay clean, risky authority defaults must stay conservative, package publishing must remain intentionally gated, and claims must be backed by the [end-to-end demo](docs/demo.md) or benchmark evidence.

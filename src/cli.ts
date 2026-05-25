@@ -14,6 +14,7 @@ import { AgentfileError, lintAgentfile } from "./diagnostics.js";
 import { diffContracts, renderContractDiff, type ContractDiffFormat } from "./diff.js";
 import { compileJsonSchema } from "./json-schema.js";
 import { parseReceiptFormat, renderReceipt, verifyReceipt } from "./receipt.js";
+import type { Agentfile } from "./schema.js";
 import { parseSource } from "./source.js";
 import { findTarget, quotedTargetIds } from "./targets.js";
 
@@ -65,6 +66,19 @@ program
     console.log(`WARN ${resolved}`);
     for (const diagnostic of diagnostics) {
       console.log(`- ${diagnostic.path}: ${diagnostic.message}`);
+    }
+  });
+
+program
+  .command("doctor")
+  .description("Check contract validity, lint posture, and generated instruction freshness.")
+  .argument("[file]", "Agentfile path")
+  .action(async (file: string) => {
+    const result = await runDoctor(file);
+    process.stdout.write(renderDoctorReport(result));
+
+    if (result.surfaces.some((surface) => surface.status === "stale")) {
+      process.exitCode = 1;
     }
   });
 
@@ -281,6 +295,112 @@ function syncTargetHelp(): string {
 
 function syncTargetList(): string {
   return quotedTargetIds(syncTargets());
+}
+
+interface DoctorSurface {
+  target: CompileTarget;
+  outputPath: string;
+  status: "missing" | "stale" | "up-to-date";
+}
+
+interface DoctorResult {
+  contractPath: string;
+  lintDiagnostics: ReturnType<typeof lintAgentfile>;
+  surfaces: DoctorSurface[];
+}
+
+async function runDoctor(file?: string): Promise<DoctorResult> {
+  const contractPath = await resolveFile(file);
+  const agentfile = await load(contractPath);
+  const lintDiagnostics = lintAgentfile(agentfile);
+  const surfaces = await inspectGeneratedSurfaces(agentfile);
+
+  return {
+    contractPath,
+    lintDiagnostics,
+    surfaces
+  };
+}
+
+async function inspectGeneratedSurfaces(agentfile: Agentfile): Promise<DoctorSurface[]> {
+  const surfaces: DoctorSurface[] = [];
+
+  for (const definition of syncTargets()) {
+    const target = definition.id;
+    if (!isSyncTarget(target)) {
+      continue;
+    }
+
+    const outputPath = defaultOutputPathForTarget(target);
+    const generated = compileAgentfile(agentfile, target);
+    const current = await readOptionalFile(outputPath);
+    const status = current === undefined
+      ? "missing"
+      : current === generated
+        ? "up-to-date"
+        : "stale";
+
+    surfaces.push({
+      target,
+      outputPath,
+      status
+    });
+  }
+
+  return surfaces;
+}
+
+async function readOptionalFile(filePath: string): Promise<string | undefined> {
+  return readFile(filePath, "utf8").catch((error: NodeJS.ErrnoException) => {
+    if (error.code === "ENOENT") {
+      return undefined;
+    }
+
+    throw new AgentfileError(error.message, filePath);
+  });
+}
+
+function renderDoctorReport(result: DoctorResult): string {
+  const staleSurfaces = result.surfaces.filter((surface) => surface.status === "stale");
+  const lines = [
+    "Agentfile Doctor",
+    `Contract: OK ${result.contractPath}`,
+    `Lint warnings: ${result.lintDiagnostics.length}`
+  ];
+
+  for (const diagnostic of result.lintDiagnostics) {
+    lines.push(`- ${diagnostic.path}: ${diagnostic.message}`);
+  }
+
+  lines.push("Generated surfaces:");
+  for (const surface of result.surfaces) {
+    lines.push(`- ${surface.outputPath} [${surface.target}]: ${doctorSurfaceLabel(surface.status)}`);
+  }
+
+  lines.push(`Status: ${staleSurfaces.length > 0 ? "fail" : "pass"}`);
+
+  if (staleSurfaces.length > 0) {
+    lines.push("Next steps:");
+    for (const surface of staleSurfaces) {
+      lines.push(
+        `- Run agentfile sync ${result.contractPath} --target ${surface.target} --output ${surface.outputPath} --force`
+      );
+    }
+  }
+
+  return `${lines.join("\n")}\n`;
+}
+
+function doctorSurfaceLabel(status: DoctorSurface["status"]): string {
+  if (status === "missing") {
+    return "not found";
+  }
+
+  if (status === "up-to-date") {
+    return "up to date";
+  }
+
+  return status;
 }
 
 function parseDiffFormat(value: string): ContractDiffFormat {

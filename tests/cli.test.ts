@@ -120,6 +120,61 @@ describe("agentfile sync", () => {
   });
 });
 
+describe("agentfile doctor", () => {
+  it("checks the discovered contract without requiring generated surfaces", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-doctor-"));
+    tempDirs.push(cwd);
+
+    const source = await readFile(examplePath, "utf8");
+    await writeFile(join(cwd, "agentfile.agent"), source, "utf8");
+
+    const { stdout } = await runCli(["doctor"], cwd);
+
+    expect(stdout).toContain("Agentfile Doctor");
+    expect(stdout).toContain("Contract: OK agentfile.agent");
+    expect(stdout).toContain("Lint warnings: 0");
+    expect(stdout).toContain("AGENTS.md [agents-md]: not found");
+    expect(stdout).toContain("CLAUDE.md [claude-md]: not found");
+    expect(stdout).toContain(".cursor/rules/agentfile.mdc [cursor-mdc]: not found");
+    expect(stdout).toContain(".github/copilot-instructions.md [copilot-md]: not found");
+    expect(stdout).toContain("Status: pass");
+  });
+
+  it("passes when an adopted generated surface is up to date", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-doctor-up-to-date-"));
+    tempDirs.push(cwd);
+
+    await runCli(["sync", examplePath, "--target", "agents-md", "--output", "AGENTS.md"], cwd);
+
+    const { stdout } = await runCli(["doctor", examplePath], cwd);
+
+    expect(stdout).toContain("AGENTS.md [agents-md]: up to date");
+    expect(stdout).toContain("CLAUDE.md [claude-md]: not found");
+    expect(stdout).toContain("Status: pass");
+  });
+
+  it("fails when an adopted generated surface is stale", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-doctor-stale-"));
+    tempDirs.push(cwd);
+
+    await writeFile(join(cwd, "AGENTS.md"), "stale generated instructions\n", "utf8");
+
+    await expect(
+      runCli(["doctor", examplePath], cwd)
+    ).rejects.toMatchObject({
+      stdout: expect.stringContaining("AGENTS.md [agents-md]: stale")
+    });
+
+    await expect(
+      runCli(["doctor", examplePath], cwd)
+    ).rejects.toMatchObject({
+      stdout: expect.stringContaining(
+        `Run agentfile sync ${examplePath} --target agents-md --output AGENTS.md --force`
+      )
+    });
+  });
+});
+
 describe("agentfile targets", () => {
   it("lists compile targets and file-backed output paths", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "agentfile-targets-"));

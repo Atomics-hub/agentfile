@@ -13,6 +13,7 @@
 - Add `agentfile diff` so reviewers can compare normalized contract changes.
 - Add CI freshness checks for generated instruction surfaces.
 - Document source-checkout GitHub Actions adoption before npm publishing.
+- Add `agentfile doctor` for local contract health and generated-surface freshness checks.
 
 ## v0.2
 
