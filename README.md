@@ -361,6 +361,12 @@ agentfile sync examples/fix-login-race.agent --target cursor-mdc
 agentfile sync examples/fix-login-race.agent --target copilot-md
 ```
 
+Verify a generated instruction file is still up to date:
+
+```sh
+agentfile sync examples/fix-login-race.agent --target agents-md --output AGENTS.md --check
+```
+
 Explain the contract:
 
 ```sh

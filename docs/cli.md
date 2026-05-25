@@ -90,6 +90,12 @@ Targets and default output paths:
 
 The command creates parent directories for nested default targets and refuses to overwrite existing files unless `--force` is passed.
 
+Pass `--check` to verify an existing generated file is up to date without writing. This is useful in CI when `AGENTS.md`, `CLAUDE.md`, Cursor rules, or Copilot instructions should remain projections of the `.agent` source:
+
+```sh
+agentfile sync examples/fix-login-race.agent --target agents-md --output AGENTS.md --check
+```
+
 ## `agentfile explain [file]`
 
 Print a short human-readable summary of the contract.

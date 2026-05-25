@@ -87,6 +87,37 @@ describe("agentfile sync", () => {
       )
     });
   });
+
+  it("checks whether generated instruction files are up to date", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-sync-check-"));
+    tempDirs.push(cwd);
+
+    const outputPath = join(cwd, "AGENTS.md");
+    await runCli(["sync", examplePath, "--target", "agents-md", "--output", outputPath], cwd);
+
+    const { stdout } = await runCli(["sync", examplePath, "--target", "agents-md", "--output", outputPath, "--check"], cwd);
+    expect(stdout).toContain(`OK ${outputPath} is up to date`);
+
+    await writeFile(outputPath, "stale generated instructions\n", "utf8");
+    await expect(
+      runCli(["sync", examplePath, "--target", "agents-md", "--output", outputPath, "--check"], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining(`generated output is stale: ${outputPath}`)
+    });
+  });
+
+  it("reports missing generated output in sync check mode", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-sync-check-missing-"));
+    tempDirs.push(cwd);
+
+    const outputPath = join(cwd, "AGENTS.md");
+
+    await expect(
+      runCli(["sync", examplePath, "--target", "agents-md", "--output", outputPath, "--check"], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining(`generated output is missing: ${outputPath}`)
+    });
+  });
 });
 
 describe("agentfile targets", () => {

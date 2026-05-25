@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added `agentfile sync --check` so generated instruction files can be verified in CI without rewriting them.
 - Added `agentfile diff` to compare normalized contract changes in text or JSON form.
 - Updated launch gates and docs for the public Phase 1 posture while keeping npm package publishing disabled.
 - Added a Phase 1 launch packet and launch-review gate evidence for the final public go/no-go decision.

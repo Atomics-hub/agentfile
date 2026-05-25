@@ -87,7 +87,8 @@ program
   .option("-t, --target <target>", syncTargetHelp(), "agents-md")
   .option("-o, --output <file>", "output path")
   .option("-f, --force", "overwrite an existing output file", false)
-  .action(async (file: string, options: { target: string; output?: string; force: boolean }) => {
+  .option("--check", "verify the generated output is already up to date without writing", false)
+  .action(async (file: string, options: { target: string; output?: string; force: boolean; check: boolean }) => {
     const target = parseTarget(options.target);
     if (!isSyncTarget(target)) {
       throw new AgentfileError(
@@ -98,13 +99,30 @@ program
     const resolved = await resolveFile(file);
     const agentfile = await load(resolved);
     const output = options.output ?? defaultOutputPathForTarget(target);
+    const generated = compileAgentfile(agentfile, target);
+
+    if (options.check) {
+      const current = await readFile(output, "utf8").catch(() => {
+        throw new AgentfileError(`generated output is missing: ${output}`, output);
+      });
+
+      if (current !== generated) {
+        throw new AgentfileError(
+          `generated output is stale: ${output}; run agentfile sync ${resolved} --target ${target} --output ${output} --force to update it`,
+          output
+        );
+      }
+
+      console.log(`OK ${output} is up to date`);
+      return;
+    }
 
     if (!options.force && await exists(output)) {
       throw new AgentfileError(`refusing to overwrite ${output}; pass --force to replace it`);
     }
 
     await mkdir(dirname(output), { recursive: true });
-    await writeFile(output, compileAgentfile(agentfile, target), "utf8");
+    await writeFile(output, generated, "utf8");
     console.log(`Wrote ${output}`);
   });
 
