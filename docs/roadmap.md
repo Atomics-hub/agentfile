@@ -25,7 +25,7 @@
 
 - Add richer formatter controls and golden fixtures for `.agent`.
 - Add trace format for agent actions and verification.
-- Expand the JSON Schema export with optional editor snippets and published schema hosting once the repository is public.
+- Expand the JSON Schema export with optional editor snippets and hosted schema URLs.
 
 ## v0.3
 

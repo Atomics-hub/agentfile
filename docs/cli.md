@@ -182,6 +182,13 @@ Print the JSON Schema for the strict Agentfile YAML/JSON contract IR:
 agentfile schema > agentfile.schema.json
 ```
 
+Use `--output` and `--check` when the schema is committed for editor integration:
+
+```sh
+agentfile schema --output .vscode/agentfile.schema.json --force
+agentfile schema --output .vscode/agentfile.schema.json --check
+```
+
 The exported schema is useful for editor integration, forms, and lightweight structural validation. It intentionally does not replace `agentfile check`, which still enforces semantic invariants such as duplicate ids, scope/permission consistency, and risky authority diagnostics.
 
 For CI setup, see [GitHub Actions Integration](github-actions.md).

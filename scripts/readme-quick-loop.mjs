@@ -42,6 +42,37 @@ try {
   });
 
   await runStep({
+    name: "Write JSON Schema",
+    command: "node dist/cli.js schema --output <temp>/agentfile.schema.json",
+    run: () => execFileAsync("node", [
+      "dist/cli.js",
+      "schema",
+      "--output",
+      join(tempRoot, "agentfile.schema.json")
+    ], {
+      cwd: root,
+      env: process.env,
+      maxBuffer
+    })
+  });
+
+  await runStep({
+    name: "Check JSON Schema",
+    command: "node dist/cli.js schema --output <temp>/agentfile.schema.json --check",
+    run: () => execFileAsync("node", [
+      "dist/cli.js",
+      "schema",
+      "--output",
+      join(tempRoot, "agentfile.schema.json"),
+      "--check"
+    ], {
+      cwd: root,
+      env: process.env,
+      maxBuffer
+    })
+  });
+
+  await runStep({
     name: "Review machine-readable health",
     command: "node dist/cli.js doctor examples/fix-login-race.agent --format json",
     run: () => execFileAsync("node", ["dist/cli.js", "doctor", "examples/fix-login-race.agent", "--format", "json"], {
@@ -313,6 +344,10 @@ function renderDemoEvidence() {
         [
           "The same health check can be printed as JSON.",
           "CI and dashboards can consume doctor status without scraping terminal prose."
+        ],
+        [
+          "The strict contract JSON Schema can be written and drift-checked.",
+          "Editors and lightweight tooling can consume the structure while semantic validation stays in `agentfile check`."
         ],
         [
           "One inspect command summarizes contract shape, health, generated surfaces, and receipt readiness.",

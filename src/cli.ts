@@ -217,8 +217,11 @@ program
 program
   .command("schema")
   .description("Print the JSON Schema for strict Agentfile contract IR.")
-  .action(() => {
-    process.stdout.write(compileJsonSchema());
+  .option("-o, --output <file>", "write the generated schema to a file")
+  .option("--check", "verify the generated schema file is already up to date", false)
+  .option("-f, --force", "overwrite an existing schema file", false)
+  .action(async (options: SchemaOptions) => {
+    await emitSchema(compileJsonSchema(), options);
   });
 
 program
@@ -463,6 +466,12 @@ interface GithubActionsWorkflow {
   toolRef: string;
   surfaces: SyncTarget[];
   receiptPath?: string;
+}
+
+interface SchemaOptions {
+  output?: string;
+  check: boolean;
+  force: boolean;
 }
 
 interface SyncCommandOptions {
@@ -1140,6 +1149,46 @@ async function emitGithubActionsWorkflow(content: string, options: GithubActions
     if (current !== content) {
       throw new AgentfileError(
         `generated workflow is stale: ${options.output}; rerun without --check and pass --force to update it`,
+        options.output
+      );
+    }
+
+    console.log(`OK ${options.output} is up to date`);
+    return;
+  }
+
+  if (!options.force && await exists(options.output)) {
+    throw new AgentfileError(`refusing to overwrite ${options.output}; pass --force to replace it`, options.output);
+  }
+
+  await mkdir(dirname(options.output), { recursive: true });
+  await writeFile(options.output, content, "utf8");
+  console.log(`Wrote ${options.output}`);
+}
+
+async function emitSchema(content: string, options: SchemaOptions): Promise<void> {
+  if (options.check && !options.output) {
+    throw new AgentfileError("schema --check requires --output so there is a schema file to verify");
+  }
+
+  if (options.check && options.force) {
+    throw new AgentfileError("schema cannot use --check and --force together");
+  }
+
+  if (!options.output) {
+    process.stdout.write(content);
+    return;
+  }
+
+  if (options.check) {
+    const current = await readOptionalFile(options.output);
+    if (current === undefined) {
+      throw new AgentfileError(`generated schema is missing: ${options.output}`, options.output);
+    }
+
+    if (current !== content) {
+      throw new AgentfileError(
+        `generated schema is stale: ${options.output}; rerun without --check and pass --force to update it`,
         options.output
       );
     }

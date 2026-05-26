@@ -682,6 +682,43 @@ describe("agentfile schema", () => {
     expect(schema.properties.checks.items.oneOf).toHaveLength(2);
     expect(schema.description).toContain("Use agentfile check for semantic invariants");
   });
+
+  it("writes and checks generated schema files", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-schema-output-"));
+    tempDirs.push(cwd);
+    const outputPath = join(cwd, ".vscode", "agentfile.schema.json");
+
+    const writeResult = await runCli(["schema", "--output", outputPath], cwd);
+    expect(writeResult.stdout).toContain(`Wrote ${outputPath}`);
+
+    const schema = JSON.parse(await readFile(outputPath, "utf8"));
+    expect(schema.title).toBe("Agentfile TaskContract");
+
+    const checkResult = await runCli(["schema", "--output", outputPath, "--check"], cwd);
+    expect(checkResult.stdout).toContain(`OK ${outputPath} is up to date`);
+  });
+
+  it("protects generated schema files from accidental overwrite and stale checks", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-schema-stale-"));
+    tempDirs.push(cwd);
+    const outputPath = join(cwd, "agentfile.schema.json");
+    await writeFile(outputPath, "{}\n", "utf8");
+
+    await expect(
+      runCli(["schema", "--output", outputPath], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining(`refusing to overwrite ${outputPath}`)
+    });
+
+    await expect(
+      runCli(["schema", "--output", outputPath, "--check"], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining(`generated schema is stale: ${outputPath}`)
+    });
+
+    const forceResult = await runCli(["schema", "--output", outputPath, "--force"], cwd);
+    expect(forceResult.stdout).toContain(`Wrote ${outputPath}`);
+  });
 });
 
 describe("agentfile diff", () => {

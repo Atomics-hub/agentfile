@@ -278,6 +278,7 @@ Export the strict contract IR JSON Schema for editors or lightweight tooling:
 
 ```sh
 node dist/cli.js schema > agentfile.schema.json
+node dist/cli.js schema --output .vscode/agentfile.schema.json --check
 ```
 
 Run the end-to-end demo:

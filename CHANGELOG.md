@@ -49,7 +49,7 @@ The project follows semantic versioning once the first public release is tagged.
 - Added a second pricing refactor benchmark receipt for the `plain-issue` condition, increasing validated receipts to twenty-nine and making the pricing Pact/plain comparator repeated.
 - Added a second pricing refactor benchmark receipt for the `agentfile-pact` condition, increasing validated receipts to twenty-eight and starting the repeated pricing comparison.
 - Tightened `npm run launch:review` so the benchmark proof gate requires stronger coverage, repeated evidence, and zero missing condition receipts.
-- Added `agentfile schema` to export a structural JSON Schema for strict YAML/JSON contract IR.
+- Added `agentfile schema` to export, write, and drift-check a structural JSON Schema for strict YAML/JSON contract IR.
 - Added the first pricing refactor benchmark receipt for the `compiled-agents-md` condition, increasing validated receipts to twenty-seven and completing the pricing four-way comparison.
 - Added the first pricing refactor benchmark receipt for the `agents-md` condition, increasing validated receipts to twenty-six.
 - Added the first pricing refactor benchmark receipt for the `plain-issue` condition, increasing validated receipts to twenty-five.

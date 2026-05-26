@@ -218,6 +218,7 @@ The CLI can export a structural JSON Schema for the strict YAML/JSON contract IR
 
 ```sh
 agentfile schema > agentfile.schema.json
+agentfile schema --output .vscode/agentfile.schema.json --check
 ```
 
 The schema is designed for editor integration, generated forms, and lightweight preflight checks. It describes required fields, enums, identifier shapes, and object structure. It does not replace `agentfile check`, which remains the source of truth for semantic invariants such as `info.title` matching `task.id`, duplicate id detection, scope/permission consistency, and risky authority validation.
