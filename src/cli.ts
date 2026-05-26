@@ -73,11 +73,12 @@ program
   .command("doctor")
   .description("Check contract validity, lint posture, and generated instruction freshness.")
   .argument("[file]", "Agentfile path")
-  .action(async (file: string) => {
+  .option("--format <format>", "text or json", "text")
+  .action(async (file: string, options: { format: string }) => {
     const result = await runDoctor(file);
-    process.stdout.write(renderDoctorReport(result));
+    process.stdout.write(renderDoctorReport(result, parseDoctorFormat(options.format)));
 
-    if (result.surfaces.some((surface) => surface.status === "stale")) {
+    if (result.status === "fail") {
       process.exitCode = 1;
     }
   });
@@ -331,8 +332,10 @@ interface DoctorSurface {
 
 interface DoctorResult {
   contractPath: string;
+  status: "pass" | "fail";
   lintDiagnostics: ReturnType<typeof lintAgentfile>;
   surfaces: DoctorSurface[];
+  nextSteps: string[];
 }
 
 interface SurfaceInspectionResult {
@@ -548,11 +551,16 @@ async function runDoctor(file?: string): Promise<DoctorResult> {
   const agentfile = await load(contractPath);
   const lintDiagnostics = lintAgentfile(agentfile);
   const surfaces = await inspectGeneratedSurfaces(agentfile);
+  const staleSurfaces = surfaces.filter((surface) => surface.status === "stale");
 
   return {
     contractPath,
+    status: staleSurfaces.length > 0 ? "fail" : "pass",
     lintDiagnostics,
-    surfaces
+    surfaces,
+    nextSteps: staleSurfaces.map((surface) =>
+      `Run agentfile sync ${contractPath} --target ${surface.target} --output ${surface.outputPath} --force`
+    )
   };
 }
 
@@ -617,8 +625,11 @@ async function readOptionalFile(filePath: string): Promise<string | undefined> {
   });
 }
 
-function renderDoctorReport(result: DoctorResult): string {
-  const staleSurfaces = result.surfaces.filter((surface) => surface.status === "stale");
+function renderDoctorReport(result: DoctorResult, format: DoctorFormat): string {
+  if (format === "json") {
+    return `${JSON.stringify(result, null, 2)}\n`;
+  }
+
   const lines = [
     "Agentfile Doctor",
     `Contract: OK ${result.contractPath}`,
@@ -634,14 +645,12 @@ function renderDoctorReport(result: DoctorResult): string {
     lines.push(`- ${surface.outputPath} [${surface.target}]: ${doctorSurfaceLabel(surface.status)}`);
   }
 
-  lines.push(`Status: ${staleSurfaces.length > 0 ? "fail" : "pass"}`);
+  lines.push(`Status: ${result.status}`);
 
-  if (staleSurfaces.length > 0) {
+  if (result.nextSteps.length > 0) {
     lines.push("Next steps:");
-    for (const surface of staleSurfaces) {
-      lines.push(
-        `- Run agentfile sync ${result.contractPath} --target ${surface.target} --output ${surface.outputPath} --force`
-      );
+    for (const step of result.nextSteps) {
+      lines.push(`- ${step}`);
     }
   }
 
@@ -680,6 +689,16 @@ function doctorSurfaceLabel(status: DoctorSurface["status"]): string {
   }
 
   return status;
+}
+
+type DoctorFormat = "text" | "json";
+
+function parseDoctorFormat(value: string): DoctorFormat {
+  if (value === "text" || value === "json") {
+    return value;
+  }
+
+  throw new AgentfileError(`unknown doctor format "${value}". Expected "text" or "json".`);
 }
 
 type SurfacesFormat = "text" | "json";

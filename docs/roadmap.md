@@ -14,6 +14,7 @@
 - Add CI freshness checks for generated instruction surfaces.
 - Document source-checkout GitHub Actions adoption before npm publishing.
 - Add `agentfile doctor` for local contract health and generated-surface freshness checks.
+- Add `agentfile doctor --format json` for machine-readable health reports.
 - Add `agentfile format --check` and `--write` plus CI coverage for canonical Pact source hygiene.
 - Add `agentfile receipt review` for readable receipt completion summaries.
 - Add `agentfile surfaces` for no-write generated instruction-surface inspection.

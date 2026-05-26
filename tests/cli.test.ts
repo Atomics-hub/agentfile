@@ -226,6 +226,27 @@ describe("agentfile doctor", () => {
     expect(stdout).toContain("Status: pass");
   });
 
+  it("prints a machine-readable health report", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-doctor-json-"));
+    tempDirs.push(cwd);
+
+    const { stdout } = await runCli(["doctor", examplePath, "--format", "json"], cwd);
+    const result = JSON.parse(stdout);
+
+    expect(result.contractPath).toBe(examplePath);
+    expect(result.status).toBe("pass");
+    expect(result.lintDiagnostics).toEqual([]);
+    expect(result.nextSteps).toEqual([]);
+    expect(result.surfaces).toHaveLength(4);
+    expect(result.surfaces).toContainEqual(expect.objectContaining({
+      target: "agents-md",
+      outputPath: "AGENTS.md",
+      status: "missing",
+      lineCount: expect.any(Number),
+      byteCount: expect.any(Number)
+    }));
+  });
+
   it("fails when an adopted generated surface is stale", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "agentfile-doctor-stale-"));
     tempDirs.push(cwd);
@@ -244,6 +265,25 @@ describe("agentfile doctor", () => {
       stdout: expect.stringContaining(
         `Run agentfile sync ${examplePath} --target agents-md --output AGENTS.md --force`
       )
+    });
+  });
+
+  it("prints a machine-readable stale health report before failing", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-doctor-json-stale-"));
+    tempDirs.push(cwd);
+
+    await writeFile(join(cwd, "AGENTS.md"), "stale generated instructions\n", "utf8");
+
+    await expect(
+      runCli(["doctor", examplePath, "--format", "json"], cwd)
+    ).rejects.toMatchObject({
+      stdout: expect.stringContaining('"status": "fail"')
+    });
+
+    await expect(
+      runCli(["doctor", examplePath, "--format", "json"], cwd)
+    ).rejects.toMatchObject({
+      stdout: expect.stringContaining(`Run agentfile sync ${examplePath} --target agents-md --output AGENTS.md --force`)
     });
   });
 });

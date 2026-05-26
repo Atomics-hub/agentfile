@@ -62,6 +62,12 @@ Missing generated files are reported as `not found` without failing, so projects
 agentfile doctor examples/fix-login-race.agent
 ```
 
+Pass `--format json` for CI, dashboards, or other tooling that needs the same status without parsing terminal prose:
+
+```sh
+agentfile doctor examples/fix-login-race.agent --format json
+```
+
 ## `agentfile surfaces [file]`
 
 Inspect the generated instruction surfaces for a contract without writing files. The command shows the file-backed targets, their default output paths, whether an adopted default file is missing, stale, or up to date, and the size of the generated content:

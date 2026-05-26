@@ -42,6 +42,16 @@ try {
   });
 
   await runStep({
+    name: "Review machine-readable health",
+    command: "node dist/cli.js doctor examples/fix-login-race.agent --format json",
+    run: () => execFileAsync("node", ["dist/cli.js", "doctor", "examples/fix-login-race.agent", "--format", "json"], {
+      cwd: root,
+      env: process.env,
+      maxBuffer
+    })
+  });
+
+  await runStep({
     name: "Inspect generated surfaces",
     command: "node dist/cli.js surfaces examples/fix-login-race.agent",
     run: () => execFileAsync("node", ["dist/cli.js", "surfaces", "examples/fix-login-race.agent"], {
@@ -256,6 +266,10 @@ function renderDemoEvidence() {
         [
           "Generated instruction surfaces can be inspected, generated, and checked before handoff.",
           "Reviewers can see which harness projections exist and verify adopted defaults are current."
+        ],
+        [
+          "The same health check can be printed as JSON.",
+          "CI and dashboards can consume doctor status without scraping terminal prose."
         ],
         [
           "A filled JSON receipt verifies against the original contract.",

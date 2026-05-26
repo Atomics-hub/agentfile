@@ -328,6 +328,7 @@ Run a project adoption check:
 
 ```sh
 agentfile doctor examples/fix-login-race.agent
+agentfile doctor examples/fix-login-race.agent --format json
 ```
 
 `doctor` validates the contract, reports lint warnings, and checks adopted default instruction surfaces like `AGENTS.md`, `CLAUDE.md`, Cursor rules, and Copilot instructions for stale generated content.
@@ -449,6 +450,7 @@ Agentfile is early. The v0.1 goal is intentionally narrow:
 - `agentfile init` can scaffold either YAML IR or Pact `.agent` source.
 - Compiler targets for `AGENTS.md`, `CLAUDE.md`, Cursor rules, and GitHub Copilot instructions.
 - `agentfile doctor` for contract health and generated instruction-surface freshness checks.
+- `agentfile doctor --format json` for machine-readable contract health reports.
 - `agentfile surfaces` for generated instruction-surface inspection without writing files.
 - `agentfile sync --all` for preflighted generation or freshness checks across every default instruction surface.
 - `agentfile format --check` and `--write` for canonical Pact source hygiene.

@@ -79,6 +79,12 @@ Expected output:
 OK examples/fix-login-race.agent
 ```
 
+The project health check can emit the same status as JSON for CI or dashboards:
+
+```sh
+node dist/cli.js doctor examples/fix-login-race.agent --format json
+```
+
 ## 3. Explain The Contract
 
 ```sh
