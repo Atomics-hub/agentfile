@@ -298,6 +298,7 @@ Use [GitHub Actions Integration](docs/github-actions.md) to validate contracts, 
 
 ```sh
 node dist/cli.js github-actions agentfile.agent > .github/workflows/agentfile.yml
+node dist/cli.js github-actions agentfile.agent --output .github/workflows/agentfile.yml --check
 ```
 
 ## CLI
@@ -460,7 +461,7 @@ Agentfile is early. The v0.1 goal is intentionally narrow:
 - `agentfile doctor` for contract health and generated instruction-surface freshness checks.
 - `agentfile doctor --format json` for machine-readable contract health reports.
 - `agentfile inspect` for one-command contract, health, surface, and receipt-readiness review.
-- `agentfile github-actions` for source-checkout CI workflow generation using inspect readiness gates and generated-surface checks.
+- `agentfile github-actions` for source-checkout CI workflow generation and drift checks using inspect readiness gates and generated-surface checks.
 - `agentfile surfaces` for generated instruction-surface inspection without writing files.
 - `agentfile sync --all` for preflighted generation or freshness checks across every default instruction surface.
 - `agentfile format --check` and `--write` for canonical Pact source hygiene.

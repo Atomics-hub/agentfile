@@ -116,6 +116,13 @@ Print a GitHub Actions workflow that checks out Agentfile from source, builds th
 agentfile github-actions agentfile.agent > .github/workflows/agentfile.yml
 ```
 
+Use `--output` to write the workflow and `--check` to verify a committed workflow has not drifted:
+
+```sh
+agentfile github-actions agentfile.agent --output .github/workflows/agentfile.yml --force
+agentfile github-actions agentfile.agent --output .github/workflows/agentfile.yml --check
+```
+
 By default the workflow checks `AGENTS.md` and `CLAUDE.md`. Use `--surfaces` to pick committed generated surfaces, or `none` for a validation-only workflow:
 
 ```sh

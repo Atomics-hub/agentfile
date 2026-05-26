@@ -517,6 +517,46 @@ describe("agentfile github-actions", () => {
     expect(stdout).toContain("run: node .agentfile/tool/dist/cli.js receipt verify 'agentfile.agent' 'receipts/latest.receipt.json'");
   });
 
+  it("writes and checks generated workflow files", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-actions-output-"));
+    tempDirs.push(cwd);
+    await writeFile(join(cwd, "agentfile.agent"), await readFile(examplePath, "utf8"), "utf8");
+    const outputPath = join(cwd, ".github", "workflows", "agentfile.yml");
+
+    const writeResult = await runCli(["github-actions", "agentfile.agent", "--output", outputPath], cwd);
+    expect(writeResult.stdout).toContain(`Wrote ${outputPath}`);
+
+    const content = await readFile(outputPath, "utf8");
+    expect(content).toContain("Inspect contract readiness");
+    expect(content).toContain("sync 'agentfile.agent' --target agents-md --output 'AGENTS.md' --check");
+
+    const checkResult = await runCli(["github-actions", "agentfile.agent", "--output", outputPath, "--check"], cwd);
+    expect(checkResult.stdout).toContain(`OK ${outputPath} is up to date`);
+  });
+
+  it("protects generated workflow files from accidental overwrite and stale checks", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-actions-stale-"));
+    tempDirs.push(cwd);
+    await writeFile(join(cwd, "agentfile.agent"), await readFile(examplePath, "utf8"), "utf8");
+    const outputPath = join(cwd, "agentfile.yml");
+    await writeFile(outputPath, "stale workflow\n", "utf8");
+
+    await expect(
+      runCli(["github-actions", "agentfile.agent", "--output", outputPath], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining(`refusing to overwrite ${outputPath}`)
+    });
+
+    await expect(
+      runCli(["github-actions", "agentfile.agent", "--output", outputPath, "--check"], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining(`generated workflow is stale: ${outputPath}`)
+    });
+
+    const forceResult = await runCli(["github-actions", "agentfile.agent", "--output", outputPath, "--force"], cwd);
+    expect(forceResult.stdout).toContain(`Wrote ${outputPath}`);
+  });
+
   it("can generate a validation-only workflow without generated surface checks", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "agentfile-actions-none-"));
     tempDirs.push(cwd);

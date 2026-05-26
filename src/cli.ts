@@ -131,17 +131,22 @@ program
   .option("--tool-ref <ref>", "Agentfile repository ref to checkout", "main")
   .option("--surfaces <targets>", `comma-separated generated surfaces to check, or "none": ${githubActionSurfaceHelp()}`, "agents-md,claude-md")
   .option("--receipt <file>", "optional receipt JSON path to verify")
+  .option("-o, --output <file>", "write the generated workflow to a file")
+  .option("--check", "verify the generated workflow file is already up to date", false)
+  .option("-f, --force", "overwrite an existing workflow file", false)
   .action(async (file: string, options: GithubActionsOptions) => {
     const contractPath = await resolveFile(file);
     await load(contractPath);
     const surfaces = parseGithubActionSurfaces(options.surfaces);
 
-    process.stdout.write(renderGithubActionsWorkflow({
+    const workflow = renderGithubActionsWorkflow({
       contractPath: toWorkflowPath(contractPath),
       toolRef: options.toolRef,
       surfaces,
       receiptPath: options.receipt ? toWorkflowPath(options.receipt) : undefined
-    }));
+    });
+
+    await emitGithubActionsWorkflow(workflow, options);
   });
 
 program
@@ -448,6 +453,9 @@ interface GithubActionsOptions {
   toolRef: string;
   surfaces: string;
   receipt?: string;
+  output?: string;
+  check: boolean;
+  force: boolean;
 }
 
 interface GithubActionsWorkflow {
@@ -1107,6 +1115,46 @@ function renderGithubActionsWorkflow(workflow: GithubActionsWorkflow): string {
     ...steps,
     ""
   ].join("\n");
+}
+
+async function emitGithubActionsWorkflow(content: string, options: GithubActionsOptions): Promise<void> {
+  if (options.check && !options.output) {
+    throw new AgentfileError("github-actions --check requires --output so there is a workflow file to verify");
+  }
+
+  if (options.check && options.force) {
+    throw new AgentfileError("github-actions cannot use --check and --force together");
+  }
+
+  if (!options.output) {
+    process.stdout.write(content);
+    return;
+  }
+
+  if (options.check) {
+    const current = await readOptionalFile(options.output);
+    if (current === undefined) {
+      throw new AgentfileError(`generated workflow is missing: ${options.output}`, options.output);
+    }
+
+    if (current !== content) {
+      throw new AgentfileError(
+        `generated workflow is stale: ${options.output}; rerun without --check and pass --force to update it`,
+        options.output
+      );
+    }
+
+    console.log(`OK ${options.output} is up to date`);
+    return;
+  }
+
+  if (!options.force && await exists(options.output)) {
+    throw new AgentfileError(`refusing to overwrite ${options.output}; pass --force to replace it`, options.output);
+  }
+
+  await mkdir(dirname(options.output), { recursive: true });
+  await writeFile(options.output, content, "utf8");
+  console.log(`Wrote ${options.output}`);
 }
 
 function toWorkflowPath(filePath: string): string {

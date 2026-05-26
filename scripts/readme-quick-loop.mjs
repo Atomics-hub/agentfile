@@ -62,9 +62,32 @@ try {
   });
 
   await runStep({
-    name: "Generate GitHub Actions workflow",
-    command: "node dist/cli.js github-actions examples/fix-login-race.agent",
-    run: () => execFileAsync("node", ["dist/cli.js", "github-actions", "examples/fix-login-race.agent"], {
+    name: "Write GitHub Actions workflow",
+    command: "node dist/cli.js github-actions examples/fix-login-race.agent --output <temp>/agentfile.yml",
+    run: () => execFileAsync("node", [
+      "dist/cli.js",
+      "github-actions",
+      "examples/fix-login-race.agent",
+      "--output",
+      join(tempRoot, "agentfile.yml")
+    ], {
+      cwd: root,
+      env: process.env,
+      maxBuffer
+    })
+  });
+
+  await runStep({
+    name: "Check GitHub Actions workflow",
+    command: "node dist/cli.js github-actions examples/fix-login-race.agent --output <temp>/agentfile.yml --check",
+    run: () => execFileAsync("node", [
+      "dist/cli.js",
+      "github-actions",
+      "examples/fix-login-race.agent",
+      "--output",
+      join(tempRoot, "agentfile.yml"),
+      "--check"
+    ], {
       cwd: root,
       env: process.env,
       maxBuffer
