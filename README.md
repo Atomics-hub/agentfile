@@ -294,7 +294,11 @@ node dist/cli.js receipt verify examples/fix-login-race.agent examples/receipts/
 
 See [End-to-End Demo](docs/demo.md) for the full path from Pact source to YAML IR, policy JSON, generated agent instruction files, and receipt verification.
 
-Use [GitHub Actions Integration](docs/github-actions.md) to validate contracts, generated instruction surfaces, and receipts in CI while Agentfile is still run from source.
+Use [GitHub Actions Integration](docs/github-actions.md) to validate contracts, generated instruction surfaces, and receipts in CI while Agentfile is still run from source. The CLI can generate a starter workflow:
+
+```sh
+node dist/cli.js github-actions agentfile.agent > .github/workflows/agentfile.yml
+```
 
 ## CLI
 
@@ -456,6 +460,7 @@ Agentfile is early. The v0.1 goal is intentionally narrow:
 - `agentfile doctor` for contract health and generated instruction-surface freshness checks.
 - `agentfile doctor --format json` for machine-readable contract health reports.
 - `agentfile inspect` for one-command contract, health, surface, and receipt-readiness review.
+- `agentfile github-actions` for source-checkout CI workflow generation using inspect readiness gates and generated-surface checks.
 - `agentfile surfaces` for generated instruction-surface inspection without writing files.
 - `agentfile sync --all` for preflighted generation or freshness checks across every default instruction surface.
 - `agentfile format --check` and `--write` for canonical Pact source hygiene.

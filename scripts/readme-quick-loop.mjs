@@ -62,6 +62,16 @@ try {
   });
 
   await runStep({
+    name: "Generate GitHub Actions workflow",
+    command: "node dist/cli.js github-actions examples/fix-login-race.agent",
+    run: () => execFileAsync("node", ["dist/cli.js", "github-actions", "examples/fix-login-race.agent"], {
+      cwd: root,
+      env: process.env,
+      maxBuffer
+    })
+  });
+
+  await runStep({
     name: "Inspect generated surfaces",
     command: "node dist/cli.js surfaces examples/fix-login-race.agent",
     run: () => execFileAsync("node", ["dist/cli.js", "surfaces", "examples/fix-login-race.agent"], {
@@ -284,6 +294,10 @@ function renderDemoEvidence() {
         [
           "One inspect command summarizes contract shape, health, generated surfaces, and receipt readiness.",
           "Reviewers can evaluate the delegation package before an agent run."
+        ],
+        [
+          "A GitHub Actions workflow can be generated from the same contract path.",
+          "Adopters get a concrete CI gate for readiness and generated-surface drift without hand-writing YAML."
         ],
         [
           "A filled JSON receipt verifies against the original contract.",

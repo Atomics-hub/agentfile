@@ -5,8 +5,17 @@ Agentfile is not published to npm yet, so the current CI path checks out this re
 Use this when a project wants CI to verify that:
 
 - The `.agent` contract is valid.
+- The contract readiness summary has no selected gate failures.
 - Generated instruction files still match the contract.
 - Filled receipts still satisfy the original contract.
+
+Generate the starter workflow from a checked-out Agentfile tool:
+
+```sh
+node dist/cli.js github-actions agentfile.agent > .github/workflows/agentfile.yml
+```
+
+The generated workflow uses `inspect --fail-on stale-surfaces,lint --format json` plus `sync --check` for selected generated surfaces. Pass `--surfaces none` for an early validation-only workflow, or pass a comma-separated list such as `agents-md,claude-md,cursor-mdc,copilot-md` for adopted generated files.
 
 ## Starter Workflow
 
@@ -45,8 +54,8 @@ jobs:
       - name: Build Agentfile CLI
         run: npm run build --prefix .agentfile/tool
 
-      - name: Validate contract
-        run: node .agentfile/tool/dist/cli.js check agentfile.agent
+      - name: Inspect contract readiness
+        run: node .agentfile/tool/dist/cli.js inspect agentfile.agent --fail-on stale-surfaces,lint --format json
 
       - name: Check generated AGENTS.md
         run: node .agentfile/tool/dist/cli.js sync agentfile.agent --target agents-md --output AGENTS.md --check

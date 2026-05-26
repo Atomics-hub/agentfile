@@ -108,6 +108,27 @@ Pass `--format json` when tooling needs the same inspection data:
 agentfile surfaces examples/fix-login-race.agent --format json
 ```
 
+## `agentfile github-actions [file]`
+
+Print a GitHub Actions workflow that checks out Agentfile from source, builds the CLI, runs `inspect --fail-on stale-surfaces,lint`, and checks adopted generated instruction surfaces:
+
+```sh
+agentfile github-actions agentfile.agent > .github/workflows/agentfile.yml
+```
+
+By default the workflow checks `AGENTS.md` and `CLAUDE.md`. Use `--surfaces` to pick committed generated surfaces, or `none` for a validation-only workflow:
+
+```sh
+agentfile github-actions agentfile.agent --surfaces agents-md,claude-md,cursor-mdc
+agentfile github-actions agentfile.agent --surfaces none
+```
+
+Use `--tool-ref` to pin the Agentfile checkout and `--receipt` to add receipt verification:
+
+```sh
+agentfile github-actions agentfile.agent --tool-ref v0.1.0 --receipt receipts/latest.receipt.json
+```
+
 ## `agentfile format [file]`
 
 Print canonical Pact `.agent` source for a contract:

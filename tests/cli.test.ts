@@ -478,6 +478,70 @@ workflow:
   });
 });
 
+describe("agentfile github-actions", () => {
+  it("prints a source-checkout workflow with readiness and generated-surface gates", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-actions-"));
+    tempDirs.push(cwd);
+    await writeFile(join(cwd, "agentfile.agent"), await readFile(examplePath, "utf8"), "utf8");
+
+    const { stdout } = await runCli(["github-actions", "agentfile.agent"], cwd);
+
+    expect(stdout).toContain("name: Agentfile");
+    expect(stdout).toContain("repository: Atomics-hub/agentfile");
+    expect(stdout).toContain('ref: "main"');
+    expect(stdout).toContain("run: node .agentfile/tool/dist/cli.js inspect 'agentfile.agent' --fail-on stale-surfaces,lint --format json");
+    expect(stdout).toContain("run: node .agentfile/tool/dist/cli.js sync 'agentfile.agent' --target agents-md --output 'AGENTS.md' --check");
+    expect(stdout).toContain("run: node .agentfile/tool/dist/cli.js sync 'agentfile.agent' --target claude-md --output 'CLAUDE.md' --check");
+  });
+
+  it("supports custom tool refs, generated surfaces, and receipt verification", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-actions-custom-"));
+    tempDirs.push(cwd);
+    await writeFile(join(cwd, "agentfile.agent"), await readFile(examplePath, "utf8"), "utf8");
+
+    const { stdout } = await runCli([
+      "github-actions",
+      "agentfile.agent",
+      "--tool-ref",
+      "v0.1.0",
+      "--surfaces",
+      "cursor-mdc,copilot-md,cursor-mdc",
+      "--receipt",
+      "receipts/latest.receipt.json"
+    ], cwd);
+
+    expect(stdout).toContain('ref: "v0.1.0"');
+    expect(stdout).toContain("run: node .agentfile/tool/dist/cli.js sync 'agentfile.agent' --target cursor-mdc --output '.cursor/rules/agentfile.mdc' --check");
+    expect(stdout).toContain("run: node .agentfile/tool/dist/cli.js sync 'agentfile.agent' --target copilot-md --output '.github/copilot-instructions.md' --check");
+    expect(stdout.match(/--target cursor-mdc/g)).toHaveLength(1);
+    expect(stdout).toContain("run: node .agentfile/tool/dist/cli.js receipt verify 'agentfile.agent' 'receipts/latest.receipt.json'");
+  });
+
+  it("can generate a validation-only workflow without generated surface checks", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-actions-none-"));
+    tempDirs.push(cwd);
+    await writeFile(join(cwd, "agentfile.agent"), await readFile(examplePath, "utf8"), "utf8");
+
+    const { stdout } = await runCli(["github-actions", "agentfile.agent", "--surfaces", "none"], cwd);
+
+    expect(stdout).toContain("Inspect contract readiness");
+    expect(stdout).not.toContain("--target agents-md");
+    expect(stdout).not.toContain("--target claude-md");
+  });
+
+  it("rejects non-file-backed generated surface targets", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-actions-invalid-"));
+    tempDirs.push(cwd);
+    await writeFile(join(cwd, "agentfile.agent"), await readFile(examplePath, "utf8"), "utf8");
+
+    await expect(
+      runCli(["github-actions", "agentfile.agent", "--surfaces", "json"], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining('github-actions surface "json" is not file-backed')
+    });
+  });
+});
+
 describe("agentfile format", () => {
   it("prints canonical Pact source without writing", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "agentfile-format-print-"));

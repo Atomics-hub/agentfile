@@ -1,14 +1,15 @@
 #!/usr/bin/env node
 import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import { constants } from "node:fs";
-import { dirname } from "node:path";
+import { dirname, isAbsolute, relative, sep } from "node:path";
 import { Command } from "commander";
 import {
   compileAgentfile,
   compileTargets,
   defaultOutputPathForTarget,
   isSyncTarget,
-  type CompileTarget
+  type CompileTarget,
+  type SyncTarget
 } from "./compiler.js";
 import { AgentfileError, lintAgentfile } from "./diagnostics.js";
 import { diffContracts, renderContractDiff, type ContractDiffFormat } from "./diff.js";
@@ -121,6 +122,26 @@ program
     if (result.status === "fail") {
       process.exitCode = 1;
     }
+  });
+
+program
+  .command("github-actions")
+  .description("Print a GitHub Actions workflow for validating an Agentfile contract from source.")
+  .argument("[file]", "Agentfile path")
+  .option("--tool-ref <ref>", "Agentfile repository ref to checkout", "main")
+  .option("--surfaces <targets>", `comma-separated generated surfaces to check, or "none": ${githubActionSurfaceHelp()}`, "agents-md,claude-md")
+  .option("--receipt <file>", "optional receipt JSON path to verify")
+  .action(async (file: string, options: GithubActionsOptions) => {
+    const contractPath = await resolveFile(file);
+    await load(contractPath);
+    const surfaces = parseGithubActionSurfaces(options.surfaces);
+
+    process.stdout.write(renderGithubActionsWorkflow({
+      contractPath: toWorkflowPath(contractPath),
+      toolRef: options.toolRef,
+      surfaces,
+      receiptPath: options.receipt ? toWorkflowPath(options.receipt) : undefined
+    }));
   });
 
 program
@@ -351,6 +372,10 @@ function syncTargetList(): string {
   return quotedTargetIds(syncTargets());
 }
 
+function githubActionSurfaceHelp(): string {
+  return `${syncTargetHelp()}, none`;
+}
+
 interface DoctorSurface {
   target: CompileTarget;
   description: string;
@@ -417,6 +442,19 @@ interface InspectGateFailure {
   check: InspectFailureCheck;
   count: number;
   message: string;
+}
+
+interface GithubActionsOptions {
+  toolRef: string;
+  surfaces: string;
+  receipt?: string;
+}
+
+interface GithubActionsWorkflow {
+  contractPath: string;
+  toolRef: string;
+  surfaces: SyncTarget[];
+  receiptPath?: string;
 }
 
 interface SyncCommandOptions {
@@ -972,6 +1010,128 @@ function parseInspectFailureChecks(value: string): InspectFailureCheck[] {
 
 function inspectFailureCheckHelp(): string {
   return allInspectFailureChecks.map((check) => `"${check}"`).join(", ");
+}
+
+function parseGithubActionSurfaces(value: string): SyncTarget[] {
+  const requested = value.split(",").map((target) => target.trim()).filter(Boolean);
+
+  if (requested.length === 0) {
+    throw new AgentfileError(`github-actions --surfaces requires at least one target or "none". Expected ${githubActionSurfaceHelp()}.`);
+  }
+
+  if (requested.includes("none")) {
+    if (requested.length === 1) {
+      return [];
+    }
+
+    throw new AgentfileError('github-actions --surfaces cannot combine "none" with generated surface targets.');
+  }
+
+  const surfaces: SyncTarget[] = [];
+  for (const value of requested) {
+    const target = parseTarget(value);
+    if (!isSyncTarget(target)) {
+      throw new AgentfileError(
+        `github-actions surface "${target}" is not file-backed. Expected ${syncTargetList()} or "none".`
+      );
+    }
+
+    if (!surfaces.includes(target)) {
+      surfaces.push(target);
+    }
+  }
+
+  return surfaces;
+}
+
+function renderGithubActionsWorkflow(workflow: GithubActionsWorkflow): string {
+  const cli = "node .agentfile/tool/dist/cli.js";
+  const contract = shellQuote(workflow.contractPath);
+  const steps = [
+    "      - name: Checkout project",
+    "        uses: actions/checkout@v4",
+    "",
+    "      - name: Checkout Agentfile",
+    "        uses: actions/checkout@v4",
+    "        with:",
+    "          repository: Atomics-hub/agentfile",
+    `          ref: ${yamlString(workflow.toolRef)}`,
+    "          path: .agentfile/tool",
+    "",
+    "      - name: Setup Node",
+    "        uses: actions/setup-node@v4",
+    "        with:",
+    "          node-version: 20",
+    "          cache: npm",
+    "          cache-dependency-path: .agentfile/tool/package-lock.json",
+    "",
+    "      - name: Install Agentfile",
+    "        run: npm ci --prefix .agentfile/tool",
+    "",
+    "      - name: Build Agentfile CLI",
+    "        run: npm run build --prefix .agentfile/tool",
+    "",
+    "      - name: Inspect contract readiness",
+    `        run: ${cli} inspect ${contract} --fail-on stale-surfaces,lint --format json`
+  ];
+
+  for (const target of workflow.surfaces) {
+    steps.push(
+      "",
+      `      - name: Check generated ${target}`,
+      `        run: ${cli} sync ${contract} --target ${target} --output ${shellQuote(defaultOutputPathForTarget(target))} --check`
+    );
+  }
+
+  if (workflow.receiptPath) {
+    steps.push(
+      "",
+      "      - name: Verify receipt",
+      `        run: ${cli} receipt verify ${contract} ${shellQuote(workflow.receiptPath)}`
+    );
+  }
+
+  return [
+    "name: Agentfile",
+    "",
+    "on:",
+    "  pull_request:",
+    "  push:",
+    "    branches:",
+    "      - main",
+    "",
+    "jobs:",
+    "  contract:",
+    "    runs-on: ubuntu-latest",
+    "    steps:",
+    ...steps,
+    ""
+  ].join("\n");
+}
+
+function toWorkflowPath(filePath: string): string {
+  if (!isAbsolute(filePath)) {
+    return normalizePathSeparators(filePath);
+  }
+
+  const relativePath = relative(process.cwd(), filePath);
+  if (!relativePath.startsWith("..") && !isAbsolute(relativePath)) {
+    return normalizePathSeparators(relativePath);
+  }
+
+  return normalizePathSeparators(filePath);
+}
+
+function normalizePathSeparators(filePath: string): string {
+  return sep === "/" ? filePath : filePath.split(sep).join("/");
+}
+
+function shellQuote(value: string): string {
+  return `'${value.replaceAll("'", "'\\''")}'`;
+}
+
+function yamlString(value: string): string {
+  return JSON.stringify(value);
 }
 
 type SurfacesFormat = "text" | "json";
