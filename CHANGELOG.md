@@ -6,7 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
-- Added `agentfile inspect` to summarize contract shape, health, generated surfaces, and receipt readiness in one command.
+- Added `agentfile inspect` to summarize contract shape, health, generated surfaces, and receipt readiness in one command, including CI-ready `--strict` and `--fail-on` gates.
 - Added `agentfile doctor --format json` for machine-readable contract health reports.
 - Added `agentfile sync --all` and `--all --check` for preflighted generation and freshness checks across every default instruction surface.
 - Added `agentfile surfaces` to inspect generated instruction-surface status and size without writing files.

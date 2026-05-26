@@ -25,6 +25,8 @@ import type { Agentfile } from "./schema.js";
 import { looksLikePactSource, parseSource } from "./source.js";
 import { findTarget, quotedTargetIds } from "./targets.js";
 
+const allInspectFailureChecks = ["stale-surfaces", "missing-surfaces", "lint"] as const;
+
 const program = new Command();
 
 program
@@ -105,8 +107,15 @@ program
   .description("Summarize contract, health, generated surfaces, and receipt readiness.")
   .argument("[file]", "Agentfile path")
   .option("--format <format>", "text or json", "text")
-  .action(async (file: string, options: { format: string }) => {
-    const result = await runInspect(file);
+  .option("--strict", "fail on stale or missing generated surfaces and lint warnings", false)
+  .option(
+    "--fail-on <checks>",
+    `comma-separated readiness checks that should fail inspection: ${inspectFailureCheckHelp()}`,
+    "stale-surfaces"
+  )
+  .action(async (file: string, options: { format: string; strict: boolean; failOn: string }) => {
+    const failureChecks = options.strict ? [...allInspectFailureChecks] : parseInspectFailureChecks(options.failOn);
+    const result = await runInspect(file, failureChecks);
     process.stdout.write(renderInspectReport(result, parseInspectFormat(options.format)));
 
     if (result.status === "fail") {
@@ -397,7 +406,17 @@ interface InspectResult {
     acceptanceCount: number;
     handoffEvidenceCount: number;
   };
+  readiness: {
+    failOn: InspectFailureCheck[];
+    failures: InspectGateFailure[];
+  };
   doctor: DoctorResult;
+}
+
+interface InspectGateFailure {
+  check: InspectFailureCheck;
+  count: number;
+  message: string;
 }
 
 interface SyncCommandOptions {
@@ -625,15 +644,19 @@ async function createDoctorResult(contractPath: string, agentfile: Agentfile): P
   };
 }
 
-async function runInspect(file?: string): Promise<InspectResult> {
+async function runInspect(
+  file: string | undefined,
+  failureChecks: InspectFailureCheck[] = ["stale-surfaces"]
+): Promise<InspectResult> {
   const contractPath = await resolveFile(file);
   const agentfile = await load(contractPath);
   const doctor = await createDoctorResult(contractPath, agentfile);
   const handoffEvidence = receiptHandoffEvidence(agentfile);
+  const gateFailures = inspectGateFailures(doctor, failureChecks);
 
   return {
     contractPath,
-    status: doctor.status,
+    status: gateFailures.length > 0 ? "fail" : "pass",
     task: {
       id: agentfile.task.id,
       goal: agentfile.task.goal,
@@ -664,8 +687,51 @@ async function runInspect(file?: string): Promise<InspectResult> {
       acceptanceCount: agentfile.workflow.acceptance.length,
       handoffEvidenceCount: handoffEvidence.length
     },
+    readiness: {
+      failOn: failureChecks,
+      failures: gateFailures
+    },
     doctor
   };
+}
+
+function inspectGateFailures(doctor: DoctorResult, failureChecks: InspectFailureCheck[]): InspectGateFailure[] {
+  const failures: InspectGateFailure[] = [];
+
+  if (failureChecks.includes("stale-surfaces")) {
+    const count = doctor.surfaces.filter((surface) => surface.status === "stale").length;
+    if (count > 0) {
+      failures.push({
+        check: "stale-surfaces",
+        count,
+        message: `${count} stale generated ${pluralize(count, "surface")}`
+      });
+    }
+  }
+
+  if (failureChecks.includes("missing-surfaces")) {
+    const count = doctor.surfaces.filter((surface) => surface.status === "missing").length;
+    if (count > 0) {
+      failures.push({
+        check: "missing-surfaces",
+        count,
+        message: `${count} missing generated ${pluralize(count, "surface")}`
+      });
+    }
+  }
+
+  if (failureChecks.includes("lint")) {
+    const count = doctor.lintDiagnostics.length;
+    if (count > 0) {
+      failures.push({
+        check: "lint",
+        count,
+        message: `${count} lint ${pluralize(count, "warning")}`
+      });
+    }
+  }
+
+  return failures;
 }
 
 async function runSurfaceInspection(file?: string): Promise<SurfaceInspectionResult> {
@@ -723,6 +789,10 @@ function listOrNone(values: string[]): string {
   return values.length > 0 ? values.join(", ") : "none";
 }
 
+function pluralize(count: number, singular: string): string {
+  return count === 1 ? singular : `${singular}s`;
+}
+
 async function readOptionalFile(filePath: string): Promise<string | undefined> {
   return readFile(filePath, "utf8").catch((error: NodeJS.ErrnoException) => {
     if (error.code === "ENOENT") {
@@ -770,6 +840,12 @@ function renderInspectReport(result: InspectResult, format: InspectFormat): stri
     return `${JSON.stringify(result, null, 2)}\n`;
   }
 
+  const gateFailureLines = result.readiness.failures.length === 0
+    ? ["Gate failures: none"]
+    : [
+        "Gate failures:",
+        ...result.readiness.failures.map((failure) => `- ${failure.check}: ${failure.message}`)
+      ];
   const lines = [
     "# Agentfile Inspect",
     `Contract: ${result.contractPath}`,
@@ -786,6 +862,8 @@ function renderInspectReport(result: InspectResult, format: InspectFormat): stri
   lines.push(
     `Owners: ${listOrNone(result.task.owners)}`,
     `Labels: ${listOrNone(result.task.labels)}`,
+    `Readiness gates: ${result.readiness.failOn.join(", ")}`,
+    ...gateFailureLines,
     "",
     "## Contract Shape",
     `Scope: ${result.scope.includeCount} include, ${result.scope.excludeCount} exclude`,
@@ -867,12 +945,33 @@ function parseDoctorFormat(value: string): DoctorFormat {
 
 type InspectFormat = "text" | "json";
 
+type InspectFailureCheck = typeof allInspectFailureChecks[number];
+
 function parseInspectFormat(value: string): InspectFormat {
   if (value === "text" || value === "json") {
     return value;
   }
 
   throw new AgentfileError(`unknown inspect format "${value}". Expected "text" or "json".`);
+}
+
+function parseInspectFailureChecks(value: string): InspectFailureCheck[] {
+  const checks = value.split(",").map((check) => check.trim()).filter(Boolean);
+
+  if (checks.length === 0) {
+    throw new AgentfileError(`inspect --fail-on requires at least one check. Expected ${inspectFailureCheckHelp()}.`);
+  }
+
+  const unknown = checks.find((check) => !allInspectFailureChecks.includes(check as InspectFailureCheck));
+  if (unknown) {
+    throw new AgentfileError(`unknown inspect failure check "${unknown}". Expected ${inspectFailureCheckHelp()}.`);
+  }
+
+  return Array.from(new Set(checks)) as InspectFailureCheck[];
+}
+
+function inspectFailureCheckHelp(): string {
+  return allInspectFailureChecks.map((check) => `"${check}"`).join(", ");
 }
 
 type SurfacesFormat = "text" | "json";

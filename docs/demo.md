@@ -89,6 +89,7 @@ Use `inspect` when a reviewer wants one summary of the contract, health status, 
 
 ```sh
 node dist/cli.js inspect examples/fix-login-race.agent
+node dist/cli.js inspect examples/fix-login-race.agent --fail-on stale-surfaces,lint --format json
 ```
 
 ## 3. Explain The Contract

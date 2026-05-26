@@ -386,6 +386,78 @@ describe("agentfile inspect", () => {
     expect(result.doctor.surfaces).toHaveLength(4);
   });
 
+  it("supports strict readiness gates for CI", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-inspect-strict-"));
+    tempDirs.push(cwd);
+
+    try {
+      await runCli(["inspect", examplePath, "--strict", "--format", "json"], cwd);
+      throw new Error("expected strict inspection to fail");
+    } catch (error) {
+      const stdout = (error as { stdout?: string }).stdout ?? "";
+      const result = JSON.parse(stdout);
+
+      expect(result.status).toBe("fail");
+      expect(result.readiness.failOn).toEqual(["stale-surfaces", "missing-surfaces", "lint"]);
+      expect(result.readiness.failures).toEqual([
+        {
+          check: "missing-surfaces",
+          count: 4,
+          message: "4 missing generated surfaces"
+        }
+      ]);
+    }
+  });
+
+  it("supports targeted readiness gates", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-inspect-fail-on-"));
+    tempDirs.push(cwd);
+
+    const contractPath = join(cwd, "risky.agentfile");
+    await writeFile(contractPath, `agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: risky-authority
+task:
+  id: risky-authority
+  goal: Exercise inspect failure gates.
+scope:
+  include:
+    - src/**
+permissions:
+  network:
+    default: allow
+  approvals:
+    requiredFor:
+      - dependency_change
+      - network_access
+      - scope_expansion
+workflow:
+  id: implement
+  acceptance:
+    - Done.
+`, "utf8");
+
+    try {
+      await runCli(["inspect", contractPath, "--fail-on", "lint", "--format", "json"], cwd);
+      throw new Error("expected lint-gated inspection to fail");
+    } catch (error) {
+      const stdout = (error as { stdout?: string }).stdout ?? "";
+      const result = JSON.parse(stdout);
+
+      expect(result.status).toBe("fail");
+      expect(result.readiness.failOn).toEqual(["lint"]);
+      expect(result.readiness.failures).toEqual([
+        {
+          check: "lint",
+          count: 2,
+          message: "2 lint warnings"
+        }
+      ]);
+      expect(result.doctor.surfaces.every((surface: { status: string }) => surface.status === "missing")).toBe(true);
+    }
+  });
+
   it("fails when project inspection finds stale adopted surfaces", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "agentfile-inspect-stale-"));
     tempDirs.push(cwd);

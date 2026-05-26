@@ -82,6 +82,18 @@ Pass `--format json` for tooling that needs the same project-readiness summary:
 agentfile inspect examples/fix-login-race.agent --format json
 ```
 
+Use `--strict` when `inspect` is acting as a CI gate after default generated surfaces have been adopted. Strict mode fails on stale generated surfaces, missing default generated surfaces, and lint warnings:
+
+```sh
+agentfile inspect examples/fix-login-race.agent --strict --format json
+```
+
+Use `--fail-on` for a narrower gate. Accepted checks are `stale-surfaces`, `missing-surfaces`, and `lint`; the default is `stale-surfaces`:
+
+```sh
+agentfile inspect examples/fix-login-race.agent --fail-on stale-surfaces,lint --format json
+```
+
 ## `agentfile surfaces [file]`
 
 Inspect the generated instruction surfaces for a contract without writing files. The command shows the file-backed targets, their default output paths, whether an adopted default file is missing, stale, or up to date, and the size of the generated content:

@@ -331,10 +331,11 @@ agentfile doctor examples/fix-login-race.agent
 agentfile doctor examples/fix-login-race.agent --format json
 agentfile inspect examples/fix-login-race.agent
 agentfile inspect examples/fix-login-race.agent --format json
+agentfile inspect examples/fix-login-race.agent --fail-on stale-surfaces,lint --format json
 ```
 
 `doctor` validates the contract, reports lint warnings, and checks adopted default instruction surfaces like `AGENTS.md`, `CLAUDE.md`, Cursor rules, and Copilot instructions for stale generated content.
-`inspect` combines contract shape, health status, generated surfaces, and receipt readiness into one review summary.
+`inspect` combines contract shape, health status, generated surfaces, and receipt readiness into one review summary. Its `--strict` and `--fail-on` gates make the same summary usable in CI without parsing prose.
 
 Inspect the generated instruction surfaces before writing files:
 
