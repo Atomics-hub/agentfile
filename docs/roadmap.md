@@ -16,6 +16,7 @@
 - Add `agentfile doctor` for local contract health and generated-surface freshness checks.
 - Add `agentfile format --check` and `--write` plus CI coverage for canonical Pact source hygiene.
 - Add `agentfile receipt review` for readable receipt completion summaries.
+- Add `agentfile surfaces` for no-write generated instruction-surface inspection.
 
 ## v0.2
 

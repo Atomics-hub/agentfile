@@ -42,6 +42,16 @@ try {
   });
 
   await runStep({
+    name: "Inspect generated surfaces",
+    command: "node dist/cli.js surfaces examples/fix-login-race.agent",
+    run: () => execFileAsync("node", ["dist/cli.js", "surfaces", "examples/fix-login-race.agent"], {
+      cwd: root,
+      env: process.env,
+      maxBuffer
+    })
+  });
+
+  await runStep({
     name: "Generate AGENTS.md",
     command: "node dist/cli.js sync examples/fix-login-race.agent --target agents-md --output <temp>/AGENTS.md --force",
     run: () => sync(generatedArtifacts[0])
@@ -218,6 +228,10 @@ function renderDemoEvidence() {
         [
           "The same source generates AGENTS.md, CLAUDE.md, Cursor, and Copilot instruction files.",
           "Existing harnesses can consume the contract without replacing the user's agent stack."
+        ],
+        [
+          "Generated instruction surfaces can be inspected before writing files.",
+          "Reviewers can see which harness projections will exist and whether adopted defaults are stale."
         ],
         [
           "A filled JSON receipt verifies against the original contract.",

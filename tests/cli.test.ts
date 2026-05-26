@@ -175,6 +175,56 @@ describe("agentfile doctor", () => {
   });
 });
 
+describe("agentfile surfaces", () => {
+  it("prints generated surface freshness and size without writing files", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-surfaces-"));
+    tempDirs.push(cwd);
+
+    const { stdout } = await runCli(["surfaces", examplePath], cwd);
+
+    expect(stdout).toContain("# Agentfile Generated Surfaces");
+    expect(stdout).toContain(`Contract: ${examplePath}`);
+    expect(stdout).toContain("| Target | Output | Status | Lines | Bytes |");
+    expect(stdout).toContain("| agents-md | AGENTS.md | not found |");
+    expect(stdout).toContain("| claude-md | CLAUDE.md | not found |");
+    expect(stdout).toContain("| cursor-mdc | .cursor/rules/agentfile.mdc | not found |");
+    expect(stdout).toContain("| copilot-md | .github/copilot-instructions.md | not found |");
+  });
+
+  it("prints machine-readable generated surface inspection", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-surfaces-json-"));
+    tempDirs.push(cwd);
+
+    const { stdout } = await runCli(["surfaces", examplePath, "--format", "json"], cwd);
+    const result = JSON.parse(stdout);
+
+    expect(result.contractPath).toBe(examplePath);
+    expect(result.surfaces).toHaveLength(4);
+    expect(result.surfaces).toContainEqual(expect.objectContaining({
+      target: "agents-md",
+      description: "generated AGENTS.md instructions",
+      outputPath: "AGENTS.md",
+      status: "missing",
+      lineCount: expect.any(Number),
+      byteCount: expect.any(Number)
+    }));
+    expect(result.surfaces[0].lineCount).toBeGreaterThan(0);
+    expect(result.surfaces[0].byteCount).toBeGreaterThan(0);
+  });
+
+  it("reports an adopted generated surface as up to date", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-surfaces-up-to-date-"));
+    tempDirs.push(cwd);
+
+    await runCli(["sync", examplePath, "--target", "agents-md", "--output", "AGENTS.md"], cwd);
+
+    const { stdout } = await runCli(["surfaces", examplePath], cwd);
+
+    expect(stdout).toContain("| agents-md | AGENTS.md | up to date |");
+    expect(stdout).toContain("| claude-md | CLAUDE.md | not found |");
+  });
+});
+
 describe("agentfile format", () => {
   it("prints canonical Pact source without writing", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "agentfile-format-print-"));

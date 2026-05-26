@@ -42,6 +42,7 @@ The steps are intentionally plain CLI commands:
 npm run build
 node dist/cli.js check examples/fix-login-race.agent
 node dist/cli.js doctor examples/fix-login-race.agent
+node dist/cli.js surfaces examples/fix-login-race.agent
 mkdir -p /tmp/agentfile-demo
 node dist/cli.js sync examples/fix-login-race.agent --target agents-md --output /tmp/agentfile-demo/AGENTS.md --force
 node dist/cli.js sync examples/fix-login-race.agent --target claude-md --output /tmp/agentfile-demo/CLAUDE.md --force
@@ -331,6 +332,13 @@ agentfile doctor examples/fix-login-race.agent
 
 `doctor` validates the contract, reports lint warnings, and checks adopted default instruction surfaces like `AGENTS.md`, `CLAUDE.md`, Cursor rules, and Copilot instructions for stale generated content.
 
+Inspect the generated instruction surfaces before writing files:
+
+```sh
+agentfile surfaces examples/fix-login-race.agent
+agentfile surfaces examples/fix-login-race.agent --format json
+```
+
 Check or write canonical Pact source formatting:
 
 ```sh
@@ -434,6 +442,7 @@ Agentfile is early. The v0.1 goal is intentionally narrow:
 - `agentfile init` can scaffold either YAML IR or Pact `.agent` source.
 - Compiler targets for `AGENTS.md`, `CLAUDE.md`, Cursor rules, and GitHub Copilot instructions.
 - `agentfile doctor` for contract health and generated instruction-surface freshness checks.
+- `agentfile surfaces` for generated instruction-surface inspection without writing files.
 - `agentfile format --check` and `--write` for canonical Pact source hygiene.
 - `agentfile receipt review` for human-readable receipt completion and verification summaries.
 - A benchmark skeleton that can compare plain issue text against Agentfile-guided tasks without claiming results before data exists.

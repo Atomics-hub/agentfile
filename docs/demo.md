@@ -177,6 +177,21 @@ copilot-md -> .github/copilot-instructions.md
   generated GitHub Copilot repository instructions
 ```
 
+Inspect the generated surfaces before writing files:
+
+```sh
+node dist/cli.js surfaces examples/fix-login-race.agent
+```
+
+Expected excerpt:
+
+```text
+| agents-md | AGENTS.md | not found |
+| claude-md | CLAUDE.md | not found |
+| cursor-mdc | .cursor/rules/agentfile.mdc | not found |
+| copilot-md | .github/copilot-instructions.md | not found |
+```
+
 Generate the files into a scratch directory:
 
 ```sh

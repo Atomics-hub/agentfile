@@ -83,6 +83,16 @@ program
   });
 
 program
+  .command("surfaces")
+  .description("Inspect generated instruction surfaces without writing files.")
+  .argument("[file]", "Agentfile path")
+  .option("--format <format>", "text or json", "text")
+  .action(async (file: string, options: { format: string }) => {
+    const result = await runSurfaceInspection(file);
+    process.stdout.write(renderSurfaceInspection(result, parseSurfacesFormat(options.format)));
+  });
+
+program
   .command("format")
   .description("Print, write, or check canonical Pact .agent source formatting.")
   .argument("[file]", "Agentfile path")
@@ -343,13 +353,21 @@ function syncTargetList(): string {
 
 interface DoctorSurface {
   target: CompileTarget;
+  description: string;
   outputPath: string;
   status: "missing" | "stale" | "up-to-date";
+  lineCount: number;
+  byteCount: number;
 }
 
 interface DoctorResult {
   contractPath: string;
   lintDiagnostics: ReturnType<typeof lintAgentfile>;
+  surfaces: DoctorSurface[];
+}
+
+interface SurfaceInspectionResult {
+  contractPath: string;
   surfaces: DoctorSurface[];
 }
 
@@ -428,6 +446,17 @@ async function runDoctor(file?: string): Promise<DoctorResult> {
   };
 }
 
+async function runSurfaceInspection(file?: string): Promise<SurfaceInspectionResult> {
+  const contractPath = await resolveFile(file);
+  const agentfile = await load(contractPath);
+  const surfaces = await inspectGeneratedSurfaces(agentfile);
+
+  return {
+    contractPath,
+    surfaces
+  };
+}
+
 async function inspectGeneratedSurfaces(agentfile: Agentfile): Promise<DoctorSurface[]> {
   const surfaces: DoctorSurface[] = [];
 
@@ -448,12 +477,24 @@ async function inspectGeneratedSurfaces(agentfile: Agentfile): Promise<DoctorSur
 
     surfaces.push({
       target,
+      description: definition.description,
       outputPath,
-      status
+      status,
+      lineCount: countLines(generated),
+      byteCount: Buffer.byteLength(generated, "utf8")
     });
   }
 
   return surfaces;
+}
+
+function countLines(content: string): number {
+  const trimmedFinalNewline = content.endsWith("\n") ? content.slice(0, -1) : content;
+  if (trimmedFinalNewline.length === 0) {
+    return 0;
+  }
+
+  return trimmedFinalNewline.split(/\r?\n/).length;
 }
 
 async function readOptionalFile(filePath: string): Promise<string | undefined> {
@@ -497,6 +538,28 @@ function renderDoctorReport(result: DoctorResult): string {
   return `${lines.join("\n")}\n`;
 }
 
+function renderSurfaceInspection(result: SurfaceInspectionResult, format: SurfacesFormat): string {
+  if (format === "json") {
+    return `${JSON.stringify(result, null, 2)}\n`;
+  }
+
+  const lines = [
+    "# Agentfile Generated Surfaces",
+    `Contract: ${result.contractPath}`,
+    "",
+    "| Target | Output | Status | Lines | Bytes |",
+    "| --- | --- | --- | ---: | ---: |"
+  ];
+
+  for (const surface of result.surfaces) {
+    lines.push(
+      `| ${surface.target} | ${surface.outputPath} | ${doctorSurfaceLabel(surface.status)} | ${surface.lineCount} | ${surface.byteCount} |`
+    );
+  }
+
+  return `${lines.join("\n")}\n`;
+}
+
 function doctorSurfaceLabel(status: DoctorSurface["status"]): string {
   if (status === "missing") {
     return "not found";
@@ -507,6 +570,16 @@ function doctorSurfaceLabel(status: DoctorSurface["status"]): string {
   }
 
   return status;
+}
+
+type SurfacesFormat = "text" | "json";
+
+function parseSurfacesFormat(value: string): SurfacesFormat {
+  if (value === "text" || value === "json") {
+    return value;
+  }
+
+  throw new AgentfileError(`unknown surfaces format "${value}". Expected "text" or "json".`);
 }
 
 function parseDiffFormat(value: string): ContractDiffFormat {
