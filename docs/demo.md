@@ -85,6 +85,12 @@ The project health check can emit the same status as JSON for CI or dashboards:
 node dist/cli.js doctor examples/fix-login-race.agent --format json
 ```
 
+Use `inspect` when a reviewer wants one summary of the contract, health status, generated surfaces, and receipt readiness:
+
+```sh
+node dist/cli.js inspect examples/fix-login-race.agent
+```
+
 ## 3. Explain The Contract
 
 ```sh

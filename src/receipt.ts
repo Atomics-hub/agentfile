@@ -304,7 +304,7 @@ function buildReceiptTemplate(agentfile: Agentfile, contractPath: string) {
   };
 }
 
-function receiptHandoffEvidence(agentfile: Agentfile): string[] {
+export function receiptHandoffEvidence(agentfile: Agentfile): string[] {
   const reviewText = agentfile.workflow.review.join("\n").toLowerCase();
   const reviewListsChangedFiles = reviewText.includes("changed file");
   const reviewNotesRisks = reviewText.includes("risk");

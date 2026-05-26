@@ -13,7 +13,14 @@ import {
 import { AgentfileError, lintAgentfile } from "./diagnostics.js";
 import { diffContracts, renderContractDiff, type ContractDiffFormat } from "./diff.js";
 import { compileJsonSchema } from "./json-schema.js";
-import { parseReceiptFormat, renderReceipt, renderReceiptReview, reviewReceipt, verifyReceipt } from "./receipt.js";
+import {
+  parseReceiptFormat,
+  receiptHandoffEvidence,
+  renderReceipt,
+  renderReceiptReview,
+  reviewReceipt,
+  verifyReceipt
+} from "./receipt.js";
 import type { Agentfile } from "./schema.js";
 import { looksLikePactSource, parseSource } from "./source.js";
 import { findTarget, quotedTargetIds } from "./targets.js";
@@ -91,6 +98,20 @@ program
   .action(async (file: string, options: { format: string }) => {
     const result = await runSurfaceInspection(file);
     process.stdout.write(renderSurfaceInspection(result, parseSurfacesFormat(options.format)));
+  });
+
+program
+  .command("inspect")
+  .description("Summarize contract, health, generated surfaces, and receipt readiness.")
+  .argument("[file]", "Agentfile path")
+  .option("--format <format>", "text or json", "text")
+  .action(async (file: string, options: { format: string }) => {
+    const result = await runInspect(file);
+    process.stdout.write(renderInspectReport(result, parseInspectFormat(options.format)));
+
+    if (result.status === "fail") {
+      process.exitCode = 1;
+    }
   });
 
 program
@@ -343,6 +364,42 @@ interface SurfaceInspectionResult {
   surfaces: DoctorSurface[];
 }
 
+interface InspectResult {
+  contractPath: string;
+  status: "pass" | "fail";
+  task: {
+    id: string;
+    goal: string;
+    summary?: string;
+    owners: string[];
+    labels: string[];
+  };
+  scope: {
+    includeCount: number;
+    excludeCount: number;
+    filesystemReadCount: number;
+    filesystemWriteCount: number;
+  };
+  authority: {
+    shellAllowCount: number;
+    shellDenyCount: number;
+    networkDefault: string;
+    networkAllowCount: number;
+    secretsAccess: string;
+    secretAllowCount: number;
+    approvalGates: string[];
+  };
+  workflow: {
+    stepCount: number;
+    checkCount: number;
+    requiredCheckCount: number;
+    commandCheckCount: number;
+    acceptanceCount: number;
+    handoffEvidenceCount: number;
+  };
+  doctor: DoctorResult;
+}
+
 interface SyncCommandOptions {
   target?: string;
   output?: string;
@@ -549,6 +606,10 @@ async function runFormat(
 async function runDoctor(file?: string): Promise<DoctorResult> {
   const contractPath = await resolveFile(file);
   const agentfile = await load(contractPath);
+  return createDoctorResult(contractPath, agentfile);
+}
+
+async function createDoctorResult(contractPath: string, agentfile: Agentfile): Promise<DoctorResult> {
   const lintDiagnostics = lintAgentfile(agentfile);
   const surfaces = await inspectGeneratedSurfaces(agentfile);
   const staleSurfaces = surfaces.filter((surface) => surface.status === "stale");
@@ -561,6 +622,49 @@ async function runDoctor(file?: string): Promise<DoctorResult> {
     nextSteps: staleSurfaces.map((surface) =>
       `Run agentfile sync ${contractPath} --target ${surface.target} --output ${surface.outputPath} --force`
     )
+  };
+}
+
+async function runInspect(file?: string): Promise<InspectResult> {
+  const contractPath = await resolveFile(file);
+  const agentfile = await load(contractPath);
+  const doctor = await createDoctorResult(contractPath, agentfile);
+  const handoffEvidence = receiptHandoffEvidence(agentfile);
+
+  return {
+    contractPath,
+    status: doctor.status,
+    task: {
+      id: agentfile.task.id,
+      goal: agentfile.task.goal,
+      summary: agentfile.info.summary,
+      owners: agentfile.info.owners,
+      labels: agentfile.info.labels
+    },
+    scope: {
+      includeCount: agentfile.scope.include.length,
+      excludeCount: agentfile.scope.exclude.length,
+      filesystemReadCount: agentfile.permissions.filesystem.read.length,
+      filesystemWriteCount: agentfile.permissions.filesystem.write.length
+    },
+    authority: {
+      shellAllowCount: agentfile.permissions.shell.allow.length,
+      shellDenyCount: agentfile.permissions.shell.deny.length,
+      networkDefault: agentfile.permissions.network.default,
+      networkAllowCount: agentfile.permissions.network.allow.length,
+      secretsAccess: agentfile.permissions.secrets.access,
+      secretAllowCount: agentfile.permissions.secrets.allow.length,
+      approvalGates: agentfile.permissions.approvals.requiredFor
+    },
+    workflow: {
+      stepCount: agentfile.workflow.steps.length,
+      checkCount: agentfile.checks.length,
+      requiredCheckCount: agentfile.checks.filter((check) => check.required).length,
+      commandCheckCount: agentfile.checks.filter((check) => check.command).length,
+      acceptanceCount: agentfile.workflow.acceptance.length,
+      handoffEvidenceCount: handoffEvidence.length
+    },
+    doctor
   };
 }
 
@@ -615,6 +719,10 @@ function countLines(content: string): number {
   return trimmedFinalNewline.split(/\r?\n/).length;
 }
 
+function listOrNone(values: string[]): string {
+  return values.length > 0 ? values.join(", ") : "none";
+}
+
 async function readOptionalFile(filePath: string): Promise<string | undefined> {
   return readFile(filePath, "utf8").catch((error: NodeJS.ErrnoException) => {
     if (error.code === "ENOENT") {
@@ -650,6 +758,62 @@ function renderDoctorReport(result: DoctorResult, format: DoctorFormat): string 
   if (result.nextSteps.length > 0) {
     lines.push("Next steps:");
     for (const step of result.nextSteps) {
+      lines.push(`- ${step}`);
+    }
+  }
+
+  return `${lines.join("\n")}\n`;
+}
+
+function renderInspectReport(result: InspectResult, format: InspectFormat): string {
+  if (format === "json") {
+    return `${JSON.stringify(result, null, 2)}\n`;
+  }
+
+  const lines = [
+    "# Agentfile Inspect",
+    `Contract: ${result.contractPath}`,
+    `Status: ${result.status}`,
+    "",
+    `Task: ${result.task.id}`,
+    `Goal: ${result.task.goal}`
+  ];
+
+  if (result.task.summary) {
+    lines.push(`Summary: ${result.task.summary}`);
+  }
+
+  lines.push(
+    `Owners: ${listOrNone(result.task.owners)}`,
+    `Labels: ${listOrNone(result.task.labels)}`,
+    "",
+    "## Contract Shape",
+    `Scope: ${result.scope.includeCount} include, ${result.scope.excludeCount} exclude`,
+    `Filesystem: ${result.scope.filesystemReadCount} read, ${result.scope.filesystemWriteCount} write`,
+    `Authority: ${result.authority.shellAllowCount} shell allow, ${result.authority.shellDenyCount} shell deny, network ${result.authority.networkDefault}, secrets ${result.authority.secretsAccess}`,
+    `Approval gates: ${listOrNone(result.authority.approvalGates)}`,
+    "",
+    "## Workflow And Receipt",
+    `Steps: ${result.workflow.stepCount}`,
+    `Checks: ${result.workflow.checkCount} total, ${result.workflow.requiredCheckCount} required, ${result.workflow.commandCheckCount} command-backed`,
+    `Acceptance evidence: ${result.workflow.acceptanceCount}`,
+    `Handoff evidence: ${result.workflow.handoffEvidenceCount}`,
+    "",
+    "## Generated Surfaces"
+  );
+
+  for (const surface of result.doctor.surfaces) {
+    lines.push(`- ${surface.outputPath} [${surface.target}]: ${doctorSurfaceLabel(surface.status)}`);
+  }
+
+  lines.push("", `Lint warnings: ${result.doctor.lintDiagnostics.length}`);
+  for (const diagnostic of result.doctor.lintDiagnostics) {
+    lines.push(`- ${diagnostic.path}: ${diagnostic.message}`);
+  }
+
+  if (result.doctor.nextSteps.length > 0) {
+    lines.push("", "Next steps:");
+    for (const step of result.doctor.nextSteps) {
       lines.push(`- ${step}`);
     }
   }
@@ -699,6 +863,16 @@ function parseDoctorFormat(value: string): DoctorFormat {
   }
 
   throw new AgentfileError(`unknown doctor format "${value}". Expected "text" or "json".`);
+}
+
+type InspectFormat = "text" | "json";
+
+function parseInspectFormat(value: string): InspectFormat {
+  if (value === "text" || value === "json") {
+    return value;
+  }
+
+  throw new AgentfileError(`unknown inspect format "${value}". Expected "text" or "json".`);
 }
 
 type SurfacesFormat = "text" | "json";

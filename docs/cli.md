@@ -68,6 +68,20 @@ Pass `--format json` for CI, dashboards, or other tooling that needs the same st
 agentfile doctor examples/fix-login-race.agent --format json
 ```
 
+## `agentfile inspect [file]`
+
+Print a review summary that combines the contract task, scope and authority counts, workflow proof/receipt readiness, doctor status, and generated surface freshness:
+
+```sh
+agentfile inspect examples/fix-login-race.agent
+```
+
+Pass `--format json` for tooling that needs the same project-readiness summary:
+
+```sh
+agentfile inspect examples/fix-login-race.agent --format json
+```
+
 ## `agentfile surfaces [file]`
 
 Inspect the generated instruction surfaces for a contract without writing files. The command shows the file-backed targets, their default output paths, whether an adopted default file is missing, stale, or up to date, and the size of the generated content:

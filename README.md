@@ -329,9 +329,12 @@ Run a project adoption check:
 ```sh
 agentfile doctor examples/fix-login-race.agent
 agentfile doctor examples/fix-login-race.agent --format json
+agentfile inspect examples/fix-login-race.agent
+agentfile inspect examples/fix-login-race.agent --format json
 ```
 
 `doctor` validates the contract, reports lint warnings, and checks adopted default instruction surfaces like `AGENTS.md`, `CLAUDE.md`, Cursor rules, and Copilot instructions for stale generated content.
+`inspect` combines contract shape, health status, generated surfaces, and receipt readiness into one review summary.
 
 Inspect the generated instruction surfaces before writing files:
 
@@ -451,6 +454,7 @@ Agentfile is early. The v0.1 goal is intentionally narrow:
 - Compiler targets for `AGENTS.md`, `CLAUDE.md`, Cursor rules, and GitHub Copilot instructions.
 - `agentfile doctor` for contract health and generated instruction-surface freshness checks.
 - `agentfile doctor --format json` for machine-readable contract health reports.
+- `agentfile inspect` for one-command contract, health, surface, and receipt-readiness review.
 - `agentfile surfaces` for generated instruction-surface inspection without writing files.
 - `agentfile sync --all` for preflighted generation or freshness checks across every default instruction surface.
 - `agentfile format --check` and `--write` for canonical Pact source hygiene.

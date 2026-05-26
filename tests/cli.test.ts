@@ -338,6 +338,74 @@ describe("agentfile surfaces", () => {
   });
 });
 
+describe("agentfile inspect", () => {
+  it("prints a project readiness summary", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-inspect-"));
+    tempDirs.push(cwd);
+
+    const { stdout } = await runCli(["inspect", examplePath], cwd);
+
+    expect(stdout).toContain("# Agentfile Inspect");
+    expect(stdout).toContain(`Contract: ${examplePath}`);
+    expect(stdout).toContain("Status: pass");
+    expect(stdout).toContain("Task: fix-login-refresh-race");
+    expect(stdout).toContain("Scope: 2 include, 2 exclude");
+    expect(stdout).toContain("Checks: 2 total, 2 required, 2 command-backed");
+    expect(stdout).toContain("Handoff evidence: 8");
+    expect(stdout).toContain("AGENTS.md [agents-md]: not found");
+    expect(stdout).toContain("Lint warnings: 0");
+  });
+
+  it("prints a machine-readable project readiness summary", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-inspect-json-"));
+    tempDirs.push(cwd);
+
+    const { stdout } = await runCli(["inspect", examplePath, "--format", "json"], cwd);
+    const result = JSON.parse(stdout);
+
+    expect(result.contractPath).toBe(examplePath);
+    expect(result.status).toBe("pass");
+    expect(result.task).toMatchObject({
+      id: "fix-login-refresh-race",
+      labels: ["auth", "concurrency"],
+      owners: ["auth-team"]
+    });
+    expect(result.scope).toMatchObject({
+      includeCount: 2,
+      excludeCount: 2,
+      filesystemReadCount: 2,
+      filesystemWriteCount: 2
+    });
+    expect(result.workflow).toMatchObject({
+      checkCount: 2,
+      requiredCheckCount: 2,
+      commandCheckCount: 2,
+      acceptanceCount: 2,
+      handoffEvidenceCount: 8
+    });
+    expect(result.doctor.surfaces).toHaveLength(4);
+  });
+
+  it("fails when project inspection finds stale adopted surfaces", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-inspect-stale-"));
+    tempDirs.push(cwd);
+
+    await writeFile(join(cwd, "AGENTS.md"), "stale generated instructions\n", "utf8");
+
+    await expect(
+      runCli(["inspect", examplePath, "--format", "json"], cwd)
+    ).rejects.toMatchObject({
+      stdout: expect.stringContaining('"status": "fail"')
+    });
+
+    await expect(
+      runCli(["inspect", examplePath], cwd)
+    ).rejects.toMatchObject({
+      stdout: expect.stringContaining("AGENTS.md [agents-md]: stale")
+    });
+  });
+});
+
 describe("agentfile format", () => {
   it("prints canonical Pact source without writing", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "agentfile-format-print-"));

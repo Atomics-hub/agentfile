@@ -52,6 +52,16 @@ try {
   });
 
   await runStep({
+    name: "Inspect project readiness",
+    command: "node dist/cli.js inspect examples/fix-login-race.agent",
+    run: () => execFileAsync("node", ["dist/cli.js", "inspect", "examples/fix-login-race.agent"], {
+      cwd: root,
+      env: process.env,
+      maxBuffer
+    })
+  });
+
+  await runStep({
     name: "Inspect generated surfaces",
     command: "node dist/cli.js surfaces examples/fix-login-race.agent",
     run: () => execFileAsync("node", ["dist/cli.js", "surfaces", "examples/fix-login-race.agent"], {
@@ -270,6 +280,10 @@ function renderDemoEvidence() {
         [
           "The same health check can be printed as JSON.",
           "CI and dashboards can consume doctor status without scraping terminal prose."
+        ],
+        [
+          "One inspect command summarizes contract shape, health, generated surfaces, and receipt readiness.",
+          "Reviewers can evaluate the delegation package before an agent run."
         ],
         [
           "A filled JSON receipt verifies against the original contract.",
