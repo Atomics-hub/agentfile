@@ -17,6 +17,7 @@
 - Add `agentfile format --check` and `--write` plus CI coverage for canonical Pact source hygiene.
 - Add `agentfile receipt review` for readable receipt completion summaries.
 - Add `agentfile surfaces` for no-write generated instruction-surface inspection.
+- Add `agentfile sync --all` for one-command default surface generation and freshness checks.
 
 ## v0.2
 

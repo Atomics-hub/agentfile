@@ -202,6 +202,13 @@ node dist/cli.js sync examples/fix-login-race.agent --target cursor-mdc --output
 node dist/cli.js sync examples/fix-login-race.agent --target copilot-md --output /tmp/agentfile-demo/copilot-instructions.md
 ```
 
+Inside a project checkout, all default instruction surfaces can also be generated or checked together:
+
+```sh
+node dist/cli.js sync examples/fix-login-race.agent --all --force
+node dist/cli.js sync examples/fix-login-race.agent --all --check
+```
+
 Each generated instruction file carries the same mission, scope, authority, policies, checks, and handoff requirements.
 
 CI can also verify that checked-in generated surfaces still match their `.agent` source without rewriting files:

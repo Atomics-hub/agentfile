@@ -135,46 +135,15 @@ program
   .command("sync")
   .description("Generate an agent instruction file from an Agentfile contract.")
   .argument("[file]", "Agentfile path")
-  .option("-t, --target <target>", syncTargetHelp(), "agents-md")
+  .option("-t, --target <target>", syncTargetHelp())
   .option("-o, --output <file>", "output path")
   .option("-f, --force", "overwrite an existing output file", false)
   .option("--check", "verify the generated output is already up to date without writing", false)
-  .action(async (file: string, options: { target: string; output?: string; force: boolean; check: boolean }) => {
-    const target = parseTarget(options.target);
-    if (!isSyncTarget(target)) {
-      throw new AgentfileError(
-        `sync target "${target}" is not file-backed. Expected ${syncTargetList()}.`
-      );
+  .option("--all", "generate or check all default file-backed instruction surfaces", false)
+  .action(async (file: string, options: SyncCommandOptions) => {
+    for (const message of await runSync(file, options)) {
+      console.log(message);
     }
-
-    const resolved = await resolveFile(file);
-    const agentfile = await load(resolved);
-    const output = options.output ?? defaultOutputPathForTarget(target);
-    const generated = compileAgentfile(agentfile, target);
-
-    if (options.check) {
-      const current = await readFile(output, "utf8").catch(() => {
-        throw new AgentfileError(`generated output is missing: ${output}`, output);
-      });
-
-      if (current !== generated) {
-        throw new AgentfileError(
-          `generated output is stale: ${output}; run agentfile sync ${resolved} --target ${target} --output ${output} --force to update it`,
-          output
-        );
-      }
-
-      console.log(`OK ${output} is up to date`);
-      return;
-    }
-
-    if (!options.force && await exists(output)) {
-      throw new AgentfileError(`refusing to overwrite ${output}; pass --force to replace it`);
-    }
-
-    await mkdir(dirname(output), { recursive: true });
-    await writeFile(output, generated, "utf8");
-    console.log(`Wrote ${output}`);
   });
 
 program
@@ -371,11 +340,152 @@ interface SurfaceInspectionResult {
   surfaces: DoctorSurface[];
 }
 
+interface SyncCommandOptions {
+  target?: string;
+  output?: string;
+  force: boolean;
+  check: boolean;
+  all: boolean;
+}
+
+interface SyncPlanItem {
+  target: CompileTarget;
+  outputPath: string;
+  generated: string;
+}
+
 type FormatResult =
   | { status: "printed"; formatted: string }
   | { status: "checked"; filePath: string }
   | { status: "unchanged"; filePath: string }
   | { status: "written"; filePath: string };
+
+async function runSync(file: string | undefined, options: SyncCommandOptions): Promise<string[]> {
+  if (options.all && options.output) {
+    throw new AgentfileError("sync --all cannot use --output because each target has its own default path");
+  }
+
+  if (options.all && options.target) {
+    throw new AgentfileError("sync --all cannot use --target; omit --all to sync one target");
+  }
+
+  const resolved = await resolveFile(file);
+  const agentfile = await load(resolved);
+  const plan = options.all
+    ? buildAllSyncPlan(agentfile)
+    : [buildSingleSyncPlanItem(agentfile, options.target ?? "agents-md", options.output)];
+
+  if (options.check) {
+    return checkSyncPlan(resolved, plan, options.all);
+  }
+
+  if (!options.force) {
+    await assertSyncPlanCanWrite(plan, options.all);
+  }
+
+  for (const item of plan) {
+    await mkdir(dirname(item.outputPath), { recursive: true });
+    await writeFile(item.outputPath, item.generated, "utf8");
+  }
+
+  return plan.map((item) => options.all ? `Wrote ${item.outputPath} [${item.target}]` : `Wrote ${item.outputPath}`);
+}
+
+function buildSingleSyncPlanItem(agentfile: Agentfile, targetValue: string, outputPath?: string): SyncPlanItem {
+  const target = parseTarget(targetValue);
+  if (!isSyncTarget(target)) {
+    throw new AgentfileError(
+      `sync target "${target}" is not file-backed. Expected ${syncTargetList()}.`
+    );
+  }
+
+  return {
+    target,
+    outputPath: outputPath ?? defaultOutputPathForTarget(target),
+    generated: compileAgentfile(agentfile, target)
+  };
+}
+
+function buildAllSyncPlan(agentfile: Agentfile): SyncPlanItem[] {
+  return syncTargets().map((definition) => {
+    const target = definition.id;
+    if (!isSyncTarget(target)) {
+      throw new AgentfileError(`sync target "${target}" is not file-backed. Expected ${syncTargetList()}.`);
+    }
+
+    return {
+      target,
+      outputPath: defaultOutputPathForTarget(target),
+      generated: compileAgentfile(agentfile, target)
+    };
+  });
+}
+
+async function checkSyncPlan(resolved: string, plan: SyncPlanItem[], all: boolean): Promise<string[]> {
+  const missing: SyncPlanItem[] = [];
+  const stale: SyncPlanItem[] = [];
+  const messages: string[] = [];
+
+  for (const item of plan) {
+    const current = await readOptionalFile(item.outputPath);
+    if (current === undefined) {
+      missing.push(item);
+      continue;
+    }
+
+    if (current !== item.generated) {
+      stale.push(item);
+      continue;
+    }
+
+    messages.push(all ? `OK ${item.outputPath} [${item.target}] is up to date` : `OK ${item.outputPath} is up to date`);
+  }
+
+  if (!all && missing.length > 0) {
+    throw new AgentfileError(`generated output is missing: ${missing[0].outputPath}`, missing[0].outputPath);
+  }
+
+  if (!all && stale.length > 0) {
+    throw new AgentfileError(
+      `generated output is stale: ${stale[0].outputPath}; run agentfile sync ${resolved} --target ${stale[0].target} --output ${stale[0].outputPath} --force to update it`,
+      stale[0].outputPath
+    );
+  }
+
+  if (missing.length > 0 || stale.length > 0) {
+    throw new AgentfileError([
+      "generated outputs are not up to date",
+      ...missing.map((item) => `- missing ${item.outputPath} [${item.target}]`),
+      ...stale.map((item) => `- stale ${item.outputPath} [${item.target}]`),
+      `Run agentfile sync ${resolved} --all --force to update default generated surfaces.`
+    ].join("\n"));
+  }
+
+  return messages;
+}
+
+async function assertSyncPlanCanWrite(plan: SyncPlanItem[], all: boolean): Promise<void> {
+  const conflicts: SyncPlanItem[] = [];
+  for (const item of plan) {
+    if (await exists(item.outputPath)) {
+      conflicts.push(item);
+    }
+  }
+
+  if (conflicts.length === 0) {
+    return;
+  }
+
+  if (!all) {
+    throw new AgentfileError(`refusing to overwrite ${conflicts[0].outputPath}; pass --force to replace it`);
+  }
+
+  throw new AgentfileError([
+    "refusing to overwrite generated outputs:",
+    ...conflicts.map((item) => `- ${item.outputPath} [${item.target}]`),
+    "Pass --force to replace them."
+  ].join("\n"));
+}
 
 async function runFormat(
   file: string | undefined,

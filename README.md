@@ -390,10 +390,17 @@ agentfile sync examples/fix-login-race.agent --target cursor-mdc
 agentfile sync examples/fix-login-race.agent --target copilot-md
 ```
 
+Generate all default instruction surfaces in one preflighted command:
+
+```sh
+agentfile sync examples/fix-login-race.agent --all --force
+```
+
 Verify a generated instruction file is still up to date:
 
 ```sh
 agentfile sync examples/fix-login-race.agent --target agents-md --output AGENTS.md --check
+agentfile sync examples/fix-login-race.agent --all --check
 npm run surfaces:check
 ```
 
@@ -443,6 +450,7 @@ Agentfile is early. The v0.1 goal is intentionally narrow:
 - Compiler targets for `AGENTS.md`, `CLAUDE.md`, Cursor rules, and GitHub Copilot instructions.
 - `agentfile doctor` for contract health and generated instruction-surface freshness checks.
 - `agentfile surfaces` for generated instruction-surface inspection without writing files.
+- `agentfile sync --all` for preflighted generation or freshness checks across every default instruction surface.
 - `agentfile format --check` and `--write` for canonical Pact source hygiene.
 - `agentfile receipt review` for human-readable receipt completion and verification summaries.
 - A benchmark skeleton that can compare plain issue text against Agentfile-guided tasks without claiming results before data exists.

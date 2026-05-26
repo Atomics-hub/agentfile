@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added `agentfile sync --all` and `--all --check` for preflighted generation and freshness checks across every default instruction surface.
 - Added `agentfile surfaces` to inspect generated instruction-surface status and size without writing files.
 - Added `agentfile receipt review` to print human-readable completion summaries for filled receipt JSON.
 - Added `agentfile format` with `--check` and `--write`, canonicalized checked-in `.agent` sources, and wired a source-format check into CI.

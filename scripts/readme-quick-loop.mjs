@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { execFile } from "node:child_process";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -49,6 +49,18 @@ try {
       env: process.env,
       maxBuffer
     })
+  });
+
+  await runStep({
+    name: "Generate all default surfaces",
+    command: "node dist/cli.js sync examples/fix-login-race.agent --all --force (cwd <temp>)",
+    run: () => syncAllDefaults(false)
+  });
+
+  await runStep({
+    name: "Check all default surfaces",
+    command: "node dist/cli.js sync examples/fix-login-race.agent --all --check (cwd <temp>)",
+    run: () => syncAllDefaults(true)
   });
 
   await runStep({
@@ -121,6 +133,18 @@ function sync(artifact) {
     join(tempRoot, artifact.outputName),
     "--force"
   ], { cwd: root, env: process.env, maxBuffer });
+}
+
+async function syncAllDefaults(check) {
+  const cwd = join(tempRoot, "sync-all");
+  await mkdir(cwd, { recursive: true });
+  return execFileAsync("node", [
+    join(root, "dist/cli.js"),
+    "sync",
+    join(root, "examples/fix-login-race.agent"),
+    "--all",
+    check ? "--check" : "--force"
+  ], { cwd, env: process.env, maxBuffer });
 }
 
 async function collectArtifactPreviews() {
@@ -230,8 +254,8 @@ function renderDemoEvidence() {
           "Existing harnesses can consume the contract without replacing the user's agent stack."
         ],
         [
-          "Generated instruction surfaces can be inspected before writing files.",
-          "Reviewers can see which harness projections will exist and whether adopted defaults are stale."
+          "Generated instruction surfaces can be inspected, generated, and checked before handoff.",
+          "Reviewers can see which harness projections exist and verify adopted defaults are current."
         ],
         [
           "A filled JSON receipt verifies against the original contract.",

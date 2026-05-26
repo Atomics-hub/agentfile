@@ -118,6 +118,79 @@ describe("agentfile sync", () => {
       stderr: expect.stringContaining(`generated output is missing: ${outputPath}`)
     });
   });
+
+  it("creates all default generated instruction surfaces", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-sync-all-"));
+    tempDirs.push(cwd);
+
+    const { stdout } = await runCli(["sync", examplePath, "--all"], cwd);
+
+    expect(stdout).toContain("Wrote AGENTS.md [agents-md]");
+    expect(stdout).toContain("Wrote CLAUDE.md [claude-md]");
+    expect(stdout).toContain("Wrote .cursor/rules/agentfile.mdc [cursor-mdc]");
+    expect(stdout).toContain("Wrote .github/copilot-instructions.md [copilot-md]");
+
+    expect(await readFile(join(cwd, "AGENTS.md"), "utf8")).toContain("# fix-login-refresh-race");
+    expect(await readFile(join(cwd, "CLAUDE.md"), "utf8")).toContain("# fix-login-refresh-race");
+    expect(await readFile(join(cwd, ".cursor/rules/agentfile.mdc"), "utf8")).toContain("alwaysApply: true");
+    expect(await readFile(join(cwd, ".github/copilot-instructions.md"), "utf8")).toContain("# fix-login-refresh-race");
+  });
+
+  it("checks all default generated instruction surfaces", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-sync-all-check-"));
+    tempDirs.push(cwd);
+
+    await runCli(["sync", examplePath, "--all"], cwd);
+
+    const { stdout } = await runCli(["sync", examplePath, "--all", "--check"], cwd);
+
+    expect(stdout).toContain("OK AGENTS.md [agents-md] is up to date");
+    expect(stdout).toContain("OK CLAUDE.md [claude-md] is up to date");
+    expect(stdout).toContain("OK .cursor/rules/agentfile.mdc [cursor-mdc] is up to date");
+    expect(stdout).toContain("OK .github/copilot-instructions.md [copilot-md] is up to date");
+  });
+
+  it("reports missing and stale surfaces in all-target check mode", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-sync-all-check-fail-"));
+    tempDirs.push(cwd);
+
+    await writeFile(join(cwd, "AGENTS.md"), "stale generated instructions\n", "utf8");
+
+    await expect(
+      runCli(["sync", examplePath, "--all", "--check"], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("generated outputs are not up to date")
+    });
+
+    await expect(
+      runCli(["sync", examplePath, "--all", "--check"], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("- stale AGENTS.md [agents-md]")
+    });
+
+    await expect(
+      runCli(["sync", examplePath, "--all", "--check"], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("- missing CLAUDE.md [claude-md]")
+    });
+  });
+
+  it("preflights all-target overwrite conflicts before writing", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-sync-all-conflict-"));
+    tempDirs.push(cwd);
+
+    await writeFile(join(cwd, "AGENTS.md"), "hand-written instructions\n", "utf8");
+
+    await expect(
+      runCli(["sync", examplePath, "--all"], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("refusing to overwrite generated outputs:")
+    });
+
+    await expect(readFile(join(cwd, "CLAUDE.md"), "utf8")).rejects.toMatchObject({
+      code: "ENOENT"
+    });
+  });
 });
 
 describe("agentfile doctor", () => {
