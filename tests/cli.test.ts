@@ -1340,6 +1340,27 @@ describe("agentfile receipt", () => {
     expect(stdout).not.toContain("## Issues");
   });
 
+  it("reviews checked-in lifecycle receipt evidence as JSON", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-review-json-"));
+    tempDirs.push(cwd);
+
+    const { stdout } = await runCli(["receipt", "review", examplePath, passingReceiptPath, "--format", "json"], cwd);
+    const review = JSON.parse(stdout);
+
+    expect(review).toMatchObject({
+      receiptPath: passingReceiptPath,
+      status: "pass",
+      taskId: "fix-login-refresh-race",
+      generatedInstructionSurfaceUsed: "AGENTS.md"
+    });
+    expect(review.requiredProof).toEqual({
+      passed: 2,
+      total: 2,
+      expectedStatus: "passed"
+    });
+    expect(review.issues).toEqual([]);
+  });
+
   it("reviews pending receipt evidence before failing", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-review-pending-"));
     tempDirs.push(cwd);
@@ -1360,6 +1381,34 @@ describe("agentfile receipt", () => {
       runCli(["receipt", "review", examplePath, pendingReceiptPath], cwd)
     ).rejects.toMatchObject({
       stdout: expect.stringContaining('requiredProof[npm-test-auth].status: expected "passed", got "pending"')
+    });
+  });
+
+  it("prints pending receipt review JSON before failing", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-review-json-pending-"));
+    tempDirs.push(cwd);
+
+    await expect(
+      runCli(["receipt", "review", examplePath, pendingReceiptPath, "--format", "json"], cwd)
+    ).rejects.toMatchObject({
+      stdout: expect.stringContaining('"status": "fail"')
+    });
+
+    await expect(
+      runCli(["receipt", "review", examplePath, pendingReceiptPath, "--format", "json"], cwd)
+    ).rejects.toMatchObject({
+      stdout: expect.stringContaining('"requiredProof"')
+    });
+  });
+
+  it("rejects unknown receipt review formats", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-review-format-"));
+    tempDirs.push(cwd);
+
+    await expect(
+      runCli(["receipt", "review", examplePath, passingReceiptPath, "--format", "yaml"], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining('unknown receipt review format "yaml". Expected "text" or "json".')
     });
   });
 });

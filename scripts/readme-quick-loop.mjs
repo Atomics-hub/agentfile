@@ -229,6 +229,20 @@ try {
   });
 
   await runStep({
+    name: "Review receipt as JSON",
+    command: "node dist/cli.js receipt review examples/fix-login-race.agent examples/receipts/fix-login-passing.receipt.json --format json",
+    run: () => execFileAsync("node", [
+      "dist/cli.js",
+      "receipt",
+      "review",
+      "examples/fix-login-race.agent",
+      "examples/receipts/fix-login-passing.receipt.json",
+      "--format",
+      "json"
+    ], { cwd: root, env: process.env, maxBuffer })
+  });
+
+  await runStep({
     name: "Verify pending receipt fails",
     command: "node dist/cli.js receipt verify examples/fix-login-race.agent examples/receipts/fix-login-pending.receipt.json",
     run: () => expectFailureWith(
@@ -439,6 +453,10 @@ function renderDemoEvidence() {
         [
           "A filled JSON receipt verifies against the original contract.",
           "Completed work can be audited against the same source that delegated it."
+        ],
+        [
+          "`agentfile receipt review --format json` emits machine-readable completion counts.",
+          "CI dashboards and harness wrappers can consume receipt status without scraping Markdown."
         ],
         [
           "A pending JSON receipt fails on missing required proof.",

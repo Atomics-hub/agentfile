@@ -350,12 +350,19 @@ receiptCommand
   .description("Print a human review summary for a filled JSON receipt.")
   .argument("<contract>", "Agentfile contract path")
   .argument("<receipt>", "JSON receipt path")
-  .action(async (contract: string, receiptPath: string) => {
+  .option("--format <format>", "text or json", "text")
+  .action(async (contract: string, receiptPath: string, options: { format: string }, command: Command) => {
     const agentfile = await load(contract);
     const receipt = await loadReceipt(receiptPath);
     const review = reviewReceipt(agentfile, receipt, receiptPath);
+    const parentOptions = command.parent?.opts() as { format?: string };
+    const format = parseReceiptReviewFormat(parentOptions.format === "markdown" ? options.format : parentOptions.format ?? options.format);
 
-    process.stdout.write(renderReceiptReview(review));
+    if (format === "json") {
+      process.stdout.write(`${JSON.stringify(review, null, 2)}\n`);
+    } else {
+      process.stdout.write(renderReceiptReview(review));
+    }
 
     if (review.status === "fail") {
       process.exitCode = 1;
@@ -1465,6 +1472,16 @@ function githubExpressionString(value: string): string {
 }
 
 type SurfacesFormat = "text" | "json";
+
+type ReceiptReviewFormat = "text" | "json";
+
+function parseReceiptReviewFormat(value: string): ReceiptReviewFormat {
+  if (value === "text" || value === "json") {
+    return value;
+  }
+
+  throw new AgentfileError(`unknown receipt review format "${value}". Expected "text" or "json".`);
+}
 
 function parseSurfacesFormat(value: string): SurfacesFormat {
   if (value === "text" || value === "json") {

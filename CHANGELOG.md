@@ -9,6 +9,7 @@ The project follows semantic versioning once the first public release is tagged.
 - Added `agentfile init --kit reviewable` to scaffold Pact source, VS Code schema setup, and a GitHub Actions validation workflow with a conditional receipt-verification gate.
 - Added `agentfile init --github-actions-receipt` to wire receipt verification into generated workflows during first-run setup.
 - Added `agentfile receipt init` to create the default JSON receipt skeleton used by generated CI receipt gates.
+- Added `agentfile receipt review --format json` for machine-readable receipt completion summaries.
 - Added `agentfile init --github-actions` to scaffold a starter contract and source-checkout validation workflow, with optional generated-surface gates.
 - Added `agentfile init --editor vscode` to scaffold a starter contract, JSON Schema, and VS Code settings in one preflighted setup.
 - Added `agentfile editor vscode` to generate, write, and drift-check VS Code settings that associate committed schemas with Agentfile YAML/JSON contract IR.

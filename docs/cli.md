@@ -334,9 +334,10 @@ agentfile receipt verify examples/fix-login-race.agent examples/receipts/fix-log
 
 ## `agentfile receipt review <contract> <receipt>`
 
-Print a human review summary for a filled JSON receipt. The command shows receipt status, generated instruction surface, required proof completion, acceptance evidence completion, handoff evidence completion, and any verification issues. It exits non-zero when the receipt does not satisfy the contract.
+Print a review summary for a filled JSON receipt. The command shows receipt status, generated instruction surface, required proof completion, acceptance evidence completion, handoff evidence completion, and any verification issues. Pass `--format json` for automation. It exits non-zero when the receipt does not satisfy the contract.
 
 ```sh
 agentfile receipt review examples/fix-login-race.agent examples/receipts/fix-login-passing.receipt.json
+agentfile receipt review examples/fix-login-race.agent examples/receipts/fix-login-passing.receipt.json --format json
 agentfile receipt review examples/fix-login-race.agent examples/receipts/fix-login-pending.receipt.json
 ```
