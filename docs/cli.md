@@ -315,6 +315,19 @@ agentfile receipt init examples/fix-login-race.agent
 agentfile receipt init examples/fix-login-race.agent --output receipts/custom.receipt.json
 ```
 
+## `agentfile receipt fill <contract> <receipt>`
+
+Fill command-backed proof entries in a JSON receipt from a check log.
+
+The command looks for each contract check command in the supplied log. Matching proof entries are marked `status: "passed"` with the log path as evidence. It does not fill acceptance or handoff evidence; those still need explicit human or harness-provided evidence before `receipt verify` can pass.
+
+By default the updated receipt is printed to stdout. Pass `--write` to update the receipt file in place.
+
+```sh
+agentfile receipt fill examples/fix-login-race.agent receipts/latest.receipt.json --check-log logs/checks.txt
+agentfile receipt fill examples/fix-login-race.agent receipts/latest.receipt.json --check-log logs/checks.txt --write
+```
+
 ## `agentfile receipt verify <contract> <receipt>`
 
 Verify a filled JSON receipt against its source contract.

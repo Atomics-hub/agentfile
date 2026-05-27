@@ -16,6 +16,7 @@ import { diffContracts, renderContractDiff, type ContractDiffFormat } from "./di
 import { defaultVscodeSchemaPath, defaultVscodeSettingsPath, renderVscodeSettings } from "./editor.js";
 import { compileJsonSchema } from "./json-schema.js";
 import {
+  fillReceiptProofFromCheckLog,
   parseReceiptFormat,
   receiptHandoffEvidence,
   renderReceipt,
@@ -369,6 +370,34 @@ receiptCommand
     }
   });
 
+receiptCommand
+  .command("fill")
+  .description("Fill command-backed receipt proof from a check log.")
+  .argument("<contract>", "Agentfile contract path")
+  .argument("<receipt>", "JSON receipt path")
+  .requiredOption("--check-log <file>", "check log path whose content contains completed proof commands")
+  .option("--write", "write the updated JSON receipt back to the receipt path", false)
+  .action(async (
+    contract: string,
+    receiptPath: string,
+    options: { checkLog: string; write: boolean }
+  ) => {
+    const agentfile = await load(contract);
+    const receipt = await loadReceipt(receiptPath);
+    const checkLog = await readTextFile(options.checkLog);
+    const result = fillReceiptProofFromCheckLog(agentfile, receipt, options.checkLog, checkLog);
+    const rendered = `${JSON.stringify(result.receipt, null, 2)}\n`;
+
+    if (!options.write) {
+      process.stdout.write(rendered);
+      return;
+    }
+
+    await writeFile(receiptPath, rendered, "utf8");
+    console.log(`Updated ${receiptPath}`);
+    console.log(`Filled proof: ${result.filledProofIds.length > 0 ? result.filledProofIds.join(", ") : "none"}`);
+  });
+
 program.parseAsync().catch((error: unknown) => {
   if (error instanceof AgentfileError) {
     console.error(error.message);
@@ -398,6 +427,12 @@ async function loadReceipt(filePath: string): Promise<unknown> {
     const message = error instanceof Error ? error.message : String(error);
     throw new AgentfileError(`invalid receipt JSON: ${message}`, filePath);
   }
+}
+
+async function readTextFile(filePath: string): Promise<string> {
+  return readFile(filePath, "utf8").catch((error: NodeJS.ErrnoException) => {
+    throw new AgentfileError(error.message, filePath);
+  });
 }
 
 function parseTarget(value: string): CompileTarget {

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { execFile } from "node:child_process";
-import { mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -51,6 +51,12 @@ try {
     name: "Create CI receipt template",
     command: "node dist/cli.js receipt init examples/fix-login-race.agent --output <temp>/latest.receipt.json",
     run: () => createReceiptTemplate()
+  });
+
+  await runStep({
+    name: "Fill receipt proof from check log",
+    command: "node dist/cli.js receipt fill examples/fix-login-race.agent <temp>/latest.receipt.json --check-log <temp>/checks.log --write",
+    run: () => fillReceiptProof()
   });
 
   await runStep({
@@ -312,6 +318,28 @@ async function createReceiptTemplate() {
   ], { cwd: root, env: process.env, maxBuffer });
 }
 
+async function fillReceiptProof() {
+  const checkLogPath = join(tempRoot, "checks.log");
+  await writeFile(checkLogPath, [
+    "$ npm test -- auth",
+    "PASS tests/auth/session.test.ts",
+    "$ npm run lint",
+    "Lint clean",
+    ""
+  ].join("\n"), "utf8");
+
+  return execFileAsync("node", [
+    "dist/cli.js",
+    "receipt",
+    "fill",
+    "examples/fix-login-race.agent",
+    join(tempRoot, "latest.receipt.json"),
+    "--check-log",
+    checkLogPath,
+    "--write"
+  ], { cwd: root, env: process.env, maxBuffer });
+}
+
 async function collectArtifactPreviews() {
   const previews = [];
 
@@ -421,6 +449,10 @@ function renderDemoEvidence() {
         [
           "`agentfile receipt init` writes the CI receipt skeleton at a predictable JSON path.",
           "A harness can fill the expected receipt file after work finishes instead of hand-building the audit shape."
+        ],
+        [
+          "`agentfile receipt fill --check-log` updates command-backed proof slots from real check output.",
+          "Wrappers can reduce manual receipt editing while still leaving acceptance and handoff evidence for review."
         ],
         [
           "The same source generates AGENTS.md, CLAUDE.md, Cursor, and Copilot instruction files.",

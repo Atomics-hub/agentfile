@@ -1264,6 +1264,84 @@ describe("agentfile receipt", () => {
     expect(jsonReceipt.kind).toBe("AgentfileReceiptTemplate");
   });
 
+  it("fills command-backed proof from a check log without writing the receipt", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-fill-"));
+    tempDirs.push(cwd);
+
+    const { stdout: templateJson } = await runCli(["receipt", examplePath, "--format", "json"], cwd);
+    const receiptPath = join(cwd, "receipt.json");
+    const checkLogPath = join(cwd, "checks.log");
+    await writeFile(receiptPath, templateJson, "utf8");
+    await writeFile(checkLogPath, [
+      "$ npm test -- auth",
+      "PASS tests/auth/session.test.ts",
+      "$ npm run lint",
+      "Lint clean"
+    ].join("\n"), "utf8");
+
+    const { stdout } = await runCli(["receipt", "fill", examplePath, receiptPath, "--check-log", "checks.log"], cwd);
+    const filled = JSON.parse(stdout);
+    const persisted = JSON.parse(await readFile(receiptPath, "utf8"));
+
+    expect(filled.requiredProof).toEqual([
+      expect.objectContaining({
+        id: "npm-test-auth",
+        status: "passed",
+        evidence: "checks.log"
+      }),
+      expect.objectContaining({
+        id: "npm-run-lint",
+        status: "passed",
+        evidence: "checks.log"
+      })
+    ]);
+    expect(filled.acceptanceEvidence[0]).toMatchObject({
+      status: "pending",
+      evidence: null
+    });
+    expect(persisted.requiredProof[0]).toMatchObject({
+      status: "pending",
+      evidence: null
+    });
+  });
+
+  it("writes filled proof while leaving acceptance and handoff evidence for review", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-fill-write-"));
+    tempDirs.push(cwd);
+
+    const { stdout: templateJson } = await runCli(["receipt", examplePath, "--format", "json"], cwd);
+    const receiptPath = join(cwd, "receipt.json");
+    await writeFile(receiptPath, templateJson, "utf8");
+    await writeFile(join(cwd, "checks.log"), "npm test -- auth\nnpm run lint\n", "utf8");
+
+    const { stdout } = await runCli([
+      "receipt",
+      "fill",
+      examplePath,
+      receiptPath,
+      "--check-log",
+      "checks.log",
+      "--write"
+    ], cwd);
+    const receipt = JSON.parse(await readFile(receiptPath, "utf8"));
+
+    expect(stdout).toContain(`Updated ${receiptPath}`);
+    expect(stdout).toContain("Filled proof: npm-test-auth, npm-run-lint");
+    expect(receipt.requiredProof.every((proof: { status: string }) => proof.status === "passed")).toBe(true);
+    expect(receipt.acceptanceEvidence.every((entry: { status: string }) => entry.status === "pending")).toBe(true);
+
+    await expect(
+      runCli(["receipt", "review", examplePath, receiptPath], cwd)
+    ).rejects.toMatchObject({
+      stdout: expect.stringContaining("- Required proof: 2/2 passed")
+    });
+    await expect(
+      runCli(["receipt", "review", examplePath, receiptPath], cwd)
+    ).rejects.toMatchObject({
+      stdout: expect.stringContaining("- Acceptance evidence: 0/2 satisfied")
+    });
+  });
+
   it("verifies a filled JSON receipt against its contract", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-verify-"));
     tempDirs.push(cwd);

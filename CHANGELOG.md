@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added `agentfile receipt fill --check-log` to update command-backed receipt proof entries from check logs while leaving acceptance and handoff evidence explicit.
 - Added `agentfile init --kit reviewable` to scaffold Pact source, VS Code schema setup, and a GitHub Actions validation workflow with a conditional receipt-verification gate.
 - Added `agentfile init --github-actions-receipt` to wire receipt verification into generated workflows during first-run setup.
 - Added `agentfile receipt init` to create the default JSON receipt skeleton used by generated CI receipt gates.

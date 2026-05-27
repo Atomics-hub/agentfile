@@ -15,6 +15,12 @@ export interface ReceiptReview {
   issues: string[];
 }
 
+export interface ReceiptFillResult {
+  receipt: unknown;
+  filledProofIds: string[];
+  unchangedProofIds: string[];
+}
+
 interface ReceiptReviewCount {
   passed: number;
   total: number;
@@ -35,6 +41,45 @@ export function renderReceipt(agentfile: Agentfile, contractPath: string, format
   }
 
   return renderReceiptChecklist(agentfile, contractPath);
+}
+
+export function fillReceiptProofFromCheckLog(
+  agentfile: Agentfile,
+  receipt: unknown,
+  checkLogPath: string,
+  checkLog: string
+): ReceiptFillResult {
+  const receiptObject = asRecord(receipt);
+  if (!receiptObject) {
+    throw new AgentfileError("<root>: receipt must be a JSON object");
+  }
+
+  const proofEntries = recordArray(receiptObject.requiredProof);
+  const filledProofIds: string[] = [];
+  const unchangedProofIds: string[] = [];
+
+  for (const check of agentfile.checks) {
+    if (!check.command) {
+      unchangedProofIds.push(check.id);
+      continue;
+    }
+
+    const proof = proofEntries.find((entry) => entry.id === check.id);
+    if (!proof || !checkLog.includes(check.command)) {
+      unchangedProofIds.push(check.id);
+      continue;
+    }
+
+    proof.status = "passed";
+    proof.evidence = checkLogPath;
+    filledProofIds.push(check.id);
+  }
+
+  return {
+    receipt: receiptObject,
+    filledProofIds,
+    unchangedProofIds
+  };
 }
 
 export function verifyReceipt(agentfile: Agentfile, receipt: unknown): string[] {
