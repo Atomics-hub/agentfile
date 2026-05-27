@@ -15,7 +15,7 @@ Generate the starter workflow from a checked-out Agentfile tool:
 node dist/cli.js github-actions agentfile.agent > .github/workflows/agentfile.yml
 ```
 
-The generated workflow uses `inspect --fail-on stale-surfaces,lint --format json` plus `sync --check` for selected generated surfaces. Pass `--surfaces none` for an early validation-only workflow, or pass a comma-separated list such as `agents-md,claude-md,cursor-mdc,copilot-md` for adopted generated files. Use `--output .github/workflows/agentfile.yml --check` in local automation when you want to verify that the committed workflow still matches the contract path, selected surfaces, and receipt setting.
+The generated workflow uses `inspect --fail-on stale-surfaces,lint --format json` plus `sync --check` for selected generated surfaces. Pass `--surfaces none` for an early validation-only workflow, or pass a comma-separated list such as `agents-md,claude-md,cursor-mdc,copilot-md` for adopted generated files. Pass `--receipt receipts/latest.receipt.json` to add a receipt verification step that runs only when the receipt file exists. Use `--output .github/workflows/agentfile.yml --check` in local automation when you want to verify that the committed workflow still matches the contract path, selected surfaces, and receipt setting.
 
 ## Starter Workflow
 

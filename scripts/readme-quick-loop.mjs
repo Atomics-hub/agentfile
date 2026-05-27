@@ -384,8 +384,8 @@ function renderDemoEvidence() {
           "Scope, authority, proof, and handoff are reviewable as a contract instead of scattered prose."
         ],
         [
-          "`agentfile init --kit reviewable` creates Pact source plus schema-backed editor setup and a validation workflow.",
-          "First-run adoption can produce reviewable source, editor validation files, and a local CI gate without manual JSON or YAML wiring."
+          "`agentfile init --kit reviewable` creates Pact source, schema-backed editor setup, and a validation workflow with a receipt gate.",
+          "First-run adoption can produce reviewable source, editor validation files, and a local CI gate that verifies completed-work evidence when a receipt exists."
         ],
         [
           "The same source generates AGENTS.md, CLAUDE.md, Cursor, and Copilot instruction files.",

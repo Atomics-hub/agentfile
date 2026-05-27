@@ -93,6 +93,8 @@ describe("agentfile init", () => {
       "agentfile.agent",
       "--surfaces",
       "none",
+      "--receipt",
+      "receipts/latest.receipt.json",
       "--output",
       ".github/workflows/agentfile.yml",
       "--check"
@@ -114,6 +116,7 @@ describe("agentfile init", () => {
 
     const workflow = await readFile(join(cwd, ".github", "workflows", "agentfile.yml"), "utf8");
     expect(workflow).toContain("sync 'agentfile.agent' --target agents-md --output 'AGENTS.md' --check");
+    expect(workflow).toContain("if: hashFiles('receipts/latest.receipt.json') != ''");
     await runCli(["sync", "agentfile.agent", "--target", "agents-md", "--output", "AGENTS.md", "--check"], cwd);
   }, 15000);
 
@@ -134,6 +137,8 @@ describe("agentfile init", () => {
       "agentfile.yaml",
       "--surfaces",
       "none",
+      "--receipt",
+      "receipts/latest.receipt.json",
       "--output",
       ".github/workflows/agentfile.yml",
       "--check"
@@ -252,6 +257,37 @@ describe("agentfile init", () => {
     ], cwd);
   }, 15000);
 
+  it("creates a GitHub Actions receipt gate when requested during init", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-init-actions-receipt-"));
+    tempDirs.push(cwd);
+
+    const { stdout } = await runCli([
+      "init",
+      "agentfile.agent",
+      "--github-actions",
+      "--github-actions-receipt",
+      "receipts/latest.receipt.json"
+    ], cwd);
+
+    expect(stdout).toContain("Created .github/workflows/agentfile.yml");
+
+    const workflow = await readFile(join(cwd, ".github", "workflows", "agentfile.yml"), "utf8");
+    expect(workflow).toContain("if: hashFiles('receipts/latest.receipt.json') != ''");
+    expect(workflow).toContain("receipt verify 'agentfile.agent' 'receipts/latest.receipt.json'");
+
+    await runCli([
+      "github-actions",
+      "agentfile.agent",
+      "--surfaces",
+      "none",
+      "--receipt",
+      "receipts/latest.receipt.json",
+      "--output",
+      ".github/workflows/agentfile.yml",
+      "--check"
+    ], cwd);
+  }, 15000);
+
   it("creates selected generated surfaces for init GitHub Actions gates", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "agentfile-init-actions-surfaces-"));
     tempDirs.push(cwd);
@@ -311,6 +347,21 @@ describe("agentfile init", () => {
       runCli(["init", "agentfile.agent", "--github-actions-surfaces", "agents-md"], cwd)
     ).rejects.toMatchObject({
       stderr: expect.stringContaining("init --github-actions-surfaces requires --github-actions")
+    });
+
+    await expect(readFile(join(cwd, "agentfile.agent"), "utf8")).rejects.toMatchObject({
+      code: "ENOENT"
+    });
+  });
+
+  it("requires --github-actions before init GitHub Actions receipt gates", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-init-actions-receipt-requires-"));
+    tempDirs.push(cwd);
+
+    await expect(
+      runCli(["init", "agentfile.agent", "--github-actions-receipt", "receipts/latest.receipt.json"], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("init --github-actions-receipt requires --github-actions")
     });
 
     await expect(readFile(join(cwd, "agentfile.agent"), "utf8")).rejects.toMatchObject({
@@ -772,6 +823,7 @@ describe("agentfile github-actions", () => {
     expect(stdout).toContain("run: node .agentfile/tool/dist/cli.js sync 'agentfile.agent' --target cursor-mdc --output '.cursor/rules/agentfile.mdc' --check");
     expect(stdout).toContain("run: node .agentfile/tool/dist/cli.js sync 'agentfile.agent' --target copilot-md --output '.github/copilot-instructions.md' --check");
     expect(stdout.match(/--target cursor-mdc/g)).toHaveLength(1);
+    expect(stdout).toContain("if: hashFiles('receipts/latest.receipt.json') != ''");
     expect(stdout).toContain("run: node .agentfile/tool/dist/cli.js receipt verify 'agentfile.agent' 'receipts/latest.receipt.json'");
   });
 

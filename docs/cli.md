@@ -10,7 +10,7 @@ Use the reviewable kit for the fastest source-first setup:
 agentfile init --kit reviewable
 ```
 
-That creates Pact `.agent` source, VS Code schema settings, and a GitHub Actions validation workflow.
+That creates Pact `.agent` source, VS Code schema settings, and a GitHub Actions validation workflow with a conditional `receipts/latest.receipt.json` verification gate.
 
 Pass `--format agent` or use a `.agent` output path to scaffold Pact source instead of YAML IR:
 
@@ -31,6 +31,7 @@ Pass `--github-actions` to also create `.github/workflows/agentfile.yml` for sou
 ```sh
 agentfile init agentfile.agent --github-actions
 agentfile init agentfile.agent --github-actions --github-actions-surfaces agents-md,claude-md
+agentfile init agentfile.agent --github-actions --github-actions-receipt receipts/latest.receipt.json
 ```
 
 By default the generated workflow validates the contract without checking generated instruction surfaces, so the starter workflow is runnable before adopting `AGENTS.md` or `CLAUDE.md`. Use `--github-actions-surfaces` when `init` should also create selected generated surfaces and wire workflow drift checks for them.
