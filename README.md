@@ -324,6 +324,12 @@ Create a starter contract with VS Code schema setup:
 agentfile init agentfile.agent --editor vscode
 ```
 
+Create a starter contract with a GitHub Actions validation workflow:
+
+```sh
+agentfile init agentfile.agent --github-actions
+```
+
 Validate a contract:
 
 ```sh
@@ -465,7 +471,7 @@ Agentfile is early. The v0.1 goal is intentionally narrow:
 - Security-first defaults.
 - Initial risky-authority lint warnings for broad permissions.
 - `agentfile init` for fast adoption.
-- `agentfile init` can scaffold either YAML IR or Pact `.agent` source, with optional VS Code schema setup.
+- `agentfile init` can scaffold either YAML IR or Pact `.agent` source, with optional VS Code schema and GitHub Actions setup.
 - Compiler targets for `AGENTS.md`, `CLAUDE.md`, Cursor rules, and GitHub Copilot instructions.
 - `agentfile doctor` for contract health and generated instruction-surface freshness checks.
 - `agentfile doctor --format json` for machine-readable contract health reports.

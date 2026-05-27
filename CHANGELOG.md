@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added `agentfile init --github-actions` to scaffold a starter contract and source-checkout validation workflow, with optional generated-surface gates.
 - Added `agentfile init --editor vscode` to scaffold a starter contract, JSON Schema, and VS Code settings in one preflighted setup.
 - Added `agentfile editor vscode` to generate, write, and drift-check VS Code settings that associate committed schemas with Agentfile YAML/JSON contract IR.
 - Added `agentfile github-actions` to generate, write, and drift-check source-checkout CI workflows that run inspect readiness gates and generated-surface checks.

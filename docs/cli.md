@@ -18,7 +18,16 @@ agentfile init agentfile.agent --editor vscode
 agentfile init agentfile.agent --editor vscode --schema schemas/agentfile.schema.json
 ```
 
-`init` refuses to overwrite any planned output path before writing files, so editor setup does not leave a partially initialized project when an existing schema or settings file is present.
+Pass `--github-actions` to also create `.github/workflows/agentfile.yml` for source-checkout contract validation:
+
+```sh
+agentfile init agentfile.agent --github-actions
+agentfile init agentfile.agent --github-actions --github-actions-surfaces agents-md,claude-md
+```
+
+By default the generated workflow validates the contract without checking generated instruction surfaces, so the starter workflow is runnable before adopting `AGENTS.md` or `CLAUDE.md`. Use `--github-actions-surfaces` when `init` should also create selected generated surfaces and wire workflow drift checks for them.
+
+`init` refuses to overwrite any planned output path before writing files, so editor or workflow setup does not leave a partially initialized project when an existing schema, settings file, workflow, or generated surface is present.
 
 ## `agentfile check [file]`
 

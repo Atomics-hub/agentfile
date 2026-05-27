@@ -28,6 +28,7 @@ import { looksLikePactSource, parseSource } from "./source.js";
 import { findTarget, quotedTargetIds } from "./targets.js";
 
 const allInspectFailureChecks = ["stale-surfaces", "missing-surfaces", "lint"] as const;
+const defaultGithubActionsWorkflowPath = ".github/workflows/agentfile.yml";
 
 const program = new Command();
 
@@ -43,6 +44,8 @@ program
   .option("-f, --format <format>", "yaml or agent")
   .option("--editor <editor>", "also create editor integration files: vscode")
   .option("--schema <file>", "schema path for generated editor setup", defaultVscodeSchemaPath)
+  .option("--github-actions", "also create a GitHub Actions validation workflow", false)
+  .option("--github-actions-surfaces <targets>", `generated surfaces to create and check, or "none": ${githubActionSurfaceHelp()}`)
   .action(async (file: string, options: InitOptions) => {
     for (const message of await runInit(file, options)) {
       console.log(message);
@@ -499,9 +502,16 @@ interface InitOptions {
   format?: string;
   editor?: string;
   schema: string;
+  githubActions: boolean;
+  githubActionsSurfaces?: string;
 }
 
 type InitEditor = "none" | "vscode";
+
+interface InitGithubActions {
+  enabled: boolean;
+  surfaces: SyncTarget[];
+}
 
 interface InitPlanItem {
   path: string;
@@ -538,7 +548,8 @@ type FormatResult =
 async function runInit(file: string, options: InitOptions): Promise<string[]> {
   const format = parseInitFormat(file, options.format);
   const editor = parseInitEditor(options.editor);
-  const plan = buildInitPlan(file, format, editor, options.schema);
+  const githubActions = parseInitGithubActions(options.githubActions, options.githubActionsSurfaces);
+  const plan = buildInitPlan(file, format, editor, options.schema, githubActions);
 
   await assertInitPlanCanWrite(plan);
 
@@ -550,11 +561,18 @@ async function runInit(file: string, options: InitOptions): Promise<string[]> {
   return plan.map((item) => `Created ${item.path}`);
 }
 
-function buildInitPlan(file: string, format: InitFormat, editor: InitEditor, schemaPath: string): InitPlanItem[] {
+function buildInitPlan(
+  file: string,
+  format: InitFormat,
+  editor: InitEditor,
+  schemaPath: string,
+  githubActions: InitGithubActions
+): InitPlanItem[] {
+  const source = minimalAgentfile(format);
   const plan: InitPlanItem[] = [
     {
       path: file,
-      content: minimalAgentfile(format)
+      content: source
     }
   ];
 
@@ -571,6 +589,25 @@ function buildInitPlan(file: string, format: InitFormat, editor: InitEditor, sch
         })
       }
     );
+  }
+
+  if (githubActions.enabled) {
+    const agentfile = parseSource(source, file);
+    for (const target of githubActions.surfaces) {
+      plan.push({
+        path: defaultOutputPathForTarget(target),
+        content: compileAgentfile(agentfile, target)
+      });
+    }
+
+    plan.push({
+      path: defaultGithubActionsWorkflowPath,
+      content: renderGithubActionsWorkflow({
+        contractPath: toWorkflowPath(file),
+        toolRef: "main",
+        surfaces: githubActions.surfaces
+      })
+    });
   }
 
   return plan;
@@ -1428,6 +1465,17 @@ function parseInitEditor(value?: string): InitEditor {
   }
 
   throw new AgentfileError(`unknown init editor "${value}". Expected "vscode".`);
+}
+
+function parseInitGithubActions(enabled: boolean, surfacesValue?: string): InitGithubActions {
+  if (!enabled && surfacesValue !== undefined) {
+    throw new AgentfileError("init --github-actions-surfaces requires --github-actions");
+  }
+
+  return {
+    enabled,
+    surfaces: enabled ? parseGithubActionSurfaces(surfacesValue ?? "none") : []
+  };
 }
 
 async function resolveFile(filePath?: string): Promise<string> {

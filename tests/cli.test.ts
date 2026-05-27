@@ -133,6 +133,99 @@ describe("agentfile init", () => {
       code: "ENOENT"
     });
   });
+
+  it("creates a Pact starter with a GitHub Actions validation workflow", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-init-actions-"));
+    tempDirs.push(cwd);
+
+    const { stdout } = await runCli(["init", "agentfile.agent", "--github-actions"], cwd);
+
+    expect(stdout).toContain("Created agentfile.agent");
+    expect(stdout).toContain("Created .github/workflows/agentfile.yml");
+
+    const workflow = await readFile(join(cwd, ".github", "workflows", "agentfile.yml"), "utf8");
+    expect(workflow).toContain("Inspect contract readiness");
+    expect(workflow).toContain("inspect 'agentfile.agent' --fail-on stale-surfaces,lint --format json");
+    expect(workflow).not.toContain("--target agents-md");
+    expect(workflow).not.toContain("--target claude-md");
+
+    await runCli(["check", "agentfile.agent"], cwd);
+    await runCli([
+      "github-actions",
+      "agentfile.agent",
+      "--surfaces",
+      "none",
+      "--output",
+      ".github/workflows/agentfile.yml",
+      "--check"
+    ], cwd);
+  }, 15000);
+
+  it("creates selected generated surfaces for init GitHub Actions gates", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-init-actions-surfaces-"));
+    tempDirs.push(cwd);
+
+    const { stdout } = await runCli([
+      "init",
+      "agentfile.agent",
+      "--github-actions",
+      "--github-actions-surfaces",
+      "agents-md,claude-md"
+    ], cwd);
+
+    expect(stdout).toContain("Created AGENTS.md");
+    expect(stdout).toContain("Created CLAUDE.md");
+    expect(stdout).toContain("Created .github/workflows/agentfile.yml");
+
+    const workflow = await readFile(join(cwd, ".github", "workflows", "agentfile.yml"), "utf8");
+    expect(workflow).toContain("sync 'agentfile.agent' --target agents-md --output 'AGENTS.md' --check");
+    expect(workflow).toContain("sync 'agentfile.agent' --target claude-md --output 'CLAUDE.md' --check");
+
+    await runCli(["sync", "agentfile.agent", "--target", "agents-md", "--output", "AGENTS.md", "--check"], cwd);
+    await runCli(["sync", "agentfile.agent", "--target", "claude-md", "--output", "CLAUDE.md", "--check"], cwd);
+    await runCli([
+      "github-actions",
+      "agentfile.agent",
+      "--surfaces",
+      "agents-md,claude-md",
+      "--output",
+      ".github/workflows/agentfile.yml",
+      "--check"
+    ], cwd);
+  }, 15000);
+
+  it("preflights init GitHub Actions setup without partially writing files", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-init-actions-conflict-"));
+    tempDirs.push(cwd);
+
+    await mkdir(join(cwd, ".github", "workflows"), { recursive: true });
+    await writeFile(join(cwd, ".github", "workflows", "agentfile.yml"), "existing workflow\n", "utf8");
+
+    await expect(
+      runCli(["init", "agentfile.agent", "--github-actions"], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("refusing to overwrite existing init files:")
+    });
+
+    await expect(readFile(join(cwd, "agentfile.agent"), "utf8")).rejects.toMatchObject({
+      code: "ENOENT"
+    });
+  });
+
+  it("requires --github-actions before init GitHub Actions surface gates", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-init-actions-requires-"));
+    tempDirs.push(cwd);
+
+    await expect(
+      runCli(["init", "agentfile.agent", "--github-actions-surfaces", "agents-md"], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("init --github-actions-surfaces requires --github-actions")
+    });
+
+    await expect(readFile(join(cwd, "agentfile.agent"), "utf8")).rejects.toMatchObject({
+      code: "ENOENT"
+    });
+  });
 });
 
 describe("agentfile sync", () => {

@@ -48,6 +48,12 @@ try {
   });
 
   await runStep({
+    name: "Create GitHub Actions starter kit",
+    command: "node dist/cli.js init agentfile.agent --github-actions (cwd <temp>)",
+    run: () => initGithubActionsKit()
+  });
+
+  await runStep({
     name: "Write JSON Schema",
     command: "node dist/cli.js schema --output <temp>/agentfile.schema.json",
     run: () => execFileAsync("node", [
@@ -282,6 +288,17 @@ async function initVscodeKit() {
   ], { cwd, env: process.env, maxBuffer });
 }
 
+async function initGithubActionsKit() {
+  const cwd = join(tempRoot, "init-actions");
+  await mkdir(cwd, { recursive: true });
+  return execFileAsync("node", [
+    join(root, "dist/cli.js"),
+    "init",
+    "agentfile.agent",
+    "--github-actions"
+  ], { cwd, env: process.env, maxBuffer });
+}
+
 async function collectArtifactPreviews() {
   const previews = [];
 
@@ -387,6 +404,10 @@ function renderDemoEvidence() {
         [
           "`agentfile init --editor vscode` creates a starter contract plus schema-backed editor setup.",
           "First-run adoption can produce reviewable source and editor validation files without manual JSON wiring."
+        ],
+        [
+          "`agentfile init --github-actions` creates a starter contract plus a validation workflow.",
+          "New adopters can get a local, source-checkout CI gate without hand-writing GitHub Actions YAML."
         ],
         [
           "The same source generates AGENTS.md, CLAUDE.md, Cursor, and Copilot instruction files.",
