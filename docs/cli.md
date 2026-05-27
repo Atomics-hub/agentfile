@@ -2,7 +2,15 @@
 
 ## `agentfile init [file]`
 
-Create a minimal valid contract. Defaults to `agentfile.yaml`.
+Create a minimal valid contract. Defaults to `agentfile.yaml`, or `agentfile.agent` when `--format agent` or `--kit reviewable` is used without a file path.
+
+Use the reviewable kit for the fastest source-first setup:
+
+```sh
+agentfile init --kit reviewable
+```
+
+That creates Pact `.agent` source, VS Code schema settings, and a GitHub Actions validation workflow.
 
 Pass `--format agent` or use a `.agent` output path to scaffold Pact source instead of YAML IR:
 

@@ -40,13 +40,14 @@ program
 program
   .command("init")
   .description("Create a minimal Agentfile starter in YAML or Pact source form.")
-  .argument("[file]", "Agentfile path", "agentfile.yaml")
+  .argument("[file]", "Agentfile path")
   .option("-f, --format <format>", "yaml or agent")
+  .option("--kit <kit>", "starter kit preset: reviewable")
   .option("--editor <editor>", "also create editor integration files: vscode")
   .option("--schema <file>", "schema path for generated editor setup", defaultVscodeSchemaPath)
   .option("--github-actions", "also create a GitHub Actions validation workflow", false)
   .option("--github-actions-surfaces <targets>", `generated surfaces to create and check, or "none": ${githubActionSurfaceHelp()}`)
-  .action(async (file: string, options: InitOptions) => {
+  .action(async (file: string | undefined, options: InitOptions) => {
     for (const message of await runInit(file, options)) {
       console.log(message);
     }
@@ -500,12 +501,14 @@ interface SchemaOptions {
 
 interface InitOptions {
   format?: string;
+  kit?: string;
   editor?: string;
   schema: string;
   githubActions: boolean;
   githubActionsSurfaces?: string;
 }
 
+type InitKit = "none" | "reviewable";
 type InitEditor = "none" | "vscode";
 
 interface InitGithubActions {
@@ -545,11 +548,16 @@ type FormatResult =
   | { status: "unchanged"; filePath: string }
   | { status: "written"; filePath: string };
 
-async function runInit(file: string, options: InitOptions): Promise<string[]> {
-  const format = parseInitFormat(file, options.format);
-  const editor = parseInitEditor(options.editor);
-  const githubActions = parseInitGithubActions(options.githubActions, options.githubActionsSurfaces);
-  const plan = buildInitPlan(file, format, editor, options.schema, githubActions);
+async function runInit(file: string | undefined, options: InitOptions): Promise<string[]> {
+  const kit = parseInitKit(options.kit);
+  const outputPath = resolveInitFile(file, options.format, kit);
+  const format = parseInitFormat(outputPath, options.format);
+  const editor = parseInitEditor(options.editor ?? defaultInitEditorForKit(kit));
+  const githubActions = parseInitGithubActions(
+    options.githubActions || kit === "reviewable",
+    options.githubActionsSurfaces
+  );
+  const plan = buildInitPlan(outputPath, format, editor, options.schema, githubActions);
 
   await assertInitPlanCanWrite(plan);
 
@@ -1443,6 +1451,26 @@ function parseDiffFormat(value: string): ContractDiffFormat {
 
 type InitFormat = "yaml" | "agent";
 
+function resolveInitFile(filePath: string | undefined, format: string | undefined, kit: InitKit): string {
+  if (filePath) {
+    return filePath;
+  }
+
+  if (format === "agent") {
+    return "agentfile.agent";
+  }
+
+  if (format === "yaml") {
+    return "agentfile.yaml";
+  }
+
+  if (kit === "reviewable") {
+    return "agentfile.agent";
+  }
+
+  return "agentfile.yaml";
+}
+
 function parseInitFormat(filePath: string, value?: string): InitFormat {
   if (value === undefined) {
     return filePath.endsWith(".agent") ? "agent" : "yaml";
@@ -1453,6 +1481,22 @@ function parseInitFormat(filePath: string, value?: string): InitFormat {
   }
 
   throw new AgentfileError(`unknown init format "${value}". Expected "yaml" or "agent".`);
+}
+
+function parseInitKit(value?: string): InitKit {
+  if (value === undefined) {
+    return "none";
+  }
+
+  if (value === "reviewable") {
+    return value;
+  }
+
+  throw new AgentfileError(`unknown init kit "${value}". Expected "reviewable".`);
+}
+
+function defaultInitEditorForKit(kit: InitKit): string | undefined {
+  return kit === "reviewable" ? "vscode" : undefined;
 }
 
 function parseInitEditor(value?: string): InitEditor {

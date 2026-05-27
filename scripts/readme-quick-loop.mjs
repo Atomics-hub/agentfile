@@ -42,15 +42,9 @@ try {
   });
 
   await runStep({
-    name: "Create VS Code starter kit",
-    command: "node dist/cli.js init agentfile.agent --editor vscode (cwd <temp>)",
-    run: () => initVscodeKit()
-  });
-
-  await runStep({
-    name: "Create GitHub Actions starter kit",
-    command: "node dist/cli.js init agentfile.agent --github-actions (cwd <temp>)",
-    run: () => initGithubActionsKit()
+    name: "Create reviewable starter kit",
+    command: "node dist/cli.js init --kit reviewable (cwd <temp>)",
+    run: () => initReviewableKit()
   });
 
   await runStep({
@@ -276,26 +270,14 @@ async function syncAllDefaults(check) {
   ], { cwd, env: process.env, maxBuffer });
 }
 
-async function initVscodeKit() {
-  const cwd = join(tempRoot, "init-vscode");
+async function initReviewableKit() {
+  const cwd = join(tempRoot, "init-reviewable");
   await mkdir(cwd, { recursive: true });
   return execFileAsync("node", [
     join(root, "dist/cli.js"),
     "init",
-    "agentfile.agent",
-    "--editor",
-    "vscode"
-  ], { cwd, env: process.env, maxBuffer });
-}
-
-async function initGithubActionsKit() {
-  const cwd = join(tempRoot, "init-actions");
-  await mkdir(cwd, { recursive: true });
-  return execFileAsync("node", [
-    join(root, "dist/cli.js"),
-    "init",
-    "agentfile.agent",
-    "--github-actions"
+    "--kit",
+    "reviewable"
   ], { cwd, env: process.env, maxBuffer });
 }
 
@@ -402,12 +384,8 @@ function renderDemoEvidence() {
           "Scope, authority, proof, and handoff are reviewable as a contract instead of scattered prose."
         ],
         [
-          "`agentfile init --editor vscode` creates a starter contract plus schema-backed editor setup.",
-          "First-run adoption can produce reviewable source and editor validation files without manual JSON wiring."
-        ],
-        [
-          "`agentfile init --github-actions` creates a starter contract plus a validation workflow.",
-          "New adopters can get a local, source-checkout CI gate without hand-writing GitHub Actions YAML."
+          "`agentfile init --kit reviewable` creates Pact source plus schema-backed editor setup and a validation workflow.",
+          "First-run adoption can produce reviewable source, editor validation files, and a local CI gate without manual JSON or YAML wiring."
         ],
         [
           "The same source generates AGENTS.md, CLAUDE.md, Cursor, and Copilot instruction files.",

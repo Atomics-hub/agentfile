@@ -60,6 +60,97 @@ describe("agentfile init", () => {
     expect(content).not.toContain('agentfile: "0.1.0"');
   }, 10000);
 
+  it("uses agentfile.agent as the default path for Pact source init", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-init-agent-default-"));
+    tempDirs.push(cwd);
+
+    const { stdout } = await runCli(["init", "--format", "agent"], cwd);
+
+    expect(stdout).toContain("Created agentfile.agent");
+    const content = await readFile(join(cwd, "agentfile.agent"), "utf8");
+    expect(content).toContain("mission my-agent-task {");
+    await expect(readFile(join(cwd, "agentfile.yaml"), "utf8")).rejects.toMatchObject({
+      code: "ENOENT"
+    });
+  }, 10000);
+
+  it("creates the reviewable starter kit", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-init-kit-reviewable-"));
+    tempDirs.push(cwd);
+
+    const { stdout } = await runCli(["init", "--kit", "reviewable"], cwd);
+
+    expect(stdout).toContain("Created agentfile.agent");
+    expect(stdout).toContain("Created .vscode/agentfile.schema.json");
+    expect(stdout).toContain("Created .vscode/settings.json");
+    expect(stdout).toContain("Created .github/workflows/agentfile.yml");
+
+    await runCli(["check", "agentfile.agent"], cwd);
+    await runCli(["schema", "--output", ".vscode/agentfile.schema.json", "--check"], cwd);
+    await runCli(["editor", "vscode", "--output", ".vscode/settings.json", "--check"], cwd);
+    await runCli([
+      "github-actions",
+      "agentfile.agent",
+      "--surfaces",
+      "none",
+      "--output",
+      ".github/workflows/agentfile.yml",
+      "--check"
+    ], cwd);
+
+    await expect(readFile(join(cwd, "agentfile.yaml"), "utf8")).rejects.toMatchObject({
+      code: "ENOENT"
+    });
+  }, 15000);
+
+  it("allows generated surface gates with the reviewable starter kit", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-init-kit-surfaces-"));
+    tempDirs.push(cwd);
+
+    await runCli(["init", "--kit", "reviewable", "--github-actions-surfaces", "agents-md"], cwd);
+
+    const generated = await readFile(join(cwd, "AGENTS.md"), "utf8");
+    expect(generated).toContain("# my-agent-task");
+
+    const workflow = await readFile(join(cwd, ".github", "workflows", "agentfile.yml"), "utf8");
+    expect(workflow).toContain("sync 'agentfile.agent' --target agents-md --output 'AGENTS.md' --check");
+    await runCli(["sync", "agentfile.agent", "--target", "agents-md", "--output", "AGENTS.md", "--check"], cwd);
+  }, 15000);
+
+  it("respects explicit YAML format with the reviewable starter kit", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-init-kit-yaml-"));
+    tempDirs.push(cwd);
+
+    const { stdout } = await runCli(["init", "--kit", "reviewable", "--format", "yaml"], cwd);
+
+    expect(stdout).toContain("Created agentfile.yaml");
+    const contract = await readFile(join(cwd, "agentfile.yaml"), "utf8");
+    expect(contract).toContain('agentfile: "0.1.0"');
+
+    const workflow = await readFile(join(cwd, ".github", "workflows", "agentfile.yml"), "utf8");
+    expect(workflow).toContain("inspect 'agentfile.yaml' --fail-on stale-surfaces,lint --format json");
+    await runCli([
+      "github-actions",
+      "agentfile.yaml",
+      "--surfaces",
+      "none",
+      "--output",
+      ".github/workflows/agentfile.yml",
+      "--check"
+    ], cwd);
+  }, 15000);
+
+  it("rejects unknown init kits", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-init-kit-unknown-"));
+    tempDirs.push(cwd);
+
+    await expect(
+      runCli(["init", "--kit", "everything"], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining('unknown init kit "everything". Expected "reviewable".')
+    });
+  });
+
   it("creates a Pact starter with VS Code schema files", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "agentfile-init-vscode-"));
     tempDirs.push(cwd);

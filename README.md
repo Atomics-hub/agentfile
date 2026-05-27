@@ -312,6 +312,12 @@ Create a starter contract:
 agentfile init
 ```
 
+Create the reviewable starter kit:
+
+```sh
+agentfile init --kit reviewable
+```
+
 Create a Pact source starter instead:
 
 ```sh
@@ -471,6 +477,7 @@ Agentfile is early. The v0.1 goal is intentionally narrow:
 - Security-first defaults.
 - Initial risky-authority lint warnings for broad permissions.
 - `agentfile init` for fast adoption.
+- `agentfile init --kit reviewable` for Pact source, VS Code schema setup, and a GitHub Actions validation workflow in one preflighted starter.
 - `agentfile init` can scaffold either YAML IR or Pact `.agent` source, with optional VS Code schema and GitHub Actions setup.
 - Compiler targets for `AGENTS.md`, `CLAUDE.md`, Cursor rules, and GitHub Copilot instructions.
 - `agentfile doctor` for contract health and generated instruction-surface freshness checks.
