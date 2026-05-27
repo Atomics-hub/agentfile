@@ -42,9 +42,9 @@ try {
   });
 
   await runStep({
-    name: "Create reviewable starter kit",
-    command: "node dist/cli.js init --kit reviewable (cwd <temp>)",
-    run: () => initReviewableKit()
+    name: "Adopt Agentfile in an existing repo",
+    command: "node dist/cli.js adopt (cwd <temp>)",
+    run: () => adoptExistingRepo()
   });
 
   await runStep({
@@ -296,14 +296,12 @@ async function syncAllDefaults(check) {
   ], { cwd, env: process.env, maxBuffer });
 }
 
-async function initReviewableKit() {
-  const cwd = join(tempRoot, "init-reviewable");
+async function adoptExistingRepo() {
+  const cwd = join(tempRoot, "adopt-existing-repo");
   await mkdir(cwd, { recursive: true });
   return execFileAsync("node", [
     join(root, "dist/cli.js"),
-    "init",
-    "--kit",
-    "reviewable"
+    "adopt"
   ], { cwd, env: process.env, maxBuffer });
 }
 
@@ -443,8 +441,8 @@ function renderDemoEvidence() {
           "Scope, authority, proof, and handoff are reviewable as a contract instead of scattered prose."
         ],
         [
-          "`agentfile init --kit reviewable` creates Pact source, schema-backed editor setup, and a validation workflow with a receipt gate.",
-          "First-run adoption can produce reviewable source, editor validation files, and a local CI gate that verifies completed-work evidence when a receipt exists."
+          "`agentfile adopt` creates Pact source, schema-backed editor setup, generated harness surfaces, and a validation workflow with a receipt gate.",
+          "First-run adoption can produce reviewable source, local agent instructions, editor validation files, and CI gates without hand-writing each surface."
         ],
         [
           "`agentfile receipt init` writes the CI receipt skeleton at a predictable JSON path.",

@@ -57,6 +57,19 @@ program
   });
 
 program
+  .command("adopt")
+  .description("Scaffold Agentfile into an existing repo with editor, CI, and generated instruction surfaces.")
+  .argument("[file]", "Pact Agentfile source path")
+  .option("--schema <file>", "schema path for generated editor setup", defaultVscodeSchemaPath)
+  .option("--surfaces <targets>", `generated surfaces to create and check, or "none": ${githubActionSurfaceHelp()}`, syncTargetHelp())
+  .option("--receipt <file>", "receipt JSON path for the generated GitHub Actions workflow to verify when present", defaultGithubActionsReceiptPath)
+  .action(async (file: string | undefined, options: AdoptOptions) => {
+    for (const message of await runAdopt(file, options)) {
+      console.log(message);
+    }
+  });
+
+program
   .command("validate")
   .alias("check")
   .description("Validate an Agentfile contract.")
@@ -564,6 +577,12 @@ interface InitOptions {
   githubActionsReceipt?: string;
 }
 
+interface AdoptOptions {
+  schema: string;
+  surfaces: string;
+  receipt: string;
+}
+
 type InitKit = "none" | "reviewable";
 type InitEditor = "none" | "vscode";
 
@@ -604,6 +623,18 @@ type FormatResult =
   | { status: "checked"; filePath: string }
   | { status: "unchanged"; filePath: string }
   | { status: "written"; filePath: string };
+
+async function runAdopt(file: string | undefined, options: AdoptOptions): Promise<string[]> {
+  return runInit(file ?? "agentfile.agent", {
+    format: "agent",
+    kit: "reviewable",
+    editor: "vscode",
+    schema: options.schema,
+    githubActions: true,
+    githubActionsSurfaces: options.surfaces,
+    githubActionsReceipt: options.receipt
+  });
+}
 
 async function runInit(file: string | undefined, options: InitOptions): Promise<string[]> {
   const kit = parseInitKit(options.kit);

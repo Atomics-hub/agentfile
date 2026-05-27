@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added `agentfile adopt` to scaffold a preflighted existing-repo adoption kit with Pact source, editor files, generated instruction surfaces, and a GitHub Actions receipt gate.
 - Added `agentfile receipt fill --check-log` to update command-backed receipt proof entries from check logs while leaving acceptance and handoff evidence explicit.
 - Updated repository and generated GitHub Actions workflows to current `actions/checkout@v6` and `actions/setup-node@v6` action majors.
 - Added `agentfile init --kit reviewable` to scaffold Pact source, VS Code schema setup, and a GitHub Actions validation workflow with a conditional receipt-verification gate.

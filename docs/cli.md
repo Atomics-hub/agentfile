@@ -1,5 +1,27 @@
 # CLI Reference
 
+## `agentfile adopt [file]`
+
+Scaffold Agentfile into an existing repository with the full source-first adoption kit. Defaults to `agentfile.agent`.
+
+```sh
+agentfile adopt
+agentfile adopt agentfile.agent
+agentfile adopt agentfile.agent --surfaces agents-md,claude-md
+agentfile adopt agentfile.agent --surfaces none
+```
+
+By default this creates:
+
+- Pact `.agent` source.
+- VS Code schema and settings files.
+- Every default generated instruction surface: `AGENTS.md`, `CLAUDE.md`, Cursor rules, and GitHub Copilot instructions.
+- `.github/workflows/agentfile.yml` with contract inspection, generated-surface drift checks, and a conditional `receipts/latest.receipt.json` verification gate.
+
+Use `--schema <file>` to choose the committed schema path, `--surfaces <targets>` to limit generated instruction files, and `--receipt <file>` to choose the receipt path checked by the generated workflow.
+
+`adopt` preflights every planned output path before writing, so an existing repo is not partially modified when an Agentfile surface already exists.
+
 ## `agentfile init [file]`
 
 Create a minimal valid contract. Defaults to `agentfile.yaml`, or `agentfile.agent` when `--format agent` or `--kit reviewable` is used without a file path.

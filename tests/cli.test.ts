@@ -370,6 +370,72 @@ describe("agentfile init", () => {
   });
 });
 
+describe("agentfile adopt", () => {
+  it("creates a complete existing-repo adoption kit", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-adopt-"));
+    tempDirs.push(cwd);
+    await writeFile(join(cwd, "package.json"), "{\"private\": true}\n", "utf8");
+
+    const { stdout } = await runCli(["adopt"], cwd);
+
+    expect(stdout).toContain("Created agentfile.agent");
+    expect(stdout).toContain("Created .vscode/agentfile.schema.json");
+    expect(stdout).toContain("Created .vscode/settings.json");
+    expect(stdout).toContain("Created AGENTS.md");
+    expect(stdout).toContain("Created CLAUDE.md");
+    expect(stdout).toContain("Created .cursor/rules/agentfile.mdc");
+    expect(stdout).toContain("Created .github/copilot-instructions.md");
+    expect(stdout).toContain("Created .github/workflows/agentfile.yml");
+
+    expect(await readFile(join(cwd, "AGENTS.md"), "utf8")).toContain("# my-agent-task");
+    expect(await readFile(join(cwd, "CLAUDE.md"), "utf8")).toContain("# my-agent-task");
+    expect(await readFile(join(cwd, ".cursor", "rules", "agentfile.mdc"), "utf8")).toContain("# my-agent-task");
+    expect(await readFile(join(cwd, ".github", "copilot-instructions.md"), "utf8")).toContain("# my-agent-task");
+
+    const workflow = await readFile(join(cwd, ".github", "workflows", "agentfile.yml"), "utf8");
+    expect(workflow).toContain("sync 'agentfile.agent' --target agents-md --output 'AGENTS.md' --check");
+    expect(workflow).toContain("sync 'agentfile.agent' --target claude-md --output 'CLAUDE.md' --check");
+    expect(workflow).toContain("sync 'agentfile.agent' --target cursor-mdc --output '.cursor/rules/agentfile.mdc' --check");
+    expect(workflow).toContain("sync 'agentfile.agent' --target copilot-md --output '.github/copilot-instructions.md' --check");
+    expect(workflow).toContain("receipt verify 'agentfile.agent' 'receipts/latest.receipt.json'");
+
+    await runCli(["check", "agentfile.agent"], cwd);
+    await runCli(["sync", "agentfile.agent", "--all", "--check"], cwd);
+    await runCli(["schema", "--output", ".vscode/agentfile.schema.json", "--check"], cwd);
+    await runCli(["editor", "vscode", "--output", ".vscode/settings.json", "--check"], cwd);
+    await runCli([
+      "github-actions",
+      "agentfile.agent",
+      "--surfaces",
+      "agents-md,claude-md,cursor-mdc,copilot-md",
+      "--receipt",
+      "receipts/latest.receipt.json",
+      "--output",
+      ".github/workflows/agentfile.yml",
+      "--check"
+    ], cwd);
+  }, 20000);
+
+  it("preflights adoption without partially writing files", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-adopt-conflict-"));
+    tempDirs.push(cwd);
+    await writeFile(join(cwd, "AGENTS.md"), "existing agent instructions\n", "utf8");
+
+    await expect(
+      runCli(["adopt"], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("refusing to overwrite existing init files:")
+    });
+
+    await expect(readFile(join(cwd, "agentfile.agent"), "utf8")).rejects.toMatchObject({
+      code: "ENOENT"
+    });
+    await expect(readFile(join(cwd, ".github", "workflows", "agentfile.yml"), "utf8")).rejects.toMatchObject({
+      code: "ENOENT"
+    });
+  });
+});
+
 describe("agentfile sync", () => {
   it("creates the default Cursor rule path", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "agentfile-sync-"));
