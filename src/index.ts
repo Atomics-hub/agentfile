@@ -18,6 +18,13 @@ export { AgentfileError, lintAgentfile } from "./diagnostics.js";
 export type { LintDiagnostic } from "./diagnostics.js";
 export { diffContracts, renderContractDiff } from "./diff.js";
 export type { ContractDiffEntry, ContractDiffFormat, ContractDiffKind } from "./diff.js";
+export {
+  defaultVscodeJsonMatches,
+  defaultVscodeSchemaPath,
+  defaultVscodeYamlMatches,
+  renderVscodeSettings
+} from "./editor.js";
+export type { VscodeSettingsOptions } from "./editor.js";
 export { parseAgentfile } from "./parser.js";
 export { parsePactSource, parseSource } from "./source.js";
 export { findTarget, quotedTargetIds } from "./targets.js";

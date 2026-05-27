@@ -13,6 +13,7 @@ import {
 } from "./compiler.js";
 import { AgentfileError, lintAgentfile } from "./diagnostics.js";
 import { diffContracts, renderContractDiff, type ContractDiffFormat } from "./diff.js";
+import { defaultVscodeSchemaPath, renderVscodeSettings } from "./editor.js";
 import { compileJsonSchema } from "./json-schema.js";
 import {
   parseReceiptFormat,
@@ -222,6 +223,26 @@ program
   .option("-f, --force", "overwrite an existing schema file", false)
   .action(async (options: SchemaOptions) => {
     await emitSchema(compileJsonSchema(), options);
+  });
+
+const editorCommand = program
+  .command("editor")
+  .description("Generate editor integration files.");
+
+editorCommand
+  .command("vscode")
+  .description("Print, write, or check VS Code settings for Agentfile schema associations.")
+  .option("--schema <file>", "schema path VS Code should use", defaultVscodeSchemaPath)
+  .option("-o, --output <file>", "write generated VS Code settings to a file")
+  .option("--check", "verify generated VS Code settings are already up to date", false)
+  .option("-f, --force", "overwrite an existing settings file", false)
+  .action(async (options: VscodeSettingsCommandOptions) => {
+    await emitVscodeSettings(
+      renderVscodeSettings({
+        schemaPath: normalizePathSeparators(options.schema)
+      }),
+      options
+    );
   });
 
 program
@@ -469,6 +490,13 @@ interface GithubActionsWorkflow {
 }
 
 interface SchemaOptions {
+  output?: string;
+  check: boolean;
+  force: boolean;
+}
+
+interface VscodeSettingsCommandOptions {
+  schema: string;
   output?: string;
   check: boolean;
   force: boolean;
@@ -1189,6 +1217,46 @@ async function emitSchema(content: string, options: SchemaOptions): Promise<void
     if (current !== content) {
       throw new AgentfileError(
         `generated schema is stale: ${options.output}; rerun without --check and pass --force to update it`,
+        options.output
+      );
+    }
+
+    console.log(`OK ${options.output} is up to date`);
+    return;
+  }
+
+  if (!options.force && await exists(options.output)) {
+    throw new AgentfileError(`refusing to overwrite ${options.output}; pass --force to replace it`, options.output);
+  }
+
+  await mkdir(dirname(options.output), { recursive: true });
+  await writeFile(options.output, content, "utf8");
+  console.log(`Wrote ${options.output}`);
+}
+
+async function emitVscodeSettings(content: string, options: VscodeSettingsCommandOptions): Promise<void> {
+  if (options.check && !options.output) {
+    throw new AgentfileError("editor vscode --check requires --output so there is a settings file to verify");
+  }
+
+  if (options.check && options.force) {
+    throw new AgentfileError("editor vscode cannot use --check and --force together");
+  }
+
+  if (!options.output) {
+    process.stdout.write(content);
+    return;
+  }
+
+  if (options.check) {
+    const current = await readOptionalFile(options.output);
+    if (current === undefined) {
+      throw new AgentfileError(`generated VS Code settings are missing: ${options.output}`, options.output);
+    }
+
+    if (current !== content) {
+      throw new AgentfileError(
+        `generated VS Code settings are stale: ${options.output}; rerun without --check and pass --force to update it`,
         options.output
       );
     }

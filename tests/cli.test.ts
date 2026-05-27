@@ -721,6 +721,71 @@ describe("agentfile schema", () => {
   });
 });
 
+describe("agentfile editor vscode", () => {
+  it("prints VS Code schema settings for YAML and JSON contract IR", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-editor-vscode-"));
+    tempDirs.push(cwd);
+
+    const { stdout } = await runCli(["editor", "vscode"], cwd);
+    const settings = JSON.parse(stdout);
+
+    expect(settings["yaml.schemas"][".vscode/agentfile.schema.json"]).toContain("agentfile.yaml");
+    expect(settings["yaml.schemas"][".vscode/agentfile.schema.json"]).toContain(".agent/agentfile.yml");
+    expect(settings["json.schemas"]).toContainEqual({
+      fileMatch: ["agentfile.json", ".agent/agentfile.json"],
+      url: ".vscode/agentfile.schema.json"
+    });
+  });
+
+  it("supports a custom VS Code schema path", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-editor-vscode-custom-"));
+    tempDirs.push(cwd);
+
+    const { stdout } = await runCli(["editor", "vscode", "--schema", "schemas/agentfile.schema.json"], cwd);
+    const settings = JSON.parse(stdout);
+
+    expect(settings["yaml.schemas"]["schemas/agentfile.schema.json"]).toContain("agentfile.yaml");
+    expect(settings["json.schemas"][0].url).toBe("schemas/agentfile.schema.json");
+  });
+
+  it("writes and checks generated VS Code settings files", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-editor-vscode-output-"));
+    tempDirs.push(cwd);
+    const outputPath = join(cwd, ".vscode", "settings.json");
+
+    const writeResult = await runCli(["editor", "vscode", "--output", outputPath], cwd);
+    expect(writeResult.stdout).toContain(`Wrote ${outputPath}`);
+
+    const settings = JSON.parse(await readFile(outputPath, "utf8"));
+    expect(settings["yaml.schemas"][".vscode/agentfile.schema.json"]).toContain("agentfile.yml");
+
+    const checkResult = await runCli(["editor", "vscode", "--output", outputPath, "--check"], cwd);
+    expect(checkResult.stdout).toContain(`OK ${outputPath} is up to date`);
+  });
+
+  it("protects generated VS Code settings from accidental overwrite and stale checks", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-editor-vscode-stale-"));
+    tempDirs.push(cwd);
+    const outputPath = join(cwd, "settings.json");
+    await writeFile(outputPath, "{}\n", "utf8");
+
+    await expect(
+      runCli(["editor", "vscode", "--output", outputPath], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining(`refusing to overwrite ${outputPath}`)
+    });
+
+    await expect(
+      runCli(["editor", "vscode", "--output", outputPath, "--check"], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining(`generated VS Code settings are stale: ${outputPath}`)
+    });
+
+    const forceResult = await runCli(["editor", "vscode", "--output", outputPath, "--force"], cwd);
+    expect(forceResult.stdout).toContain(`Wrote ${outputPath}`);
+  });
+});
+
 describe("agentfile diff", () => {
   it("prints normalized contract differences", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "agentfile-diff-"));

@@ -278,7 +278,9 @@ Export the strict contract IR JSON Schema for editors or lightweight tooling:
 
 ```sh
 node dist/cli.js schema > agentfile.schema.json
-node dist/cli.js schema --output .vscode/agentfile.schema.json --check
+node dist/cli.js schema --output .vscode/agentfile.schema.json --force
+node dist/cli.js editor vscode --output .vscode/settings.json --force
+node dist/cli.js editor vscode --output .vscode/settings.json --check
 ```
 
 Run the end-to-end demo:
@@ -463,6 +465,7 @@ Agentfile is early. The v0.1 goal is intentionally narrow:
 - `agentfile doctor --format json` for machine-readable contract health reports.
 - `agentfile inspect` for one-command contract, health, surface, and receipt-readiness review.
 - `agentfile github-actions` for source-checkout CI workflow generation and drift checks using inspect readiness gates and generated-surface checks.
+- `agentfile editor vscode` for generated VS Code schema settings and drift checks.
 - `agentfile surfaces` for generated instruction-surface inspection without writing files.
 - `agentfile sync --all` for preflighted generation or freshness checks across every default instruction surface.
 - `agentfile format --check` and `--write` for canonical Pact source hygiene.

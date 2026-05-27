@@ -73,6 +73,39 @@ try {
   });
 
   await runStep({
+    name: "Write VS Code settings",
+    command: "node dist/cli.js editor vscode --output <temp>/settings.json",
+    run: () => execFileAsync("node", [
+      "dist/cli.js",
+      "editor",
+      "vscode",
+      "--output",
+      join(tempRoot, "settings.json")
+    ], {
+      cwd: root,
+      env: process.env,
+      maxBuffer
+    })
+  });
+
+  await runStep({
+    name: "Check VS Code settings",
+    command: "node dist/cli.js editor vscode --output <temp>/settings.json --check",
+    run: () => execFileAsync("node", [
+      "dist/cli.js",
+      "editor",
+      "vscode",
+      "--output",
+      join(tempRoot, "settings.json"),
+      "--check"
+    ], {
+      cwd: root,
+      env: process.env,
+      maxBuffer
+    })
+  });
+
+  await runStep({
     name: "Review machine-readable health",
     command: "node dist/cli.js doctor examples/fix-login-race.agent --format json",
     run: () => execFileAsync("node", ["dist/cli.js", "doctor", "examples/fix-login-race.agent", "--format", "json"], {
@@ -348,6 +381,10 @@ function renderDemoEvidence() {
         [
           "The strict contract JSON Schema can be written and drift-checked.",
           "Editors and lightweight tooling can consume the structure while semantic validation stays in `agentfile check`."
+        ],
+        [
+          "VS Code schema settings can be generated and drift-checked.",
+          "Editor setup can point at the committed schema without hand-wiring JSON settings."
         ],
         [
           "One inspect command summarizes contract shape, health, generated surfaces, and receipt readiness.",

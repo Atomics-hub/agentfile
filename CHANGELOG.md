@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added `agentfile editor vscode` to generate, write, and drift-check VS Code settings that associate committed schemas with Agentfile YAML/JSON contract IR.
 - Added `agentfile github-actions` to generate, write, and drift-check source-checkout CI workflows that run inspect readiness gates and generated-surface checks.
 - Added `agentfile inspect` to summarize contract shape, health, generated surfaces, and receipt readiness in one command, including CI-ready `--strict` and `--fail-on` gates.
 - Added `agentfile doctor --format json` for machine-readable contract health reports.

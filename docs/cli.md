@@ -191,6 +191,30 @@ agentfile schema --output .vscode/agentfile.schema.json --check
 
 The exported schema is useful for editor integration, forms, and lightweight structural validation. It intentionally does not replace `agentfile check`, which still enforces semantic invariants such as duplicate ids, scope/permission consistency, and risky authority diagnostics.
 
+## `agentfile editor vscode`
+
+Print VS Code workspace settings that associate the generated Agentfile JSON Schema with YAML and JSON contract IR files:
+
+```sh
+agentfile editor vscode
+```
+
+Use it with `agentfile schema` to commit editor setup and drift-check it later:
+
+```sh
+agentfile schema --output .vscode/agentfile.schema.json --force
+agentfile editor vscode --output .vscode/settings.json --force
+agentfile editor vscode --output .vscode/settings.json --check
+```
+
+Pass `--schema` when the schema is committed somewhere else:
+
+```sh
+agentfile editor vscode --schema schemas/agentfile.schema.json
+```
+
+The generated settings target YAML/JSON contract IR files such as `agentfile.yaml`, `agentfile.yml`, and `agentfile.json`. Pact `.agent` source uses Agentfile's parser and formatter rather than JSON Schema.
+
 For CI setup, see [GitHub Actions Integration](github-actions.md).
 
 ## `agentfile sync [file] --target <target> --output <file>`
