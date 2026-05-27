@@ -45,6 +45,7 @@
     "benchmark:baseline": "node benchmarks/baseline.mjs",
     "benchmark:report": "node benchmarks/report.mjs",
     "demo:quick": "node scripts/readme-quick-loop.mjs",
+    "demo:adopt": "node scripts/adoption-demo.mjs",
     "surfaces:check": "npm run build && node scripts/check-generated-surfaces.mjs",
     "source:format:check": "npm run build && node scripts/check-pact-format.mjs",
     "claims:review": "node scripts/public-claim-review.mjs",

@@ -23,9 +23,10 @@ From a clean checkout, the current end-to-end proof is intentionally small:
 ```sh
 npm install
 npm run demo:quick
+npm run demo:adopt
 ```
 
-That script runs the same lifecycle by building the CLI, validating one `.agent` contract, projecting it into the instruction files current agent harnesses already read, showing excerpts from those generated files, then verifying a filled receipt against the original contract.
+The quick loop runs the same lifecycle by building the CLI, validating one `.agent` contract, projecting it into the instruction files current agent harnesses already read, showing excerpts from those generated files, then verifying a filled receipt against the original contract. The adoption demo creates a temporary existing Node project and runs the source-to-surfaces-to-receipt loop inside it.
 
 What the loop demonstrates:
 
@@ -287,6 +288,7 @@ Run the end-to-end demo:
 
 ```sh
 npm run demo:quick
+npm run demo:adopt
 npm run build
 node dist/cli.js check examples/fix-login-race.agent
 node dist/cli.js doctor examples/fix-login-race.agent

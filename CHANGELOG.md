@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added `npm run demo:adopt` to run a temporary existing-repo adoption demo through `adopt`, generated surfaces, project checks, receipt fill, review, and verification.
 - Added `agentfile adopt` to scaffold a preflighted existing-repo adoption kit with Pact source, editor files, generated instruction surfaces, and a GitHub Actions receipt gate.
 - Added `agentfile receipt fill --check-log` to update command-backed receipt proof entries from check logs while leaving acceptance and handoff evidence explicit.
 - Updated repository and generated GitHub Actions workflows to current `actions/checkout@v6` and `actions/setup-node@v6` action majors.

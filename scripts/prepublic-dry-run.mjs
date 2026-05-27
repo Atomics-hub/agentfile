@@ -39,6 +39,11 @@ const commands = [
     name: "README quick loop",
     command: "npm run demo:quick",
     args: ["run", "demo:quick"]
+  },
+  {
+    name: "Existing-repo adoption demo",
+    command: "npm run demo:adopt",
+    args: ["run", "demo:adopt"]
   }]),
   {
     name: "Launch metadata review",
