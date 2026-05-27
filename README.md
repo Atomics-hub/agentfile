@@ -318,6 +318,12 @@ Create a Pact source starter instead:
 agentfile init agentfile.agent
 ```
 
+Create a starter contract with VS Code schema setup:
+
+```sh
+agentfile init agentfile.agent --editor vscode
+```
+
 Validate a contract:
 
 ```sh
@@ -459,7 +465,7 @@ Agentfile is early. The v0.1 goal is intentionally narrow:
 - Security-first defaults.
 - Initial risky-authority lint warnings for broad permissions.
 - `agentfile init` for fast adoption.
-- `agentfile init` can scaffold either YAML IR or Pact `.agent` source.
+- `agentfile init` can scaffold either YAML IR or Pact `.agent` source, with optional VS Code schema setup.
 - Compiler targets for `AGENTS.md`, `CLAUDE.md`, Cursor rules, and GitHub Copilot instructions.
 - `agentfile doctor` for contract health and generated instruction-surface freshness checks.
 - `agentfile doctor --format json` for machine-readable contract health reports.

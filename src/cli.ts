@@ -13,7 +13,7 @@ import {
 } from "./compiler.js";
 import { AgentfileError, lintAgentfile } from "./diagnostics.js";
 import { diffContracts, renderContractDiff, type ContractDiffFormat } from "./diff.js";
-import { defaultVscodeSchemaPath, renderVscodeSettings } from "./editor.js";
+import { defaultVscodeSchemaPath, defaultVscodeSettingsPath, renderVscodeSettings } from "./editor.js";
 import { compileJsonSchema } from "./json-schema.js";
 import {
   parseReceiptFormat,
@@ -41,12 +41,12 @@ program
   .description("Create a minimal Agentfile starter in YAML or Pact source form.")
   .argument("[file]", "Agentfile path", "agentfile.yaml")
   .option("-f, --format <format>", "yaml or agent")
-  .action(async (file: string, options: { format?: string }) => {
-    const format = parseInitFormat(file, options.format);
-    await writeFile(file, minimalAgentfile(format), { flag: "wx" }).catch((error: NodeJS.ErrnoException) => {
-      throw new AgentfileError(error.message, file);
-    });
-    console.log(`Created ${file}`);
+  .option("--editor <editor>", "also create editor integration files: vscode")
+  .option("--schema <file>", "schema path for generated editor setup", defaultVscodeSchemaPath)
+  .action(async (file: string, options: InitOptions) => {
+    for (const message of await runInit(file, options)) {
+      console.log(message);
+    }
   });
 
 program
@@ -495,6 +495,19 @@ interface SchemaOptions {
   force: boolean;
 }
 
+interface InitOptions {
+  format?: string;
+  editor?: string;
+  schema: string;
+}
+
+type InitEditor = "none" | "vscode";
+
+interface InitPlanItem {
+  path: string;
+  content: string;
+}
+
 interface VscodeSettingsCommandOptions {
   schema: string;
   output?: string;
@@ -521,6 +534,80 @@ type FormatResult =
   | { status: "checked"; filePath: string }
   | { status: "unchanged"; filePath: string }
   | { status: "written"; filePath: string };
+
+async function runInit(file: string, options: InitOptions): Promise<string[]> {
+  const format = parseInitFormat(file, options.format);
+  const editor = parseInitEditor(options.editor);
+  const plan = buildInitPlan(file, format, editor, options.schema);
+
+  await assertInitPlanCanWrite(plan);
+
+  for (const item of plan) {
+    await mkdir(dirname(item.path), { recursive: true });
+    await writeFile(item.path, item.content, "utf8");
+  }
+
+  return plan.map((item) => `Created ${item.path}`);
+}
+
+function buildInitPlan(file: string, format: InitFormat, editor: InitEditor, schemaPath: string): InitPlanItem[] {
+  const plan: InitPlanItem[] = [
+    {
+      path: file,
+      content: minimalAgentfile(format)
+    }
+  ];
+
+  if (editor === "vscode") {
+    plan.push(
+      {
+        path: schemaPath,
+        content: compileJsonSchema()
+      },
+      {
+        path: defaultVscodeSettingsPath,
+        content: renderVscodeSettings({
+          schemaPath: normalizePathSeparators(schemaPath)
+        })
+      }
+    );
+  }
+
+  return plan;
+}
+
+async function assertInitPlanCanWrite(plan: InitPlanItem[]): Promise<void> {
+  const planned = new Set<string>();
+  const duplicate = plan.find((item) => {
+    if (planned.has(item.path)) {
+      return true;
+    }
+
+    planned.add(item.path);
+    return false;
+  });
+
+  if (duplicate) {
+    throw new AgentfileError(`init output paths must be unique: ${duplicate.path}`, duplicate.path);
+  }
+
+  const conflicts: string[] = [];
+  for (const item of plan) {
+    if (await exists(item.path)) {
+      conflicts.push(item.path);
+    }
+  }
+
+  if (conflicts.length === 0) {
+    return;
+  }
+
+  throw new AgentfileError([
+    "refusing to overwrite existing init files:",
+    ...conflicts.map((path) => `- ${path}`),
+    "Run init in an empty project or choose different output paths."
+  ].join("\n"), conflicts[0]);
+}
 
 async function runSync(file: string | undefined, options: SyncCommandOptions): Promise<string[]> {
   if (options.all && options.output) {
@@ -1329,6 +1416,18 @@ function parseInitFormat(filePath: string, value?: string): InitFormat {
   }
 
   throw new AgentfileError(`unknown init format "${value}". Expected "yaml" or "agent".`);
+}
+
+function parseInitEditor(value?: string): InitEditor {
+  if (value === undefined) {
+    return "none";
+  }
+
+  if (value === "vscode") {
+    return value;
+  }
+
+  throw new AgentfileError(`unknown init editor "${value}". Expected "vscode".`);
 }
 
 async function resolveFile(filePath?: string): Promise<string> {

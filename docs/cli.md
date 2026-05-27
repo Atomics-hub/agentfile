@@ -11,6 +11,15 @@ agentfile init agentfile.agent
 agentfile init starter.txt --format agent
 ```
 
+Pass `--editor vscode` to also create `.vscode/agentfile.schema.json` and `.vscode/settings.json` in the same preflighted setup:
+
+```sh
+agentfile init agentfile.agent --editor vscode
+agentfile init agentfile.agent --editor vscode --schema schemas/agentfile.schema.json
+```
+
+`init` refuses to overwrite any planned output path before writing files, so editor setup does not leave a partially initialized project when an existing schema or settings file is present.
+
 ## `agentfile check [file]`
 
 Validate a contract. `validate` is an alias.

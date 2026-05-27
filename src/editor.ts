@@ -5,6 +5,7 @@ export interface VscodeSettingsOptions {
 }
 
 export const defaultVscodeSchemaPath = ".vscode/agentfile.schema.json";
+export const defaultVscodeSettingsPath = ".vscode/settings.json";
 
 export const defaultVscodeYamlMatches = [
   "agentfile.yaml",

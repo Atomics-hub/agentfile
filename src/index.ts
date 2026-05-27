@@ -21,6 +21,7 @@ export type { ContractDiffEntry, ContractDiffFormat, ContractDiffKind } from "./
 export {
   defaultVscodeJsonMatches,
   defaultVscodeSchemaPath,
+  defaultVscodeSettingsPath,
   defaultVscodeYamlMatches,
   renderVscodeSettings
 } from "./editor.js";

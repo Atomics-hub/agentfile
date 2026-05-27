@@ -42,6 +42,12 @@ try {
   });
 
   await runStep({
+    name: "Create VS Code starter kit",
+    command: "node dist/cli.js init agentfile.agent --editor vscode (cwd <temp>)",
+    run: () => initVscodeKit()
+  });
+
+  await runStep({
     name: "Write JSON Schema",
     command: "node dist/cli.js schema --output <temp>/agentfile.schema.json",
     run: () => execFileAsync("node", [
@@ -264,6 +270,18 @@ async function syncAllDefaults(check) {
   ], { cwd, env: process.env, maxBuffer });
 }
 
+async function initVscodeKit() {
+  const cwd = join(tempRoot, "init-vscode");
+  await mkdir(cwd, { recursive: true });
+  return execFileAsync("node", [
+    join(root, "dist/cli.js"),
+    "init",
+    "agentfile.agent",
+    "--editor",
+    "vscode"
+  ], { cwd, env: process.env, maxBuffer });
+}
+
 async function collectArtifactPreviews() {
   const previews = [];
 
@@ -365,6 +383,10 @@ function renderDemoEvidence() {
         [
           "The `.agent` source validates before any work starts.",
           "Scope, authority, proof, and handoff are reviewable as a contract instead of scattered prose."
+        ],
+        [
+          "`agentfile init --editor vscode` creates a starter contract plus schema-backed editor setup.",
+          "First-run adoption can produce reviewable source and editor validation files without manual JSON wiring."
         ],
         [
           "The same source generates AGENTS.md, CLAUDE.md, Cursor, and Copilot instruction files.",

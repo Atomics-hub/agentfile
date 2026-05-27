@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -59,6 +59,80 @@ describe("agentfile init", () => {
     expect(content).toContain("mission my-agent-task {");
     expect(content).not.toContain('agentfile: "0.1.0"');
   }, 10000);
+
+  it("creates a Pact starter with VS Code schema files", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-init-vscode-"));
+    tempDirs.push(cwd);
+
+    const { stdout } = await runCli(["init", "agentfile.agent", "--editor", "vscode"], cwd);
+
+    expect(stdout).toContain("Created agentfile.agent");
+    expect(stdout).toContain("Created .vscode/agentfile.schema.json");
+    expect(stdout).toContain("Created .vscode/settings.json");
+
+    const contract = await readFile(join(cwd, "agentfile.agent"), "utf8");
+    expect(contract).toContain("mission my-agent-task {");
+
+    const schema = JSON.parse(await readFile(join(cwd, ".vscode", "agentfile.schema.json"), "utf8"));
+    expect(schema.title).toBe("Agentfile TaskContract");
+
+    const settings = JSON.parse(await readFile(join(cwd, ".vscode", "settings.json"), "utf8"));
+    expect(settings["yaml.schemas"][".vscode/agentfile.schema.json"]).toContain("agentfile.yaml");
+
+    await runCli(["check", "agentfile.agent"], cwd);
+    await runCli(["schema", "--output", ".vscode/agentfile.schema.json", "--check"], cwd);
+    await runCli(["editor", "vscode", "--output", ".vscode/settings.json", "--check"], cwd);
+  }, 15000);
+
+  it("supports a custom schema path for init editor setup", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-init-vscode-schema-"));
+    tempDirs.push(cwd);
+
+    await runCli(["init", "agentfile.agent", "--editor", "vscode", "--schema", "schemas/agentfile.schema.json"], cwd);
+
+    const schema = JSON.parse(await readFile(join(cwd, "schemas", "agentfile.schema.json"), "utf8"));
+    expect(schema.title).toBe("Agentfile TaskContract");
+
+    const settings = JSON.parse(await readFile(join(cwd, ".vscode", "settings.json"), "utf8"));
+    expect(settings["yaml.schemas"]["schemas/agentfile.schema.json"]).toContain("agentfile.yml");
+    expect(settings["json.schemas"][0].url).toBe("schemas/agentfile.schema.json");
+  });
+
+  it("preflights init editor setup without partially writing files", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-init-vscode-conflict-"));
+    tempDirs.push(cwd);
+
+    await mkdir(join(cwd, ".vscode"), { recursive: true });
+    await writeFile(join(cwd, ".vscode", "agentfile.schema.json"), "{}\n", "utf8");
+
+    await expect(
+      runCli(["init", "agentfile.agent", "--editor", "vscode"], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("refusing to overwrite existing init files:")
+    });
+
+    await expect(readFile(join(cwd, "agentfile.agent"), "utf8")).rejects.toMatchObject({
+      code: "ENOENT"
+    });
+    await expect(readFile(join(cwd, ".vscode", "settings.json"), "utf8")).rejects.toMatchObject({
+      code: "ENOENT"
+    });
+  });
+
+  it("rejects overlapping init output paths", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-init-vscode-overlap-"));
+    tempDirs.push(cwd);
+
+    await expect(
+      runCli(["init", "agentfile.agent", "--editor", "vscode", "--schema", ".vscode/settings.json"], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("init output paths must be unique: .vscode/settings.json")
+    });
+
+    await expect(readFile(join(cwd, "agentfile.agent"), "utf8")).rejects.toMatchObject({
+      code: "ENOENT"
+    });
+  });
 });
 
 describe("agentfile sync", () => {
