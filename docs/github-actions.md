@@ -33,16 +33,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Checkout Agentfile
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: Atomics-hub/agentfile
           path: .agentfile/tool
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: npm
@@ -75,12 +75,12 @@ This workflow treats `.agent` as the source of truth. `AGENTS.md` and `CLAUDE.md
 For early adoption, start with only validation:
 
 ```yaml
-- uses: actions/checkout@v4
-- uses: actions/checkout@v4
+- uses: actions/checkout@v6
+- uses: actions/checkout@v6
   with:
     repository: Atomics-hub/agentfile
     path: .agentfile/tool
-- uses: actions/setup-node@v4
+- uses: actions/setup-node@v6
   with:
     node-version: 20
 - run: npm ci --prefix .agentfile/tool
