@@ -48,6 +48,12 @@ try {
   });
 
   await runStep({
+    name: "Create CI receipt template",
+    command: "node dist/cli.js receipt init examples/fix-login-race.agent --output <temp>/latest.receipt.json",
+    run: () => createReceiptTemplate()
+  });
+
+  await runStep({
     name: "Write JSON Schema",
     command: "node dist/cli.js schema --output <temp>/agentfile.schema.json",
     run: () => execFileAsync("node", [
@@ -281,6 +287,17 @@ async function initReviewableKit() {
   ], { cwd, env: process.env, maxBuffer });
 }
 
+async function createReceiptTemplate() {
+  return execFileAsync("node", [
+    "dist/cli.js",
+    "receipt",
+    "init",
+    "examples/fix-login-race.agent",
+    "--output",
+    join(tempRoot, "latest.receipt.json")
+  ], { cwd: root, env: process.env, maxBuffer });
+}
+
 async function collectArtifactPreviews() {
   const previews = [];
 
@@ -386,6 +403,10 @@ function renderDemoEvidence() {
         [
           "`agentfile init --kit reviewable` creates Pact source, schema-backed editor setup, and a validation workflow with a receipt gate.",
           "First-run adoption can produce reviewable source, editor validation files, and a local CI gate that verifies completed-work evidence when a receipt exists."
+        ],
+        [
+          "`agentfile receipt init` writes the CI receipt skeleton at a predictable JSON path.",
+          "A harness can fill the expected receipt file after work finishes instead of hand-building the audit shape."
         ],
         [
           "The same source generates AGENTS.md, CLAUDE.md, Cursor, and Copilot instruction files.",

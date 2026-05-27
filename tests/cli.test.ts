@@ -1207,6 +1207,40 @@ describe("agentfile receipt", () => {
     }));
   });
 
+  it("initializes the default CI receipt template path", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-init-"));
+    tempDirs.push(cwd);
+
+    await writeFile(join(cwd, "agentfile.agent"), await readFile(examplePath, "utf8"), "utf8");
+
+    const { stdout } = await runCli(["receipt", "init"], cwd);
+    const receiptPath = join(cwd, "receipts", "latest.receipt.json");
+    const receipt = JSON.parse(await readFile(receiptPath, "utf8"));
+
+    expect(stdout).toContain("Wrote receipts/latest.receipt.json");
+    expect(receipt.kind).toBe("AgentfileReceiptTemplate");
+    expect(receipt.contract.path).toBe("agentfile.agent");
+    expect(receipt.requiredProof[0]).toMatchObject({
+      status: "pending",
+      evidence: null
+    });
+
+    await expect(
+      runCli(["receipt", "init"], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("refusing to overwrite receipts/latest.receipt.json; pass --force to replace it")
+    });
+
+    const forceResult = await runCli(["receipt", "init", "--force"], cwd);
+    expect(forceResult.stdout).toContain("Wrote receipts/latest.receipt.json");
+
+    const customResult = await runCli(["receipt", "init", "--output", "artifacts/run.receipt.json"], cwd);
+    const customReceipt = JSON.parse(await readFile(join(cwd, "artifacts", "run.receipt.json"), "utf8"));
+
+    expect(customResult.stdout).toContain("Wrote artifacts/run.receipt.json");
+    expect(customReceipt.contract.path).toBe("agentfile.agent");
+  }, 15000);
+
   it("writes receipt artifacts and protects existing files", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-output-"));
     tempDirs.push(cwd);

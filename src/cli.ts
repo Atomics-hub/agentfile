@@ -301,17 +301,28 @@ const receiptCommand = program
     const receipt = renderReceipt(agentfile, resolved, format);
 
     if (options.output) {
-      if (!options.force && await exists(options.output)) {
-        throw new AgentfileError(`refusing to overwrite ${options.output}; pass --force to replace it`);
-      }
-
-      await mkdir(dirname(options.output), { recursive: true });
-      await writeFile(options.output, receipt, "utf8");
-      console.log(`Wrote ${options.output}`);
+      await writeReceiptArtifact(receipt, options.output, options.force);
       return;
     }
 
     process.stdout.write(receipt);
+  });
+
+receiptCommand
+  .command("init")
+  .description("Create a JSON receipt template for the default CI receipt gate.")
+  .argument("[file]", "Agentfile path")
+  .option("-o, --output <file>", "receipt JSON output path", defaultGithubActionsReceiptPath)
+  .option("--force", "overwrite an existing receipt file", false)
+  .action(async (file: string, options: { output: string; force: boolean }, command: Command) => {
+    const resolved = await resolveFile(file);
+    const agentfile = await load(resolved);
+    const receipt = renderReceipt(agentfile, resolved, "json");
+    const parentOptions = command.parent?.opts() as { output?: string; force?: boolean };
+    const output = parentOptions.output ?? options.output;
+    const force = options.force || Boolean(parentOptions.force);
+
+    await writeReceiptArtifact(receipt, output, force);
   });
 
 receiptCommand
@@ -1332,6 +1343,16 @@ async function emitGithubActionsWorkflow(content: string, options: GithubActions
   await mkdir(dirname(options.output), { recursive: true });
   await writeFile(options.output, content, "utf8");
   console.log(`Wrote ${options.output}`);
+}
+
+async function writeReceiptArtifact(content: string, outputPath: string, force: boolean): Promise<void> {
+  if (!force && await exists(outputPath)) {
+    throw new AgentfileError(`refusing to overwrite ${outputPath}; pass --force to replace it`);
+  }
+
+  await mkdir(dirname(outputPath), { recursive: true });
+  await writeFile(outputPath, content, "utf8");
+  console.log(`Wrote ${outputPath}`);
 }
 
 async function emitSchema(content: string, options: SchemaOptions): Promise<void> {

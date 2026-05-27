@@ -306,6 +306,15 @@ agentfile receipt examples/fix-login-race.agent --output receipts/fix-login.md
 agentfile receipt examples/fix-login-race.agent --format json --output receipts/fix-login.json
 ```
 
+## `agentfile receipt init [file]`
+
+Create a machine-readable receipt template at `receipts/latest.receipt.json`, the default path used by generated GitHub Actions receipt gates. The file starts with pending proof, acceptance, and handoff slots for the harness to fill after work finishes.
+
+```sh
+agentfile receipt init examples/fix-login-race.agent
+agentfile receipt init examples/fix-login-race.agent --output receipts/custom.receipt.json
+```
+
 ## `agentfile receipt verify <contract> <receipt>`
 
 Verify a filled JSON receipt against its source contract.

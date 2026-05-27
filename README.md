@@ -454,6 +454,7 @@ Print the receipt checklist a harness run should satisfy:
 
 ```sh
 agentfile receipt examples/fix-login-race.agent
+agentfile receipt init examples/fix-login-race.agent
 agentfile receipt examples/fix-login-race.agent --output receipts/fix-login.md
 agentfile receipt examples/fix-login-race.agent --format json --output receipts/fix-login.json
 agentfile receipt review examples/fix-login-race.agent examples/receipts/fix-login-passing.receipt.json
@@ -490,6 +491,7 @@ Agentfile is early. The v0.1 goal is intentionally narrow:
 - `agentfile surfaces` for generated instruction-surface inspection without writing files.
 - `agentfile sync --all` for preflighted generation or freshness checks across every default instruction surface.
 - `agentfile format --check` and `--write` for canonical Pact source hygiene.
+- `agentfile receipt init` for a predictable JSON receipt skeleton that matches the default CI gate path.
 - `agentfile receipt review` for human-readable receipt completion and verification summaries.
 - A benchmark skeleton that can compare plain issue text against Agentfile-guided tasks without claiming results before data exists.
 

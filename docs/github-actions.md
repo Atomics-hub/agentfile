@@ -106,6 +106,7 @@ If a generated file is stale, the command exits non-zero and prints the command 
 Receipts are optional, but they make the contract loop auditable after an agent run:
 
 ```sh
+node .agentfile/tool/dist/cli.js receipt init agentfile.agent
 node .agentfile/tool/dist/cli.js receipt verify agentfile.agent receipts/latest.receipt.json
 ```
 
