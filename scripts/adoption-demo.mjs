@@ -172,7 +172,7 @@ try {
 
   await runStep({
     name: "Attach acceptance and handoff evidence",
-    command: "write completed evidence fields",
+    command: "node dist/cli.js receipt evidence agentfile.agent receipts/latest.receipt.json --surface AGENTS.md --write",
     run: () => completeReceiptEvidence()
   });
 
@@ -322,19 +322,31 @@ async function writeTaskContract() {
 async function completeReceiptEvidence() {
   const receiptPath = join(repo, "receipts", "latest.receipt.json");
   const receipt = JSON.parse(await readFile(receiptPath, "utf8"));
-  receipt.source.generatedInstructionSurfaceUsed = "AGENTS.md";
+  const evidenceArgs = [
+    join(root, "dist/cli.js"),
+    "receipt",
+    "evidence",
+    "agentfile.agent",
+    "receipts/latest.receipt.json",
+    "--surface",
+    "AGENTS.md"
+  ];
 
-  for (const entry of receipt.acceptanceEvidence) {
-    entry.status = "satisfied";
-    entry.evidence = "tests/title-slug.test.mjs";
-  }
+  receipt.acceptanceEvidence.forEach((_, index) => {
+    evidenceArgs.push("--acceptance", `${index + 1}=tests/title-slug.test.mjs`);
+  });
 
-  for (const entry of receipt.handoffEvidence) {
-    entry.status = "satisfied";
-    entry.evidence = evidenceForHandoff(entry.item);
-  }
+  receipt.handoffEvidence.forEach((entry, index) => {
+    evidenceArgs.push("--handoff", `${index + 1}=${evidenceForHandoff(entry.item)}`);
+  });
 
-  await writeFile(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`, "utf8");
+  evidenceArgs.push("--write");
+
+  return execFileAsync("node", evidenceArgs, {
+    cwd: repo,
+    env: process.env,
+    maxBuffer
+  });
 }
 
 function evidenceForHandoff(item) {
@@ -343,7 +355,7 @@ function evidenceForHandoff(item) {
     return "logs/checks.txt";
   }
   if (lower.includes("patch diff") || lower.includes("changed files")) {
-    return ["agentfile.agent", "AGENTS.md", "CLAUDE.md", ".cursor/rules/agentfile.mdc", ".github/copilot-instructions.md"];
+    return "agentfile.agent, AGENTS.md, CLAUDE.md, .cursor/rules/agentfile.mdc, .github/copilot-instructions.md";
   }
   if (lower.includes("risk") || lower.includes("approval") || lower.includes("policy")) {
     return "No skipped checks, approvals, or policy limit changes in this local adoption demo.";
@@ -400,7 +412,7 @@ function renderReport(failed) {
     "- Generated GitHub Actions workflows can include receipt-ready check runs when a project is ready to execute contract checks in CI.",
     "- Structured check-result JSON has a generated schema surface that wrappers can write and drift-check before filling receipts.",
     "- `agentfile checks run` can execute command-backed proof checks and feed structured results into `receipt fill --check-results`.",
-    "- Explicit acceptance and handoff evidence can then make the receipt verifiable.",
+    "- `agentfile receipt evidence` can attach explicit acceptance and handoff evidence without manual JSON edits.",
     "- The demo uses a local Node fixture and does not run a live coding agent or publish a package.",
     "",
     ...results.filter((result) => result.status === "fail").flatMap((result) => [

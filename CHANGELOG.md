@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added `agentfile receipt evidence` so acceptance and handoff evidence can be filled explicitly without hand-editing receipt JSON.
 - Added `agentfile github-actions --run-checks` to generate CI steps that run contract checks, write structured check results, fill receipt proof, and then verify receipts when present.
 - Added `agentfile checks run` to execute command-backed proof checks and emit receipt-ready check logs plus structured check results.
 - Added `agentfile receipt check-results-schema` and adoption-demo drift checks so wrappers can target the structured receipt proof input reliably.

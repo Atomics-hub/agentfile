@@ -18,10 +18,12 @@ import { diffContracts, renderContractDiff, type ContractDiffFormat } from "./di
 import { defaultVscodeSchemaPath, defaultVscodeSettingsPath, renderVscodeSettings } from "./editor.js";
 import { compileJsonSchema } from "./json-schema.js";
 import {
+  fillReceiptEvidence,
   fillReceiptProofFromCheckLog,
   fillReceiptProofFromCheckResults,
   parseReceiptFormat,
   receiptHandoffEvidence,
+  type ReceiptEvidenceAssignment,
   renderReceipt,
   renderReceiptReview,
   reviewReceipt,
@@ -473,6 +475,52 @@ receiptCommand
     console.log(`Filled proof: ${result.filledProofIds.length > 0 ? result.filledProofIds.join(", ") : "none"}`);
   });
 
+receiptCommand
+  .command("evidence")
+  .description("Fill acceptance and handoff evidence in a JSON receipt.")
+  .argument("<contract>", "Agentfile contract path")
+  .argument("<receipt>", "JSON receipt path")
+  .option("--acceptance <item=evidence>", "fill acceptance evidence by 1-based item number or exact item text", collectOption, [])
+  .option("--handoff <item=evidence>", "fill handoff evidence by 1-based item number or exact item text", collectOption, [])
+  .option("--surface <file>", "record the generated instruction surface used for this receipt")
+  .option("--write", "write the updated JSON receipt back to the receipt path", false)
+  .action(async (
+    contract: string,
+    receiptPath: string,
+    options: { acceptance: string[]; handoff: string[]; surface?: string; write: boolean }
+  ) => {
+    const agentfile = await load(contract);
+    const receipt = await loadReceipt(receiptPath);
+    const result = fillReceiptEvidence(agentfile, receipt, {
+      acceptance: parseEvidenceAssignments(options.acceptance, "--acceptance"),
+      handoff: parseEvidenceAssignments(options.handoff, "--handoff"),
+      generatedInstructionSurfaceUsed: options.surface
+    });
+
+    if (
+      result.filledAcceptanceItems.length === 0 &&
+      result.filledHandoffItems.length === 0 &&
+      result.generatedInstructionSurfaceUsed === undefined
+    ) {
+      throw new AgentfileError("receipt evidence requires at least one of --acceptance, --handoff, or --surface");
+    }
+
+    const rendered = `${JSON.stringify(result.receipt, null, 2)}\n`;
+
+    if (!options.write) {
+      process.stdout.write(rendered);
+      return;
+    }
+
+    await writeFile(receiptPath, rendered, "utf8");
+    console.log(`Updated ${receiptPath}`);
+    console.log(`Filled acceptance evidence: ${result.filledAcceptanceItems.length}`);
+    console.log(`Filled handoff evidence: ${result.filledHandoffItems.length}`);
+    if (result.generatedInstructionSurfaceUsed) {
+      console.log(`Generated surface: ${result.generatedInstructionSurfaceUsed}`);
+    }
+  });
+
 program.parseAsync().catch((error: unknown) => {
   if (error instanceof AgentfileError) {
     console.error(error.message);
@@ -524,6 +572,34 @@ async function fillReceiptProof(
   }
 
   throw new AgentfileError("receipt fill requires --check-log or --check-results");
+}
+
+function collectOption(value: string, previous: string[] = []): string[] {
+  return [...previous, value];
+}
+
+function parseEvidenceAssignments(values: string[], optionName: string): ReceiptEvidenceAssignment[] {
+  return values.map((value) => parseEvidenceAssignment(value, optionName));
+}
+
+function parseEvidenceAssignment(value: string, optionName: string): ReceiptEvidenceAssignment {
+  const separatorIndex = value.indexOf("=");
+
+  if (separatorIndex <= 0) {
+    throw new AgentfileError(`${optionName} entries must use item=evidence with non-empty values`);
+  }
+
+  const selector = value.slice(0, separatorIndex).trim();
+  const evidence = value.slice(separatorIndex + 1).trim();
+
+  if (selector.length === 0 || evidence.length === 0) {
+    throw new AgentfileError(`${optionName} entries must use item=evidence with non-empty values`);
+  }
+
+  return {
+    selector,
+    evidence
+  };
 }
 
 async function readTextFile(filePath: string): Promise<string> {

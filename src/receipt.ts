@@ -21,6 +21,24 @@ export interface ReceiptFillResult {
   unchangedProofIds: string[];
 }
 
+export interface ReceiptEvidenceAssignment {
+  selector: string;
+  evidence: unknown;
+}
+
+export interface ReceiptEvidenceFillInput {
+  acceptance?: ReceiptEvidenceAssignment[];
+  handoff?: ReceiptEvidenceAssignment[];
+  generatedInstructionSurfaceUsed?: string;
+}
+
+export interface ReceiptEvidenceFillResult {
+  receipt: unknown;
+  filledAcceptanceItems: string[];
+  filledHandoffItems: string[];
+  generatedInstructionSurfaceUsed?: string;
+}
+
 interface ReceiptReviewCount {
   passed: number;
   total: number;
@@ -124,6 +142,36 @@ export function fillReceiptProofFromCheckResults(
     receipt: receiptObject,
     filledProofIds,
     unchangedProofIds
+  };
+}
+
+export function fillReceiptEvidence(
+  agentfile: Agentfile,
+  receipt: unknown,
+  input: ReceiptEvidenceFillInput
+): ReceiptEvidenceFillResult {
+  const receiptObject = assertReceiptRecord(receipt);
+  const filledAcceptanceItems = fillEvidenceEntries(
+    receiptObject.acceptanceEvidence,
+    agentfile.workflow.acceptance,
+    "acceptanceEvidence",
+    input.acceptance ?? []
+  );
+  const filledHandoffItems = fillEvidenceEntries(
+    receiptObject.handoffEvidence,
+    receiptHandoffEvidence(agentfile),
+    "handoffEvidence",
+    input.handoff ?? []
+  );
+  const generatedInstructionSurfaceUsed = input.generatedInstructionSurfaceUsed === undefined
+    ? undefined
+    : setGeneratedInstructionSurface(receiptObject, input.generatedInstructionSurfaceUsed);
+
+  return {
+    receipt: receiptObject,
+    filledAcceptanceItems,
+    filledHandoffItems,
+    generatedInstructionSurfaceUsed
   };
 }
 
@@ -476,6 +524,21 @@ function recordArray(value: unknown): Record<string, unknown>[] {
   });
 }
 
+function assertRecordArray(value: unknown, path: string): Record<string, unknown>[] {
+  if (!Array.isArray(value)) {
+    throw new AgentfileError(`${path}: must be an array`);
+  }
+
+  return value.map((item, index) => {
+    const record = asRecord(item);
+    if (!record) {
+      throw new AgentfileError(`${path}[${index}]: must be an object`);
+    }
+
+    return record;
+  });
+}
+
 interface ParsedCheckResult {
   id?: string;
   command?: string;
@@ -490,6 +553,88 @@ function assertReceiptRecord(receipt: unknown): Record<string, unknown> {
   }
 
   return receiptObject;
+}
+
+function fillEvidenceEntries(
+  value: unknown,
+  expectedItems: string[],
+  path: "acceptanceEvidence" | "handoffEvidence",
+  assignments: ReceiptEvidenceAssignment[]
+): string[] {
+  const entries = assertRecordArray(value, path);
+  const filled = new Set<string>();
+
+  for (const assignment of assignments) {
+    if (!hasEvidence(assignment.evidence)) {
+      throw new AgentfileError(`${path} selector "${assignment.selector}": evidence is required`);
+    }
+
+    const item = resolveEvidenceSelector(assignment.selector, expectedItems, path);
+    const entry = entries.find((candidate) => candidate.item === item);
+
+    if (!entry) {
+      throw new AgentfileError(`${path}[${item}]: missing`);
+    }
+
+    entry.status = "satisfied";
+    entry.evidence = assignment.evidence;
+    filled.add(item);
+  }
+
+  return [...filled];
+}
+
+function resolveEvidenceSelector(
+  selector: string,
+  expectedItems: string[],
+  path: "acceptanceEvidence" | "handoffEvidence"
+): string {
+  const trimmed = selector.trim();
+
+  if (trimmed.length === 0) {
+    throw new AgentfileError(`${path} selector: must be a non-empty string`);
+  }
+
+  if (/^\d+$/.test(trimmed)) {
+    const index = Number(trimmed);
+    if (index < 1 || index > expectedItems.length) {
+      throw new AgentfileError(`${path} selector "${trimmed}": item number out of range (expected 1-${expectedItems.length})`);
+    }
+
+    return expectedItems[index - 1];
+  }
+
+  if (expectedItems.includes(trimmed)) {
+    return trimmed;
+  }
+
+  throw new AgentfileError(`${path} selector "${trimmed}": no matching contract item`);
+}
+
+function setGeneratedInstructionSurface(receiptObject: Record<string, unknown>, value: string): string {
+  const trimmed = value.trim();
+  if (trimmed.length === 0) {
+    throw new AgentfileError("source.generatedInstructionSurfaceUsed: must be a non-empty string");
+  }
+
+  const source = ensureReceiptSource(receiptObject);
+  source.generatedInstructionSurfaceUsed = trimmed;
+  return trimmed;
+}
+
+function ensureReceiptSource(receiptObject: Record<string, unknown>): Record<string, unknown> {
+  const existing = asRecord(receiptObject.source);
+  if (existing) {
+    return existing;
+  }
+
+  if (receiptObject.source === undefined || receiptObject.source === null) {
+    const source: Record<string, unknown> = {};
+    receiptObject.source = source;
+    return source;
+  }
+
+  throw new AgentfileError("source: must be an object");
 }
 
 function parseCheckResults(checkResults: unknown): ParsedCheckResult[] {

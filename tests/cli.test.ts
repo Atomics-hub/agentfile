@@ -1755,6 +1755,106 @@ describe("agentfile receipt", () => {
     });
   });
 
+  it("fills acceptance and handoff evidence without manual JSON edits", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-evidence-"));
+    tempDirs.push(cwd);
+
+    const { stdout: templateJson } = await runCli(["receipt", examplePath, "--format", "json"], cwd);
+    const receiptPath = join(cwd, "receipt.json");
+    await writeFile(receiptPath, templateJson, "utf8");
+    await writeFile(join(cwd, "check-results.json"), `${JSON.stringify({
+      checks: [
+        {
+          id: "npm-test-auth",
+          status: "passed",
+          evidence: "logs/npm-test-auth.txt"
+        },
+        {
+          id: "npm-run-lint",
+          status: "passed",
+          evidence: "logs/npm-run-lint.txt"
+        }
+      ]
+    }, null, 2)}\n`, "utf8");
+
+    await runCli([
+      "receipt",
+      "fill",
+      examplePath,
+      receiptPath,
+      "--check-results",
+      "check-results.json",
+      "--write"
+    ], cwd);
+
+    const receipt = JSON.parse(await readFile(receiptPath, "utf8")) as {
+      acceptanceEvidence: Array<{ item: string }>;
+      handoffEvidence: Array<{ item: string }>;
+    };
+    const handoffArgs = receipt.handoffEvidence.flatMap((_, index) => [
+      "--handoff",
+      `${index + 1}=handoff/${index + 1}.md`
+    ]);
+
+    const { stdout } = await runCli([
+      "receipt",
+      "evidence",
+      examplePath,
+      receiptPath,
+      "--surface",
+      "AGENTS.md",
+      "--acceptance",
+      `${receipt.acceptanceEvidence[0].item}=tests/auth/session.test.ts`,
+      "--acceptance",
+      "2=tests/auth/session.test.ts",
+      ...handoffArgs,
+      "--write"
+    ], cwd);
+    const updated = JSON.parse(await readFile(receiptPath, "utf8")) as {
+      source: { generatedInstructionSurfaceUsed: string };
+      acceptanceEvidence: Array<{ status: string; evidence: string }>;
+      handoffEvidence: Array<{ status: string; evidence: string }>;
+    };
+
+    expect(stdout).toContain(`Updated ${receiptPath}`);
+    expect(stdout).toContain("Filled acceptance evidence: 2");
+    expect(stdout).toContain(`Filled handoff evidence: ${receipt.handoffEvidence.length}`);
+    expect(stdout).toContain("Generated surface: AGENTS.md");
+    expect(updated.source.generatedInstructionSurfaceUsed).toBe("AGENTS.md");
+    expect(updated.acceptanceEvidence.every((entry) => entry.status === "satisfied")).toBe(true);
+    expect(updated.handoffEvidence.every((entry) => entry.status === "satisfied")).toBe(true);
+
+    const verify = await runCli(["receipt", "verify", examplePath, receiptPath], cwd);
+    expect(verify.stdout).toContain(`OK ${receiptPath} satisfies ${examplePath}`);
+  });
+
+  it("rejects malformed receipt evidence updates", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-evidence-invalid-"));
+    tempDirs.push(cwd);
+
+    const { stdout: templateJson } = await runCli(["receipt", examplePath, "--format", "json"], cwd);
+    const receiptPath = join(cwd, "receipt.json");
+    await writeFile(receiptPath, templateJson, "utf8");
+
+    await expect(
+      runCli(["receipt", "evidence", examplePath, receiptPath], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("receipt evidence requires at least one of --acceptance, --handoff, or --surface")
+    });
+
+    await expect(
+      runCli(["receipt", "evidence", examplePath, receiptPath, "--acceptance", "missing-separator"], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("--acceptance entries must use item=evidence with non-empty values")
+    });
+
+    await expect(
+      runCli(["receipt", "evidence", examplePath, receiptPath, "--handoff", "99=logs/handoff.txt"], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining('handoffEvidence selector "99": item number out of range')
+    });
+  });
+
   it("verifies a filled JSON receipt against its contract", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-verify-"));
     tempDirs.push(cwd);

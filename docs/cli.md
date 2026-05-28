@@ -366,7 +366,7 @@ With `--check-log`, the command looks for each contract check command in the sup
 
 With `--check-results`, the command reads JSON shaped like `{ "checks": [{ "id": "npm-test", "status": "passed", "evidence": "logs/test.txt" }] }`. Entries can match by `id` or `command`; accepted statuses are `passed`, `failed`, and `skipped`. Failed or skipped results are recorded in the receipt but still fail `receipt verify` for required proof.
 
-`receipt fill` does not fill acceptance or handoff evidence; those still need explicit human or harness-provided evidence before `receipt verify` can pass.
+`receipt fill` only updates command-backed proof. Use `receipt evidence` for explicit acceptance and handoff evidence before `receipt verify`.
 
 By default the updated receipt is printed to stdout. Pass `--write` to update the receipt file in place.
 
@@ -374,6 +374,18 @@ By default the updated receipt is printed to stdout. Pass `--write` to update th
 agentfile receipt fill examples/fix-login-race.agent receipts/latest.receipt.json --check-log logs/checks.txt
 agentfile receipt fill examples/fix-login-race.agent receipts/latest.receipt.json --check-results logs/check-results.json
 agentfile receipt fill examples/fix-login-race.agent receipts/latest.receipt.json --check-log logs/checks.txt --write
+```
+
+## `agentfile receipt evidence <contract> <receipt>`
+
+Fill acceptance and handoff evidence slots in a JSON receipt. Select items by 1-based position or exact contract text with `--acceptance <item=evidence>` and `--handoff <item=evidence>`. Repeat either option to fill multiple items. Pass `--surface <file>` to record the generated instruction surface used for the run.
+
+By default the updated receipt is printed to stdout. Pass `--write` to update the receipt file in place.
+
+```sh
+agentfile receipt evidence examples/fix-login-race.agent receipts/latest.receipt.json --acceptance "1=tests/auth/session.test.ts"
+agentfile receipt evidence examples/fix-login-race.agent receipts/latest.receipt.json --handoff "Attach or link the check log.=logs/checks.txt"
+agentfile receipt evidence examples/fix-login-race.agent receipts/latest.receipt.json --surface AGENTS.md --acceptance "1=tests/auth/session.test.ts" --handoff "1=logs/agent-run.txt" --write
 ```
 
 ## `agentfile receipt check-results-schema`
