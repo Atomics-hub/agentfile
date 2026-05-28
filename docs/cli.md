@@ -355,6 +355,16 @@ agentfile receipt fill examples/fix-login-race.agent receipts/latest.receipt.jso
 agentfile receipt fill examples/fix-login-race.agent receipts/latest.receipt.json --check-log logs/checks.txt --write
 ```
 
+## `agentfile receipt check-results-schema`
+
+Print, write, or drift-check the JSON Schema for the structured `--check-results` input accepted by `receipt fill`. This gives wrappers, CI jobs, and harness adapters a stable local contract for the check-result file they produce before handing it to Agentfile.
+
+```sh
+agentfile receipt check-results-schema
+agentfile receipt check-results-schema --output schemas/receipt-check-results.schema.json
+agentfile receipt check-results-schema --output schemas/receipt-check-results.schema.json --check
+```
+
 ## `agentfile receipt verify <contract> <receipt>`
 
 Verify a filled JSON receipt against its source contract.

@@ -14,6 +14,7 @@ export {
   toNormalizedPolicy
 } from "./compiler.js";
 export type { CompileTarget, CompileTargetDefinition, JsonContract, NormalizedPolicy, SyncTarget } from "./compiler.js";
+export { receiptCheckResultsJsonSchema, compileReceiptCheckResultsSchema } from "./check-results-schema.js";
 export { AgentfileError, lintAgentfile } from "./diagnostics.js";
 export type { LintDiagnostic } from "./diagnostics.js";
 export { diffContracts, renderContractDiff } from "./diff.js";

@@ -11,6 +11,7 @@ import {
   type CompileTarget,
   type SyncTarget
 } from "./compiler.js";
+import { compileReceiptCheckResultsSchema } from "./check-results-schema.js";
 import { AgentfileError, lintAgentfile } from "./diagnostics.js";
 import { diffContracts, renderContractDiff, type ContractDiffFormat } from "./diff.js";
 import { defaultVscodeSchemaPath, defaultVscodeSettingsPath, renderVscodeSettings } from "./editor.js";
@@ -382,6 +383,21 @@ receiptCommand
     if (review.status === "fail") {
       process.exitCode = 1;
     }
+  });
+
+receiptCommand
+  .command("check-results-schema")
+  .description("Print, write, or check the JSON Schema for receipt fill check-results input.")
+  .option("-o, --output <file>", "write the generated schema to a file")
+  .option("--check", "verify the generated schema file is already up to date", false)
+  .option("-f, --force", "overwrite an existing schema file", false)
+  .action(async (options: SchemaOptions, command: Command) => {
+    const parentOptions = command.parent?.opts() as { output?: string; force?: boolean };
+    await emitSchema(compileReceiptCheckResultsSchema(), {
+      ...options,
+      output: parentOptions.output ?? options.output,
+      force: options.force || Boolean(parentOptions.force)
+    });
   });
 
 receiptCommand

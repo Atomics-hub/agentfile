@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added `agentfile receipt check-results-schema` and adoption-demo drift checks so wrappers can target the structured receipt proof input reliably.
 - Added `agentfile receipt fill --check-results` for structured check-result JSON, including failed/skipped proof status recording.
 - Added `npm run demo:adopt` to run a temporary existing-repo adoption demo through `adopt`, generated surfaces, project checks, receipt fill, review, and verification.
 - Added `agentfile adopt` to scaffold a preflighted existing-repo adoption kit with Pact source, editor files, generated instruction surfaces, and a GitHub Actions receipt gate.

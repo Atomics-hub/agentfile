@@ -95,6 +95,39 @@ try {
   });
 
   await runStep({
+    name: "Write check-results schema",
+    command: "node dist/cli.js receipt check-results-schema --output schemas/receipt-check-results.schema.json",
+    run: () => execFileAsync("node", [
+      join(root, "dist/cli.js"),
+      "receipt",
+      "check-results-schema",
+      "--output",
+      "schemas/receipt-check-results.schema.json"
+    ], {
+      cwd: repo,
+      env: process.env,
+      maxBuffer
+    })
+  });
+
+  await runStep({
+    name: "Check check-results schema",
+    command: "node dist/cli.js receipt check-results-schema --output schemas/receipt-check-results.schema.json --check",
+    run: () => execFileAsync("node", [
+      join(root, "dist/cli.js"),
+      "receipt",
+      "check-results-schema",
+      "--output",
+      "schemas/receipt-check-results.schema.json",
+      "--check"
+    ], {
+      cwd: repo,
+      env: process.env,
+      maxBuffer
+    })
+  });
+
+  await runStep({
     name: "Create receipt template",
     command: "node dist/cli.js receipt init agentfile.agent --force",
     run: () => execFileAsync("node", [join(root, "dist/cli.js"), "receipt", "init", "agentfile.agent", "--force"], {
@@ -380,6 +413,7 @@ function renderReport(failed) {
     "",
     "- `agentfile adopt` can be run inside an existing project without hand-writing editor, harness, or CI surfaces.",
     "- Generated instruction surfaces can be refreshed and drift-checked from the same `.agent` contract.",
+    "- Structured check-result JSON has a generated schema surface that wrappers can write and drift-check before filling receipts.",
     "- Project checks can feed structured results into `receipt fill --check-results`, then explicit acceptance and handoff evidence can make the receipt verifiable.",
     "- The demo uses a local Node fixture and does not run a live coding agent or publish a package.",
     "",
