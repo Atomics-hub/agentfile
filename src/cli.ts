@@ -11,6 +11,7 @@ import {
   type CompileTarget,
   type SyncTarget
 } from "./compiler.js";
+import { renderCheckRunReport, runCommandChecks } from "./check-runner.js";
 import { compileReceiptCheckResultsSchema } from "./check-results-schema.js";
 import { AgentfileError, lintAgentfile } from "./diagnostics.js";
 import { diffContracts, renderContractDiff, type ContractDiffFormat } from "./diff.js";
@@ -245,6 +246,36 @@ program
   .option("-f, --force", "overwrite an existing schema file", false)
   .action(async (options: SchemaOptions) => {
     await emitSchema(compileJsonSchema(), options);
+  });
+
+const checksCommand = program
+  .command("checks")
+  .description("Run command-backed Agentfile checks and write receipt-ready results.");
+
+checksCommand
+  .command("run")
+  .description("Run command-backed contract checks and emit a check log plus structured check results.")
+  .argument("[file]", "Agentfile path")
+  .option("--log <file>", "combined check log output path", "logs/checks.txt")
+  .option("--results <file>", "structured check results JSON output path", "logs/check-results.json")
+  .option("--timeout-ms <ms>", "per-check command timeout in milliseconds", "120000")
+  .action(async (file: string | undefined, options: CheckRunCommandOptions) => {
+    const resolved = await resolveFile(file);
+    const agentfile = await load(resolved);
+    const report = await runCommandChecks(agentfile, {
+      contractPath: resolved,
+      cwd: process.cwd(),
+      env: process.env,
+      logPath: options.log,
+      resultsPath: options.results,
+      timeoutMs: parsePositiveInteger(options.timeoutMs, "checks run --timeout-ms")
+    });
+
+    process.stdout.write(renderCheckRunReport(report));
+
+    if (report.failedRequiredCheckIds.length > 0) {
+      process.exitCode = 1;
+    }
   });
 
 const editorCommand = program
@@ -615,6 +646,12 @@ interface SchemaOptions {
   output?: string;
   check: boolean;
   force: boolean;
+}
+
+interface CheckRunCommandOptions {
+  log: string;
+  results: string;
+  timeoutMs: string;
 }
 
 interface InitOptions {
@@ -1613,6 +1650,16 @@ function parseDiffFormat(value: string): ContractDiffFormat {
   }
 
   throw new AgentfileError(`unknown diff format "${value}". Expected "text" or "json".`);
+}
+
+function parsePositiveInteger(value: string, label: string): number {
+  const parsed = Number(value);
+
+  if (Number.isInteger(parsed) && parsed > 0) {
+    return parsed;
+  }
+
+  throw new AgentfileError(`${label} must be a positive integer`);
 }
 
 type InitFormat = "yaml" | "agent";

@@ -460,6 +460,12 @@ agentfile diff examples/fix-login-race.agent changed.agent
 agentfile diff examples/fix-login-race.agent changed.agent --format json
 ```
 
+Run command-backed proof checks and write receipt-ready artifacts:
+
+```sh
+agentfile checks run examples/fix-login-race.agent --log logs/checks.txt --results logs/check-results.json
+```
+
 Print the receipt checklist a harness run should satisfy:
 
 ```sh
@@ -506,6 +512,7 @@ Agentfile is early. The v0.1 goal is intentionally narrow:
 - `agentfile surfaces` for generated instruction-surface inspection without writing files.
 - `agentfile sync --all` for preflighted generation or freshness checks across every default instruction surface.
 - `agentfile format --check` and `--write` for canonical Pact source hygiene.
+- `agentfile checks run` for executing command-backed proof checks and writing receipt-ready check logs plus structured results.
 - `agentfile receipt init` for a predictable JSON receipt skeleton that matches the default CI gate path.
 - `agentfile receipt fill --check-log` and `--check-results` for updating command-backed proof entries from real check output while leaving acceptance and handoff evidence reviewable.
 - `agentfile receipt check-results-schema` for wrapper-friendly schema generation and drift checks around structured receipt proof input.

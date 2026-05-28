@@ -314,6 +314,18 @@ Pass `--format json` for automation:
 agentfile diff examples/fix-login-race.agent changed.agent --format json
 ```
 
+## `agentfile checks run [file]`
+
+Run command-backed checks from the contract and write both a combined check log and structured check results JSON that can feed `receipt fill --check-results`.
+
+The command runs every executable check, records failed checks in the results file, and exits nonzero when any required check fails. Optional check failures are recorded but do not fail the command.
+
+```sh
+agentfile checks run examples/fix-login-race.agent
+agentfile checks run examples/fix-login-race.agent --log logs/checks.txt --results logs/check-results.json
+agentfile receipt fill examples/fix-login-race.agent receipts/latest.receipt.json --check-results logs/check-results.json --write
+```
+
 ## `agentfile receipt [file]`
 
 Print a receipt artifact for auditing a completed harness run against the contract.

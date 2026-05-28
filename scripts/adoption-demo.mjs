@@ -90,8 +90,21 @@ try {
 
   await runStep({
     name: "Run project checks",
-    command: "npm test && npm run lint -> logs/checks.txt + logs/check-results.json",
-    run: () => runProjectChecks()
+    command: "node dist/cli.js checks run agentfile.agent --log logs/checks.txt --results logs/check-results.json",
+    run: () => execFileAsync("node", [
+      join(root, "dist/cli.js"),
+      "checks",
+      "run",
+      "agentfile.agent",
+      "--log",
+      "logs/checks.txt",
+      "--results",
+      "logs/check-results.json"
+    ], {
+      cwd: repo,
+      env: process.env,
+      maxBuffer
+    })
   });
 
   await runStep({
@@ -305,36 +318,6 @@ async function writeTaskContract() {
   ].join("\n"), "utf8");
 }
 
-async function runProjectChecks() {
-  const chunks = [];
-  const checks = [];
-  await runAndCapture(["npm", ["test"]], chunks, checks);
-  await runAndCapture(["npm", ["run", "lint"]], chunks, checks);
-  await writeFile(join(repo, "logs", "checks.txt"), chunks.join("\n"), "utf8");
-  await writeFile(join(repo, "logs", "check-results.json"), `${JSON.stringify({ checks }, null, 2)}\n`, "utf8");
-  return {
-    stdout: chunks.join("\n"),
-    stderr: ""
-  };
-}
-
-async function runAndCapture([command, args], chunks, checks) {
-  const displayCommand = [command, ...args].join(" ");
-  chunks.push(`$ ${displayCommand}`);
-  const { stdout, stderr } = await execFileAsync(command, args, { cwd: repo, env: process.env, maxBuffer });
-  if (stdout.trim()) {
-    chunks.push(stdout.trim());
-  }
-  if (stderr.trim()) {
-    chunks.push(stderr.trim());
-  }
-  checks.push({
-    command: displayCommand,
-    status: "passed",
-    evidence: "logs/checks.txt"
-  });
-}
-
 async function completeReceiptEvidence() {
   const receiptPath = join(repo, "receipts", "latest.receipt.json");
   const receipt = JSON.parse(await readFile(receiptPath, "utf8"));
@@ -414,7 +397,8 @@ function renderReport(failed) {
     "- `agentfile adopt` can be run inside an existing project without hand-writing editor, harness, or CI surfaces.",
     "- Generated instruction surfaces can be refreshed and drift-checked from the same `.agent` contract.",
     "- Structured check-result JSON has a generated schema surface that wrappers can write and drift-check before filling receipts.",
-    "- Project checks can feed structured results into `receipt fill --check-results`, then explicit acceptance and handoff evidence can make the receipt verifiable.",
+    "- `agentfile checks run` can execute command-backed proof checks and feed structured results into `receipt fill --check-results`.",
+    "- Explicit acceptance and handoff evidence can then make the receipt verifiable.",
     "- The demo uses a local Node fixture and does not run a live coding agent or publish a package.",
     "",
     ...results.filter((result) => result.status === "fail").flatMap((result) => [

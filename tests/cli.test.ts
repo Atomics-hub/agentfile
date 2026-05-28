@@ -1223,6 +1223,109 @@ describe("agentfile diff", () => {
   });
 });
 
+describe("agentfile checks", () => {
+  it("runs command-backed checks and writes receipt-ready results", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-checks-run-"));
+    tempDirs.push(cwd);
+    const contractPath = join(cwd, "agentfile.agentfile");
+
+    await writeFile(contractPath, checkRunContract([
+      {
+        id: "node-pass",
+        command: 'node -e "console.log(42)"',
+        required: true
+      },
+      {
+        id: "node-second-pass",
+        command: 'node -e "console.log(43)"',
+        required: true
+      }
+    ]), "utf8");
+
+    const { stdout } = await runCli([
+      "checks",
+      "run",
+      contractPath,
+      "--log",
+      "artifacts/checks.txt",
+      "--results",
+      "artifacts/check-results.json"
+    ], cwd);
+    const log = await readFile(join(cwd, "artifacts", "checks.txt"), "utf8");
+    const results = JSON.parse(await readFile(join(cwd, "artifacts", "check-results.json"), "utf8"));
+
+    expect(stdout).toContain(`Ran 2 command-backed checks for ${contractPath}.`);
+    expect(stdout).toContain("Wrote artifacts/checks.txt");
+    expect(log).toContain('$ node -e "console.log(42)"');
+    expect(log).toContain("42");
+    expect(log).toContain("[exit 0]");
+    expect(results.checks).toEqual([
+      {
+        id: "node-pass",
+        command: 'node -e "console.log(42)"',
+        status: "passed",
+        evidence: "artifacts/checks.txt"
+      },
+      {
+        id: "node-second-pass",
+        command: 'node -e "console.log(43)"',
+        status: "passed",
+        evidence: "artifacts/checks.txt"
+      }
+    ]);
+  }, 15000);
+
+  it("records failed checks and exits nonzero when required proof fails", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-checks-run-fail-"));
+    tempDirs.push(cwd);
+    const contractPath = join(cwd, "agentfile.agentfile");
+
+    await writeFile(contractPath, checkRunContract([
+      {
+        id: "node-pass",
+        command: 'node -e "console.log(42)"',
+        required: true
+      },
+      {
+        id: "node-fail",
+        command: 'node -e "process.exit(2)"',
+        required: true
+      }
+    ]), "utf8");
+
+    await expect(
+      runCli([
+        "checks",
+        "run",
+        contractPath,
+        "--log",
+        "logs/checks.txt",
+        "--results",
+        "logs/check-results.json"
+      ], cwd)
+    ).rejects.toMatchObject({
+      stdout: expect.stringContaining("Required checks failed: node-fail")
+    });
+
+    const log = await readFile(join(cwd, "logs", "checks.txt"), "utf8");
+    const results = JSON.parse(await readFile(join(cwd, "logs", "check-results.json"), "utf8"));
+
+    expect(log).toContain('$ node -e "process.exit(2)"');
+    expect(log).toContain("[exit 2]");
+    expect(results.checks).toEqual([
+      expect.objectContaining({
+        id: "node-pass",
+        status: "passed"
+      }),
+      expect.objectContaining({
+        id: "node-fail",
+        status: "failed",
+        evidence: "logs/checks.txt"
+      })
+    ]);
+  }, 15000);
+});
+
 describe("agentfile receipt", () => {
   it("prints an audit checklist for a completed harness run", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-"));
@@ -1964,3 +2067,29 @@ workflow:
     );
   });
 });
+
+function checkRunContract(checks: { id: string; command: string; required: boolean }[]): string {
+  return `agentfile: "0.1.0"
+kind: TaskContract
+info:
+  title: check-runner
+task:
+  id: check-runner
+  goal: Exercise command-backed check execution.
+scope:
+  include:
+    - src/**
+permissions:
+  shell:
+    allow:
+${checks.map((check) => `      - ${JSON.stringify(check.command)}`).join("\n")}
+checks:
+${checks.map((check) => [
+  `  - id: ${check.id}`,
+  `    command: ${JSON.stringify(check.command)}`,
+  `    required: ${check.required ? "true" : "false"}`
+].join("\n")).join("\n")}
+workflow:
+  id: implement
+`;
+}
