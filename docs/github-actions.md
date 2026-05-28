@@ -8,6 +8,7 @@ Use this when a project wants CI to verify that:
 - The contract readiness summary has no selected gate failures.
 - Generated instruction files still match the contract.
 - Filled receipts still satisfy the original contract.
+- Committed receipt input schemas still match the Agentfile tool version.
 
 Generate the starter workflow from a checked-out Agentfile tool:
 
@@ -15,7 +16,7 @@ Generate the starter workflow from a checked-out Agentfile tool:
 node dist/cli.js github-actions agentfile.agent > .github/workflows/agentfile.yml
 ```
 
-The generated workflow uses `inspect --fail-on stale-surfaces,lint --format json` plus `sync --check` for selected generated surfaces. Pass `--surfaces none` for an early validation-only workflow, or pass a comma-separated list such as `agents-md,claude-md,cursor-mdc,copilot-md` for adopted generated files. Pass `--receipt receipts/latest.receipt.json` to add a receipt verification step that runs only when the receipt file exists. Pass `--run-checks` when CI should execute command-backed contract checks and write `logs/checks.txt` plus `logs/check-results.json` before receipt verification. Use `--output .github/workflows/agentfile.yml --check` in local automation when you want to verify that the committed workflow still matches the contract path, selected surfaces, receipt setting, and check-run setting.
+The generated workflow uses `inspect --fail-on stale-surfaces,lint --format json` plus `sync --check` for selected generated surfaces. Pass `--surfaces none` for an early validation-only workflow, or pass a comma-separated list such as `agents-md,claude-md,cursor-mdc,copilot-md` for adopted generated files. Pass `--receipt receipts/latest.receipt.json` to add a receipt verification step that runs only when the receipt file exists. Pass `--run-checks` when CI should execute command-backed contract checks and write `logs/checks.txt` plus `logs/check-results.json` before receipt verification. When `schemas/receipt-evidence.schema.json` or `schemas/receipt-check-results.schema.json` are committed, generated workflows drift-check them conditionally before using receipt inputs. Use `--output .github/workflows/agentfile.yml --check` in local automation when you want to verify that the committed workflow still matches the contract path, selected surfaces, receipt setting, and check-run setting.
 
 ## Starter Workflow
 
@@ -123,6 +124,14 @@ node dist/cli.js github-actions agentfile.agent --run-checks --receipt receipts/
 The generated workflow adds:
 
 ```yaml
+- name: Check receipt check-results schema
+  if: hashFiles('schemas/receipt-check-results.schema.json') != ''
+  run: node .agentfile/tool/dist/cli.js receipt check-results-schema --output schemas/receipt-check-results.schema.json --check
+
+- name: Check receipt evidence schema
+  if: hashFiles('schemas/receipt-evidence.schema.json') != ''
+  run: node .agentfile/tool/dist/cli.js receipt evidence-schema --output schemas/receipt-evidence.schema.json --check
+
 - name: Run contract checks
   run: node .agentfile/tool/dist/cli.js checks run agentfile.agent --log logs/checks.txt --results logs/check-results.json
 

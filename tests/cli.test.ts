@@ -273,6 +273,8 @@ describe("agentfile init", () => {
 
     const workflow = await readFile(join(cwd, ".github", "workflows", "agentfile.yml"), "utf8");
     expect(workflow).toContain("if: hashFiles('receipts/latest.receipt.json') != ''");
+    expect(workflow).toContain("if: hashFiles('schemas/receipt-evidence.schema.json') != ''");
+    expect(workflow).toContain("receipt evidence-schema --output 'schemas/receipt-evidence.schema.json' --check");
     expect(workflow).toContain("receipt verify 'agentfile.agent' 'receipts/latest.receipt.json'");
 
     await runCli([
@@ -439,6 +441,8 @@ describe("agentfile adopt", () => {
     await runCli(["adopt", "--run-checks"], cwd);
 
     const workflow = await readFile(join(cwd, ".github", "workflows", "agentfile.yml"), "utf8");
+    expect(workflow).toContain("receipt check-results-schema --output 'schemas/receipt-check-results.schema.json' --check");
+    expect(workflow).toContain("receipt evidence-schema --output 'schemas/receipt-evidence.schema.json' --check");
     expect(workflow).toContain("checks run 'agentfile.agent' --log 'logs/checks.txt' --results 'logs/check-results.json'");
     expect(workflow).toContain("receipt fill 'agentfile.agent' 'receipts/latest.receipt.json' --check-results 'logs/check-results.json' --write");
 
@@ -930,6 +934,9 @@ describe("agentfile github-actions", () => {
     expect(stdout).toContain("run: node .agentfile/tool/dist/cli.js sync 'agentfile.agent' --target copilot-md --output '.github/copilot-instructions.md' --check");
     expect(stdout.match(/--target cursor-mdc/g)).toHaveLength(1);
     expect(stdout).toContain("if: hashFiles('receipts/latest.receipt.json') != ''");
+    expect(stdout).toContain("Check receipt evidence schema");
+    expect(stdout).toContain("if: hashFiles('schemas/receipt-evidence.schema.json') != ''");
+    expect(stdout).toContain("run: node .agentfile/tool/dist/cli.js receipt evidence-schema --output 'schemas/receipt-evidence.schema.json' --check");
     expect(stdout).toContain("run: node .agentfile/tool/dist/cli.js receipt verify 'agentfile.agent' 'receipts/latest.receipt.json'");
   });
 
@@ -953,6 +960,10 @@ describe("agentfile github-actions", () => {
     ], cwd);
 
     expect(stdout).toContain("Run contract checks");
+    expect(stdout).toContain("Check receipt check-results schema");
+    expect(stdout).toContain("run: node .agentfile/tool/dist/cli.js receipt check-results-schema --output 'schemas/receipt-check-results.schema.json' --check");
+    expect(stdout).toContain("Check receipt evidence schema");
+    expect(stdout).toContain("run: node .agentfile/tool/dist/cli.js receipt evidence-schema --output 'schemas/receipt-evidence.schema.json' --check");
     expect(stdout).toContain("run: node .agentfile/tool/dist/cli.js checks run 'agentfile.agent' --log 'artifacts/checks.txt' --results 'artifacts/check-results.json'");
     expect(stdout).toContain("Fill receipt proof");
     expect(stdout).toContain("run: node .agentfile/tool/dist/cli.js receipt fill 'agentfile.agent' 'receipts/latest.receipt.json' --check-results 'artifacts/check-results.json' --write");

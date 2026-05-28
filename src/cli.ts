@@ -40,6 +40,8 @@ const defaultGithubActionsWorkflowPath = ".github/workflows/agentfile.yml";
 const defaultGithubActionsReceiptPath = "receipts/latest.receipt.json";
 const defaultGithubActionsCheckLogPath = "logs/checks.txt";
 const defaultGithubActionsCheckResultsPath = "logs/check-results.json";
+const defaultGithubActionsCheckResultsSchemaPath = "schemas/receipt-check-results.schema.json";
+const defaultGithubActionsEvidenceSchemaPath = "schemas/receipt-evidence.schema.json";
 
 const program = new Command();
 
@@ -1665,6 +1667,24 @@ function renderGithubActionsWorkflow(workflow: GithubActionsWorkflow): string {
       "",
       `      - name: Check generated ${target}`,
       `        run: ${cli} sync ${contract} --target ${target} --output ${shellQuote(defaultOutputPathForTarget(target))} --check`
+    );
+  }
+
+  if (workflow.runChecks) {
+    steps.push(
+      "",
+      "      - name: Check receipt check-results schema",
+      `        if: hashFiles(${githubExpressionString(defaultGithubActionsCheckResultsSchemaPath)}) != ''`,
+      `        run: ${cli} receipt check-results-schema --output ${shellQuote(defaultGithubActionsCheckResultsSchemaPath)} --check`
+    );
+  }
+
+  if (workflow.receiptPath) {
+    steps.push(
+      "",
+      "      - name: Check receipt evidence schema",
+      `        if: hashFiles(${githubExpressionString(defaultGithubActionsEvidenceSchemaPath)}) != ''`,
+      `        run: ${cli} receipt evidence-schema --output ${shellQuote(defaultGithubActionsEvidenceSchemaPath)} --check`
     );
   }
 

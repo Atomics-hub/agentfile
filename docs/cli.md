@@ -192,6 +192,8 @@ agentfile github-actions agentfile.agent --run-checks --receipt receipts/latest.
 agentfile github-actions agentfile.agent --run-checks --checks-log artifacts/checks.txt --checks-results artifacts/check-results.json
 ```
 
+Generated workflows also drift-check committed receipt input schemas when present: `schemas/receipt-check-results.schema.json` for check-result JSON and `schemas/receipt-evidence.schema.json` for structured acceptance or handoff evidence.
+
 Projects that need dependency installation, services, or environment setup should add those workflow steps before the generated `Run contract checks` step.
 
 ## `agentfile format [file]`

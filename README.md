@@ -315,7 +315,7 @@ Adopt Agentfile in an existing repo:
 agentfile adopt
 ```
 
-This creates Pact source, VS Code schema setup, generated AGENTS/Claude/Cursor/Copilot instruction surfaces, and a GitHub Actions workflow that checks contract readiness, generated-surface drift, and `receipts/latest.receipt.json` when a completed-work receipt exists.
+This creates Pact source, VS Code schema setup, generated AGENTS/Claude/Cursor/Copilot instruction surfaces, and a GitHub Actions workflow that checks contract readiness, generated-surface drift, optional receipt input schemas, and `receipts/latest.receipt.json` when a completed-work receipt exists.
 
 Create a starter contract:
 
@@ -511,7 +511,7 @@ Agentfile is early. The v0.1 goal is intentionally narrow:
 - `agentfile doctor` for contract health and generated instruction-surface freshness checks.
 - `agentfile doctor --format json` for machine-readable contract health reports.
 - `agentfile inspect` for one-command contract, health, surface, and receipt-readiness review.
-- `agentfile github-actions` for source-checkout CI workflow generation and drift checks using inspect readiness gates and generated-surface checks.
+- `agentfile github-actions` for source-checkout CI workflow generation and drift checks using inspect readiness gates, generated-surface checks, and optional receipt schema checks.
 - `agentfile editor vscode` for generated VS Code schema settings and drift checks.
 - `agentfile surfaces` for generated instruction-surface inspection without writing files.
 - `agentfile sync --all` for preflighted generation or freshness checks across every default instruction surface.
