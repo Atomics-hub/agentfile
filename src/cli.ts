@@ -24,6 +24,7 @@ import {
   parseReceiptFormat,
   receiptHandoffEvidence,
   type ReceiptEvidenceAssignment,
+  type ReceiptEvidenceFillInput,
   renderReceipt,
   renderReceiptReview,
   reviewReceipt,
@@ -482,27 +483,24 @@ receiptCommand
   .argument("<receipt>", "JSON receipt path")
   .option("--acceptance <item=evidence>", "fill acceptance evidence by 1-based item number or exact item text", collectOption, [])
   .option("--handoff <item=evidence>", "fill handoff evidence by 1-based item number or exact item text", collectOption, [])
+  .option("--evidence-file <file>", "structured JSON file with acceptance, handoff, and generated-surface evidence")
   .option("--surface <file>", "record the generated instruction surface used for this receipt")
   .option("--write", "write the updated JSON receipt back to the receipt path", false)
   .action(async (
     contract: string,
     receiptPath: string,
-    options: { acceptance: string[]; handoff: string[]; surface?: string; write: boolean }
+    options: { acceptance: string[]; evidenceFile?: string; handoff: string[]; surface?: string; write: boolean }
   ) => {
     const agentfile = await load(contract);
     const receipt = await loadReceipt(receiptPath);
-    const result = fillReceiptEvidence(agentfile, receipt, {
-      acceptance: parseEvidenceAssignments(options.acceptance, "--acceptance"),
-      handoff: parseEvidenceAssignments(options.handoff, "--handoff"),
-      generatedInstructionSurfaceUsed: options.surface
-    });
+    const result = fillReceiptEvidence(agentfile, receipt, await buildReceiptEvidenceInput(options));
 
     if (
       result.filledAcceptanceItems.length === 0 &&
       result.filledHandoffItems.length === 0 &&
       result.generatedInstructionSurfaceUsed === undefined
     ) {
-      throw new AgentfileError("receipt evidence requires at least one of --acceptance, --handoff, or --surface");
+      throw new AgentfileError("receipt evidence requires --acceptance, --handoff, --surface, or --evidence-file data");
     }
 
     const rendered = `${JSON.stringify(result.receipt, null, 2)}\n`;
@@ -600,6 +598,108 @@ function parseEvidenceAssignment(value: string, optionName: string): ReceiptEvid
     selector,
     evidence
   };
+}
+
+async function buildReceiptEvidenceInput(options: {
+  acceptance: string[];
+  evidenceFile?: string;
+  handoff: string[];
+  surface?: string;
+}): Promise<ReceiptEvidenceFillInput> {
+  const fileInput = options.evidenceFile
+    ? parseReceiptEvidenceFileInput(await loadJson(options.evidenceFile, "receipt evidence file"))
+    : {};
+  const cliInput: ReceiptEvidenceFillInput = {
+    acceptance: parseEvidenceAssignments(options.acceptance, "--acceptance"),
+    handoff: parseEvidenceAssignments(options.handoff, "--handoff"),
+    generatedInstructionSurfaceUsed: options.surface
+  };
+
+  if (fileInput.generatedInstructionSurfaceUsed && cliInput.generatedInstructionSurfaceUsed) {
+    throw new AgentfileError("receipt evidence accepts generated surface from either --surface or --evidence-file, not both");
+  }
+
+  return {
+    acceptance: [
+      ...(fileInput.acceptance ?? []),
+      ...(cliInput.acceptance ?? [])
+    ],
+    handoff: [
+      ...(fileInput.handoff ?? []),
+      ...(cliInput.handoff ?? [])
+    ],
+    generatedInstructionSurfaceUsed: cliInput.generatedInstructionSurfaceUsed ?? fileInput.generatedInstructionSurfaceUsed
+  };
+}
+
+function parseReceiptEvidenceFileInput(value: unknown): ReceiptEvidenceFillInput {
+  const root = jsonRecord(value, "receipt evidence file");
+
+  return {
+    acceptance: parseEvidenceFileAssignments(root.acceptance, "receipt evidence file.acceptance"),
+    handoff: parseEvidenceFileAssignments(root.handoff, "receipt evidence file.handoff"),
+    generatedInstructionSurfaceUsed: optionalJsonString(
+      root.generatedInstructionSurfaceUsed,
+      "receipt evidence file.generatedInstructionSurfaceUsed"
+    )
+  };
+}
+
+function parseEvidenceFileAssignments(value: unknown, path: string): ReceiptEvidenceAssignment[] {
+  if (value === undefined) {
+    return [];
+  }
+
+  if (!Array.isArray(value)) {
+    throw new AgentfileError(`${path}: must be an array`);
+  }
+
+  return value.map((item, index) => {
+    const record = jsonRecord(item, `${path}[${index}]`);
+    if (!Object.prototype.hasOwnProperty.call(record, "selector")) {
+      throw new AgentfileError(`${path}[${index}].selector: is required`);
+    }
+    if (!Object.prototype.hasOwnProperty.call(record, "evidence")) {
+      throw new AgentfileError(`${path}[${index}].evidence: is required`);
+    }
+
+    return {
+      selector: parseEvidenceFileSelector(record.selector, `${path}[${index}].selector`),
+      evidence: record.evidence
+    };
+  });
+}
+
+function parseEvidenceFileSelector(value: unknown, path: string): string {
+  if (typeof value === "number" && Number.isInteger(value) && value > 0) {
+    return String(value);
+  }
+
+  if (typeof value === "string" && value.trim().length > 0) {
+    return value;
+  }
+
+  throw new AgentfileError(`${path}: must be a non-empty string or positive integer`);
+}
+
+function optionalJsonString(value: unknown, path: string): string | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (typeof value === "string" && value.trim().length > 0) {
+    return value;
+  }
+
+  throw new AgentfileError(`${path}: must be a non-empty string`);
+}
+
+function jsonRecord(value: unknown, path: string): Record<string, unknown> {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    throw new AgentfileError(`${path}: must be a JSON object`);
+  }
+
+  return value as Record<string, unknown>;
 }
 
 async function readTextFile(filePath: string): Promise<string> {

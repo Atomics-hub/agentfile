@@ -172,7 +172,7 @@ try {
 
   await runStep({
     name: "Attach acceptance and handoff evidence",
-    command: "node dist/cli.js receipt evidence agentfile.agent receipts/latest.receipt.json --surface AGENTS.md --write",
+    command: "node dist/cli.js receipt evidence agentfile.agent receipts/latest.receipt.json --evidence-file logs/receipt-evidence.json --write",
     run: () => completeReceiptEvidence()
   });
 
@@ -322,25 +322,31 @@ async function writeTaskContract() {
 async function completeReceiptEvidence() {
   const receiptPath = join(repo, "receipts", "latest.receipt.json");
   const receipt = JSON.parse(await readFile(receiptPath, "utf8"));
+  const evidencePath = join(repo, "logs", "receipt-evidence.json");
+  const evidence = {
+    generatedInstructionSurfaceUsed: "AGENTS.md",
+    acceptance: receipt.acceptanceEvidence.map((_, index) => ({
+      selector: index + 1,
+      evidence: "tests/title-slug.test.mjs"
+    })),
+    handoff: receipt.handoffEvidence.map((entry, index) => ({
+      selector: index + 1,
+      evidence: evidenceForHandoff(entry.item)
+    }))
+  };
+
+  await writeFile(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`, "utf8");
+
   const evidenceArgs = [
     join(root, "dist/cli.js"),
     "receipt",
     "evidence",
     "agentfile.agent",
     "receipts/latest.receipt.json",
-    "--surface",
-    "AGENTS.md"
+    "--evidence-file",
+    "logs/receipt-evidence.json",
+    "--write"
   ];
-
-  receipt.acceptanceEvidence.forEach((_, index) => {
-    evidenceArgs.push("--acceptance", `${index + 1}=tests/title-slug.test.mjs`);
-  });
-
-  receipt.handoffEvidence.forEach((entry, index) => {
-    evidenceArgs.push("--handoff", `${index + 1}=${evidenceForHandoff(entry.item)}`);
-  });
-
-  evidenceArgs.push("--write");
 
   return execFileAsync("node", evidenceArgs, {
     cwd: repo,
@@ -355,7 +361,7 @@ function evidenceForHandoff(item) {
     return "logs/checks.txt";
   }
   if (lower.includes("patch diff") || lower.includes("changed files")) {
-    return "agentfile.agent, AGENTS.md, CLAUDE.md, .cursor/rules/agentfile.mdc, .github/copilot-instructions.md";
+    return ["agentfile.agent", "AGENTS.md", "CLAUDE.md", ".cursor/rules/agentfile.mdc", ".github/copilot-instructions.md"];
   }
   if (lower.includes("risk") || lower.includes("approval") || lower.includes("policy")) {
     return "No skipped checks, approvals, or policy limit changes in this local adoption demo.";
@@ -412,7 +418,7 @@ function renderReport(failed) {
     "- Generated GitHub Actions workflows can include receipt-ready check runs when a project is ready to execute contract checks in CI.",
     "- Structured check-result JSON has a generated schema surface that wrappers can write and drift-check before filling receipts.",
     "- `agentfile checks run` can execute command-backed proof checks and feed structured results into `receipt fill --check-results`.",
-    "- `agentfile receipt evidence` can attach explicit acceptance and handoff evidence without manual JSON edits.",
+    "- `agentfile receipt evidence --evidence-file` can attach explicit acceptance and handoff evidence from a structured artifact.",
     "- The demo uses a local Node fixture and does not run a live coding agent or publish a package.",
     "",
     ...results.filter((result) => result.status === "fail").flatMap((result) => [

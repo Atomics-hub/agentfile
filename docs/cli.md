@@ -380,12 +380,29 @@ agentfile receipt fill examples/fix-login-race.agent receipts/latest.receipt.jso
 
 Fill acceptance and handoff evidence slots in a JSON receipt. Select items by 1-based position or exact contract text with `--acceptance <item=evidence>` and `--handoff <item=evidence>`. Repeat either option to fill multiple items. Pass `--surface <file>` to record the generated instruction surface used for the run.
 
+Harnesses and wrappers can pass `--evidence-file <file>` instead. The file must be JSON shaped like:
+
+```json
+{
+  "generatedInstructionSurfaceUsed": "AGENTS.md",
+  "acceptance": [
+    { "selector": 1, "evidence": "tests/auth/session.test.ts" }
+  ],
+  "handoff": [
+    { "selector": "Attach or link the check log.", "evidence": "logs/checks.txt" }
+  ]
+}
+```
+
+`selector` accepts a 1-based item number or exact item text. `evidence` may be a non-empty string, array, object, number, or boolean.
+
 By default the updated receipt is printed to stdout. Pass `--write` to update the receipt file in place.
 
 ```sh
 agentfile receipt evidence examples/fix-login-race.agent receipts/latest.receipt.json --acceptance "1=tests/auth/session.test.ts"
 agentfile receipt evidence examples/fix-login-race.agent receipts/latest.receipt.json --handoff "Attach or link the check log.=logs/checks.txt"
 agentfile receipt evidence examples/fix-login-race.agent receipts/latest.receipt.json --surface AGENTS.md --acceptance "1=tests/auth/session.test.ts" --handoff "1=logs/agent-run.txt" --write
+agentfile receipt evidence examples/fix-login-race.agent receipts/latest.receipt.json --evidence-file logs/receipt-evidence.json --write
 ```
 
 ## `agentfile receipt check-results-schema`

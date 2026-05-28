@@ -1828,6 +1828,67 @@ describe("agentfile receipt", () => {
     expect(verify.stdout).toContain(`OK ${receiptPath} satisfies ${examplePath}`);
   });
 
+  it("fills acceptance and handoff evidence from a structured evidence file", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-evidence-file-"));
+    tempDirs.push(cwd);
+
+    const { stdout: templateJson } = await runCli(["receipt", examplePath, "--format", "json"], cwd);
+    const receipt = JSON.parse(templateJson) as {
+      requiredProof: Array<{ id: string; status: string; evidence: string }>;
+      acceptanceEvidence: Array<{ item: string }>;
+      handoffEvidence: Array<{ item: string }>;
+    };
+    for (const proof of receipt.requiredProof) {
+      proof.status = "passed";
+      proof.evidence = `logs/${proof.id}.txt`;
+    }
+
+    const receiptPath = join(cwd, "receipt.json");
+    const evidencePath = join(cwd, "receipt-evidence.json");
+    await writeFile(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`, "utf8");
+    await writeFile(evidencePath, `${JSON.stringify({
+      generatedInstructionSurfaceUsed: "AGENTS.md",
+      acceptance: receipt.acceptanceEvidence.map((_, index) => ({
+        selector: index + 1,
+        evidence: {
+          file: "tests/auth/session.test.ts",
+          assertion: `acceptance ${index + 1}`
+        }
+      })),
+      handoff: receipt.handoffEvidence.map((_, index) => ({
+        selector: index + 1,
+        evidence: index === 0 ? ["logs/agent-run.txt"] : `handoff/${index + 1}.md`
+      }))
+    }, null, 2)}\n`, "utf8");
+
+    const { stdout } = await runCli([
+      "receipt",
+      "evidence",
+      examplePath,
+      receiptPath,
+      "--evidence-file",
+      evidencePath,
+      "--write"
+    ], cwd);
+    const updated = JSON.parse(await readFile(receiptPath, "utf8")) as {
+      source: { generatedInstructionSurfaceUsed: string };
+      acceptanceEvidence: Array<{ evidence: unknown; status: string }>;
+      handoffEvidence: Array<{ evidence: unknown; status: string }>;
+    };
+
+    expect(stdout).toContain("Filled acceptance evidence: 2");
+    expect(stdout).toContain(`Filled handoff evidence: ${receipt.handoffEvidence.length}`);
+    expect(updated.source.generatedInstructionSurfaceUsed).toBe("AGENTS.md");
+    expect(updated.acceptanceEvidence[0].evidence).toEqual({
+      file: "tests/auth/session.test.ts",
+      assertion: "acceptance 1"
+    });
+    expect(updated.handoffEvidence[0].evidence).toEqual(["logs/agent-run.txt"]);
+
+    const verify = await runCli(["receipt", "verify", examplePath, receiptPath], cwd);
+    expect(verify.stdout).toContain(`OK ${receiptPath} satisfies ${examplePath}`);
+  });
+
   it("rejects malformed receipt evidence updates", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-evidence-invalid-"));
     tempDirs.push(cwd);
@@ -1839,7 +1900,7 @@ describe("agentfile receipt", () => {
     await expect(
       runCli(["receipt", "evidence", examplePath, receiptPath], cwd)
     ).rejects.toMatchObject({
-      stderr: expect.stringContaining("receipt evidence requires at least one of --acceptance, --handoff, or --surface")
+      stderr: expect.stringContaining("receipt evidence requires --acceptance, --handoff, --surface, or --evidence-file data")
     });
 
     await expect(
@@ -1852,6 +1913,19 @@ describe("agentfile receipt", () => {
       runCli(["receipt", "evidence", examplePath, receiptPath, "--handoff", "99=logs/handoff.txt"], cwd)
     ).rejects.toMatchObject({
       stderr: expect.stringContaining('handoffEvidence selector "99": item number out of range')
+    });
+
+    await writeFile(join(cwd, "bad-evidence.json"), `${JSON.stringify({
+      acceptance: [
+        {
+          selector: 1
+        }
+      ]
+    }, null, 2)}\n`, "utf8");
+    await expect(
+      runCli(["receipt", "evidence", examplePath, receiptPath, "--evidence-file", "bad-evidence.json"], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("receipt evidence file.acceptance[0].evidence: is required")
     });
   });
 
