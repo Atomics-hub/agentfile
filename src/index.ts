@@ -17,6 +17,7 @@ export type { CompileTarget, CompileTargetDefinition, JsonContract, NormalizedPo
 export { renderCheckRunReport, runCommandChecks } from "./check-runner.js";
 export type { CheckRunOptions, CheckRunReport } from "./check-runner.js";
 export { receiptCheckResultsJsonSchema, compileReceiptCheckResultsSchema } from "./check-results-schema.js";
+export { receiptEvidenceJsonSchema, compileReceiptEvidenceSchema } from "./receipt-evidence-schema.js";
 export { AgentfileError, lintAgentfile } from "./diagnostics.js";
 export type { LintDiagnostic } from "./diagnostics.js";
 export { diffContracts, renderContractDiff } from "./diff.js";

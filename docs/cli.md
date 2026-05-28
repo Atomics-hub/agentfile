@@ -405,6 +405,16 @@ agentfile receipt evidence examples/fix-login-race.agent receipts/latest.receipt
 agentfile receipt evidence examples/fix-login-race.agent receipts/latest.receipt.json --evidence-file logs/receipt-evidence.json --write
 ```
 
+## `agentfile receipt evidence-schema`
+
+Print, write, or drift-check the JSON Schema for the structured `--evidence-file` input accepted by `receipt evidence`. This gives wrappers, CI jobs, and harness adapters a stable local contract for the acceptance and handoff evidence file they produce before handing it to Agentfile.
+
+```sh
+agentfile receipt evidence-schema
+agentfile receipt evidence-schema --output schemas/receipt-evidence.schema.json
+agentfile receipt evidence-schema --output schemas/receipt-evidence.schema.json --check
+```
+
 ## `agentfile receipt check-results-schema`
 
 Print, write, or drift-check the JSON Schema for the structured `--check-results` input accepted by `receipt fill`. This gives wrappers, CI jobs, and harness adapters a stable local contract for the check-result file they produce before handing it to Agentfile.

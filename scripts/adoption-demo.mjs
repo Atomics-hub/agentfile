@@ -142,6 +142,39 @@ try {
   });
 
   await runStep({
+    name: "Write receipt evidence schema",
+    command: "node dist/cli.js receipt evidence-schema --output schemas/receipt-evidence.schema.json",
+    run: () => execFileAsync("node", [
+      join(root, "dist/cli.js"),
+      "receipt",
+      "evidence-schema",
+      "--output",
+      "schemas/receipt-evidence.schema.json"
+    ], {
+      cwd: repo,
+      env: process.env,
+      maxBuffer
+    })
+  });
+
+  await runStep({
+    name: "Check receipt evidence schema",
+    command: "node dist/cli.js receipt evidence-schema --output schemas/receipt-evidence.schema.json --check",
+    run: () => execFileAsync("node", [
+      join(root, "dist/cli.js"),
+      "receipt",
+      "evidence-schema",
+      "--output",
+      "schemas/receipt-evidence.schema.json",
+      "--check"
+    ], {
+      cwd: repo,
+      env: process.env,
+      maxBuffer
+    })
+  });
+
+  await runStep({
     name: "Create receipt template",
     command: "node dist/cli.js receipt init agentfile.agent --force",
     run: () => execFileAsync("node", [join(root, "dist/cli.js"), "receipt", "init", "agentfile.agent", "--force"], {
@@ -417,6 +450,7 @@ function renderReport(failed) {
     "- Generated instruction surfaces can be refreshed and drift-checked from the same `.agent` contract.",
     "- Generated GitHub Actions workflows can include receipt-ready check runs when a project is ready to execute contract checks in CI.",
     "- Structured check-result JSON has a generated schema surface that wrappers can write and drift-check before filling receipts.",
+    "- Structured receipt evidence JSON has a generated schema surface that wrappers can write and drift-check before verification.",
     "- `agentfile checks run` can execute command-backed proof checks and feed structured results into `receipt fill --check-results`.",
     "- `agentfile receipt evidence --evidence-file` can attach explicit acceptance and handoff evidence from a structured artifact.",
     "- The demo uses a local Node fixture and does not run a live coding agent or publish a package.",

@@ -1718,6 +1718,52 @@ describe("agentfile receipt", () => {
     });
   }, 15000);
 
+  it("prints, writes, and checks the structured receipt evidence schema", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-evidence-schema-"));
+    tempDirs.push(cwd);
+
+    const { stdout } = await runCli(["receipt", "evidence-schema"], cwd);
+    const schema = JSON.parse(stdout);
+
+    expect(schema.title).toBe("Agentfile Receipt Evidence");
+    expect(schema.anyOf).toEqual([
+      {
+        required: ["generatedInstructionSurfaceUsed"]
+      },
+      {
+        required: ["acceptance"]
+      },
+      {
+        required: ["handoff"]
+      }
+    ]);
+    expect(schema.properties.acceptance.items.required).toEqual(["selector", "evidence"]);
+    expect(schema.properties.acceptance.items.properties.selector.anyOf).toEqual([
+      {
+        type: "string",
+        minLength: 1
+      },
+      {
+        type: "integer",
+        minimum: 1
+      }
+    ]);
+
+    const output = join(cwd, "schemas", "receipt-evidence.schema.json");
+    const writeResult = await runCli(["receipt", "evidence-schema", "--output", output], cwd);
+    expect(writeResult.stdout).toContain(`Wrote ${output}`);
+
+    const checkResult = await runCli(["receipt", "evidence-schema", "--output", output, "--check"], cwd);
+    expect(checkResult.stdout).toContain(`OK ${output} is up to date`);
+
+    await writeFile(output, "{}\n", "utf8");
+    await expect(
+      runCli(["receipt", "evidence-schema", "--output", output, "--check"], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining(`generated schema is stale: ${output}`)
+    });
+  }, 15000);
+
   it("writes filled proof while leaving acceptance and handoff evidence for review", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-fill-write-"));
     tempDirs.push(cwd);

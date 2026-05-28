@@ -478,6 +478,7 @@ agentfile receipt fill examples/fix-login-race.agent receipts/fix-login.json --c
 agentfile receipt fill examples/fix-login-race.agent receipts/fix-login.json --check-results logs/check-results.json --write
 agentfile receipt evidence examples/fix-login-race.agent receipts/fix-login.json --acceptance "1=tests/auth/session.test.ts" --handoff "Attach or link the check log.=logs/checks.txt" --write
 agentfile receipt evidence examples/fix-login-race.agent receipts/fix-login.json --evidence-file logs/receipt-evidence.json --write
+agentfile receipt evidence-schema --output schemas/receipt-evidence.schema.json --check
 agentfile receipt check-results-schema --output schemas/receipt-check-results.schema.json --check
 agentfile receipt review examples/fix-login-race.agent examples/receipts/fix-login-passing.receipt.json
 agentfile receipt review examples/fix-login-race.agent examples/receipts/fix-login-passing.receipt.json --format json
@@ -519,6 +520,7 @@ Agentfile is early. The v0.1 goal is intentionally narrow:
 - `agentfile receipt init` for a predictable JSON receipt skeleton that matches the default CI gate path.
 - `agentfile receipt fill --check-log` and `--check-results` for updating command-backed proof entries from real check output.
 - `agentfile receipt evidence` and `--evidence-file` for filling explicit acceptance and handoff evidence without hand-editing receipt JSON.
+- `agentfile receipt evidence-schema` for wrapper-friendly schema generation and drift checks around structured receipt evidence input.
 - `agentfile receipt check-results-schema` for wrapper-friendly schema generation and drift checks around structured receipt proof input.
 - `agentfile receipt review` for human-readable or JSON receipt completion and verification summaries.
 - A benchmark skeleton that can compare plain issue text against Agentfile-guided tasks without claiming results before data exists.

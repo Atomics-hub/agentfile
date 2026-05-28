@@ -17,6 +17,7 @@ import { AgentfileError, lintAgentfile } from "./diagnostics.js";
 import { diffContracts, renderContractDiff, type ContractDiffFormat } from "./diff.js";
 import { defaultVscodeSchemaPath, defaultVscodeSettingsPath, renderVscodeSettings } from "./editor.js";
 import { compileJsonSchema } from "./json-schema.js";
+import { compileReceiptEvidenceSchema } from "./receipt-evidence-schema.js";
 import {
   fillReceiptEvidence,
   fillReceiptProofFromCheckLog,
@@ -442,6 +443,21 @@ receiptCommand
   .action(async (options: SchemaOptions, command: Command) => {
     const parentOptions = command.parent?.opts() as { output?: string; force?: boolean };
     await emitSchema(compileReceiptCheckResultsSchema(), {
+      ...options,
+      output: parentOptions.output ?? options.output,
+      force: options.force || Boolean(parentOptions.force)
+    });
+  });
+
+receiptCommand
+  .command("evidence-schema")
+  .description("Print, write, or check the JSON Schema for receipt evidence-file input.")
+  .option("-o, --output <file>", "write the generated schema to a file")
+  .option("--check", "verify the generated schema file is already up to date", false)
+  .option("-f, --force", "overwrite an existing schema file", false)
+  .action(async (options: SchemaOptions, command: Command) => {
+    const parentOptions = command.parent?.opts() as { output?: string; force?: boolean };
+    await emitSchema(compileReceiptEvidenceSchema(), {
       ...options,
       output: parentOptions.output ?? options.output,
       force: options.force || Boolean(parentOptions.force)
