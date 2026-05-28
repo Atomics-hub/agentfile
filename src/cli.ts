@@ -34,6 +34,8 @@ import { findTarget, quotedTargetIds } from "./targets.js";
 const allInspectFailureChecks = ["stale-surfaces", "missing-surfaces", "lint"] as const;
 const defaultGithubActionsWorkflowPath = ".github/workflows/agentfile.yml";
 const defaultGithubActionsReceiptPath = "receipts/latest.receipt.json";
+const defaultGithubActionsCheckLogPath = "logs/checks.txt";
+const defaultGithubActionsCheckResultsPath = "logs/check-results.json";
 
 const program = new Command();
 
@@ -53,6 +55,9 @@ program
   .option("--github-actions", "also create a GitHub Actions validation workflow", false)
   .option("--github-actions-surfaces <targets>", `generated surfaces to create and check, or "none": ${githubActionSurfaceHelp()}`)
   .option("--github-actions-receipt <file>", "receipt JSON path for the generated GitHub Actions workflow to verify when present")
+  .option("--github-actions-run-checks", "also run command-backed contract checks in the generated GitHub Actions workflow", false)
+  .option("--github-actions-checks-log <file>", "check log path for generated GitHub Actions check runs", defaultGithubActionsCheckLogPath)
+  .option("--github-actions-checks-results <file>", "structured check results path for generated GitHub Actions check runs", defaultGithubActionsCheckResultsPath)
   .action(async (file: string | undefined, options: InitOptions) => {
     for (const message of await runInit(file, options)) {
       console.log(message);
@@ -66,6 +71,9 @@ program
   .option("--schema <file>", "schema path for generated editor setup", defaultVscodeSchemaPath)
   .option("--surfaces <targets>", `generated surfaces to create and check, or "none": ${githubActionSurfaceHelp()}`, syncTargetHelp())
   .option("--receipt <file>", "receipt JSON path for the generated GitHub Actions workflow to verify when present", defaultGithubActionsReceiptPath)
+  .option("--run-checks", "also run command-backed contract checks in the generated GitHub Actions workflow", false)
+  .option("--checks-log <file>", "check log path for generated GitHub Actions check runs", defaultGithubActionsCheckLogPath)
+  .option("--checks-results <file>", "structured check results path for generated GitHub Actions check runs", defaultGithubActionsCheckResultsPath)
   .action(async (file: string | undefined, options: AdoptOptions) => {
     for (const message of await runAdopt(file, options)) {
       console.log(message);
@@ -155,6 +163,9 @@ program
   .option("--tool-ref <ref>", "Agentfile repository ref to checkout", "main")
   .option("--surfaces <targets>", `comma-separated generated surfaces to check, or "none": ${githubActionSurfaceHelp()}`, "agents-md,claude-md")
   .option("--receipt <file>", "optional receipt JSON path to verify")
+  .option("--run-checks", "also run command-backed contract checks and emit receipt-ready results", false)
+  .option("--checks-log <file>", "check log path for generated check runs", defaultGithubActionsCheckLogPath)
+  .option("--checks-results <file>", "structured check results path for generated check runs", defaultGithubActionsCheckResultsPath)
   .option("-o, --output <file>", "write the generated workflow to a file")
   .option("--check", "verify the generated workflow file is already up to date", false)
   .option("-f, --force", "overwrite an existing workflow file", false)
@@ -167,7 +178,10 @@ program
       contractPath: toWorkflowPath(contractPath),
       toolRef: options.toolRef,
       surfaces,
-      receiptPath: options.receipt ? toWorkflowPath(options.receipt) : undefined
+      receiptPath: options.receipt ? toWorkflowPath(options.receipt) : undefined,
+      runChecks: options.runChecks,
+      checkLogPath: toWorkflowPath(options.checksLog),
+      checkResultsPath: toWorkflowPath(options.checksResults)
     });
 
     await emitGithubActionsWorkflow(workflow, options);
@@ -630,6 +644,9 @@ interface GithubActionsOptions {
   toolRef: string;
   surfaces: string;
   receipt?: string;
+  runChecks: boolean;
+  checksLog: string;
+  checksResults: string;
   output?: string;
   check: boolean;
   force: boolean;
@@ -640,6 +657,9 @@ interface GithubActionsWorkflow {
   toolRef: string;
   surfaces: SyncTarget[];
   receiptPath?: string;
+  runChecks: boolean;
+  checkLogPath: string;
+  checkResultsPath: string;
 }
 
 interface SchemaOptions {
@@ -662,12 +682,18 @@ interface InitOptions {
   githubActions: boolean;
   githubActionsSurfaces?: string;
   githubActionsReceipt?: string;
+  githubActionsRunChecks: boolean;
+  githubActionsChecksLog: string;
+  githubActionsChecksResults: string;
 }
 
 interface AdoptOptions {
   schema: string;
   surfaces: string;
   receipt: string;
+  runChecks: boolean;
+  checksLog: string;
+  checksResults: string;
 }
 
 type InitKit = "none" | "reviewable";
@@ -677,6 +703,9 @@ interface InitGithubActions {
   enabled: boolean;
   surfaces: SyncTarget[];
   receiptPath?: string;
+  runChecks: boolean;
+  checkLogPath: string;
+  checkResultsPath: string;
 }
 
 interface InitPlanItem {
@@ -719,7 +748,10 @@ async function runAdopt(file: string | undefined, options: AdoptOptions): Promis
     schema: options.schema,
     githubActions: true,
     githubActionsSurfaces: options.surfaces,
-    githubActionsReceipt: options.receipt
+    githubActionsReceipt: options.receipt,
+    githubActionsRunChecks: options.runChecks,
+    githubActionsChecksLog: options.checksLog,
+    githubActionsChecksResults: options.checksResults
   });
 }
 
@@ -732,7 +764,10 @@ async function runInit(file: string | undefined, options: InitOptions): Promise<
   const githubActions = parseInitGithubActions(
     githubActionsEnabled,
     options.githubActionsSurfaces,
-    options.githubActionsReceipt ?? defaultInitGithubActionsReceiptForKit(kit)
+    options.githubActionsReceipt ?? defaultInitGithubActionsReceiptForKit(kit),
+    options.githubActionsRunChecks,
+    options.githubActionsChecksLog,
+    options.githubActionsChecksResults
   );
   const plan = buildInitPlan(outputPath, format, editor, options.schema, githubActions);
 
@@ -791,7 +826,10 @@ function buildInitPlan(
         contractPath: toWorkflowPath(file),
         toolRef: "main",
         surfaces: githubActions.surfaces,
-        receiptPath: githubActions.receiptPath ? toWorkflowPath(githubActions.receiptPath) : undefined
+        receiptPath: githubActions.receiptPath ? toWorkflowPath(githubActions.receiptPath) : undefined,
+        runChecks: githubActions.runChecks,
+        checkLogPath: toWorkflowPath(githubActions.checkLogPath),
+        checkResultsPath: toWorkflowPath(githubActions.checkResultsPath)
       })
     });
   }
@@ -1438,7 +1476,24 @@ function renderGithubActionsWorkflow(workflow: GithubActionsWorkflow): string {
     );
   }
 
+  if (workflow.runChecks) {
+    steps.push(
+      "",
+      "      - name: Run contract checks",
+      `        run: ${cli} checks run ${contract} --log ${shellQuote(workflow.checkLogPath)} --results ${shellQuote(workflow.checkResultsPath)}`
+    );
+  }
+
   if (workflow.receiptPath) {
+    if (workflow.runChecks) {
+      steps.push(
+        "",
+        "      - name: Fill receipt proof",
+        `        if: hashFiles(${githubExpressionString(workflow.receiptPath)}) != ''`,
+        `        run: ${cli} receipt fill ${contract} ${shellQuote(workflow.receiptPath)} --check-results ${shellQuote(workflow.checkResultsPath)} --write`
+      );
+    }
+
     steps.push(
       "",
       "      - name: Verify receipt",
@@ -1728,7 +1783,14 @@ function parseInitEditor(value?: string): InitEditor {
   throw new AgentfileError(`unknown init editor "${value}". Expected "vscode".`);
 }
 
-function parseInitGithubActions(enabled: boolean, surfacesValue?: string, receiptPath?: string): InitGithubActions {
+function parseInitGithubActions(
+  enabled: boolean,
+  surfacesValue: string | undefined,
+  receiptPath: string | undefined,
+  runChecks: boolean,
+  checkLogPath: string,
+  checkResultsPath: string
+): InitGithubActions {
   if (!enabled && surfacesValue !== undefined) {
     throw new AgentfileError("init --github-actions-surfaces requires --github-actions");
   }
@@ -1737,10 +1799,17 @@ function parseInitGithubActions(enabled: boolean, surfacesValue?: string, receip
     throw new AgentfileError("init --github-actions-receipt requires --github-actions");
   }
 
+  if (!enabled && runChecks) {
+    throw new AgentfileError("init --github-actions-run-checks requires --github-actions");
+  }
+
   return {
     enabled,
     surfaces: enabled ? parseGithubActionSurfaces(surfacesValue ?? "none") : [],
-    receiptPath: enabled ? receiptPath : undefined
+    receiptPath: enabled ? receiptPath : undefined,
+    runChecks: enabled ? runChecks : false,
+    checkLogPath,
+    checkResultsPath
   };
 }
 

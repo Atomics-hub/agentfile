@@ -59,7 +59,7 @@ try {
 
   await runStep({
     name: "Refresh CI workflow",
-    command: "node dist/cli.js github-actions agentfile.agent --surfaces agents-md,claude-md,cursor-mdc,copilot-md --receipt receipts/latest.receipt.json --output .github/workflows/agentfile.yml --force",
+    command: "node dist/cli.js github-actions agentfile.agent --surfaces agents-md,claude-md,cursor-mdc,copilot-md --receipt receipts/latest.receipt.json --run-checks --output .github/workflows/agentfile.yml --force",
     run: () => execFileAsync("node", [
       join(root, "dist/cli.js"),
       "github-actions",
@@ -68,6 +68,7 @@ try {
       "agents-md,claude-md,cursor-mdc,copilot-md",
       "--receipt",
       "receipts/latest.receipt.json",
+      "--run-checks",
       "--output",
       ".github/workflows/agentfile.yml",
       "--force"
@@ -396,6 +397,7 @@ function renderReport(failed) {
     "",
     "- `agentfile adopt` can be run inside an existing project without hand-writing editor, harness, or CI surfaces.",
     "- Generated instruction surfaces can be refreshed and drift-checked from the same `.agent` contract.",
+    "- Generated GitHub Actions workflows can include receipt-ready check runs when a project is ready to execute contract checks in CI.",
     "- Structured check-result JSON has a generated schema surface that wrappers can write and drift-check before filling receipts.",
     "- `agentfile checks run` can execute command-backed proof checks and feed structured results into `receipt fill --check-results`.",
     "- Explicit acceptance and handoff evidence can then make the receipt verifiable.",

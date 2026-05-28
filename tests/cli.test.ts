@@ -368,6 +368,21 @@ describe("agentfile init", () => {
       code: "ENOENT"
     });
   });
+
+  it("requires --github-actions before init GitHub Actions check runs", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-init-actions-checks-requires-"));
+    tempDirs.push(cwd);
+
+    await expect(
+      runCli(["init", "agentfile.agent", "--github-actions-run-checks"], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("init --github-actions-run-checks requires --github-actions")
+    });
+
+    await expect(readFile(join(cwd, "agentfile.agent"), "utf8")).rejects.toMatchObject({
+      code: "ENOENT"
+    });
+  });
 });
 
 describe("agentfile adopt", () => {
@@ -410,6 +425,31 @@ describe("agentfile adopt", () => {
       "agents-md,claude-md,cursor-mdc,copilot-md",
       "--receipt",
       "receipts/latest.receipt.json",
+      "--output",
+      ".github/workflows/agentfile.yml",
+      "--check"
+    ], cwd);
+  }, 20000);
+
+  it("can generate an adoption workflow with command-backed check runs", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-adopt-run-checks-"));
+    tempDirs.push(cwd);
+    await writeFile(join(cwd, "package.json"), "{\"private\": true}\n", "utf8");
+
+    await runCli(["adopt", "--run-checks"], cwd);
+
+    const workflow = await readFile(join(cwd, ".github", "workflows", "agentfile.yml"), "utf8");
+    expect(workflow).toContain("checks run 'agentfile.agent' --log 'logs/checks.txt' --results 'logs/check-results.json'");
+    expect(workflow).toContain("receipt fill 'agentfile.agent' 'receipts/latest.receipt.json' --check-results 'logs/check-results.json' --write");
+
+    await runCli([
+      "github-actions",
+      "agentfile.agent",
+      "--surfaces",
+      "agents-md,claude-md,cursor-mdc,copilot-md",
+      "--receipt",
+      "receipts/latest.receipt.json",
+      "--run-checks",
       "--output",
       ".github/workflows/agentfile.yml",
       "--check"
@@ -890,6 +930,32 @@ describe("agentfile github-actions", () => {
     expect(stdout).toContain("run: node .agentfile/tool/dist/cli.js sync 'agentfile.agent' --target copilot-md --output '.github/copilot-instructions.md' --check");
     expect(stdout.match(/--target cursor-mdc/g)).toHaveLength(1);
     expect(stdout).toContain("if: hashFiles('receipts/latest.receipt.json') != ''");
+    expect(stdout).toContain("run: node .agentfile/tool/dist/cli.js receipt verify 'agentfile.agent' 'receipts/latest.receipt.json'");
+  });
+
+  it("can generate receipt-ready check runs in GitHub Actions", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-actions-run-checks-"));
+    tempDirs.push(cwd);
+    await writeFile(join(cwd, "agentfile.agent"), await readFile(examplePath, "utf8"), "utf8");
+
+    const { stdout } = await runCli([
+      "github-actions",
+      "agentfile.agent",
+      "--surfaces",
+      "none",
+      "--run-checks",
+      "--checks-log",
+      "artifacts/checks.txt",
+      "--checks-results",
+      "artifacts/check-results.json",
+      "--receipt",
+      "receipts/latest.receipt.json"
+    ], cwd);
+
+    expect(stdout).toContain("Run contract checks");
+    expect(stdout).toContain("run: node .agentfile/tool/dist/cli.js checks run 'agentfile.agent' --log 'artifacts/checks.txt' --results 'artifacts/check-results.json'");
+    expect(stdout).toContain("Fill receipt proof");
+    expect(stdout).toContain("run: node .agentfile/tool/dist/cli.js receipt fill 'agentfile.agent' 'receipts/latest.receipt.json' --check-results 'artifacts/check-results.json' --write");
     expect(stdout).toContain("run: node .agentfile/tool/dist/cli.js receipt verify 'agentfile.agent' 'receipts/latest.receipt.json'");
   });
 

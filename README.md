@@ -304,6 +304,7 @@ Use [GitHub Actions Integration](docs/github-actions.md) to validate contracts, 
 ```sh
 node dist/cli.js github-actions agentfile.agent > .github/workflows/agentfile.yml
 node dist/cli.js github-actions agentfile.agent --output .github/workflows/agentfile.yml --check
+node dist/cli.js github-actions agentfile.agent --run-checks --receipt receipts/latest.receipt.json
 ```
 
 ## CLI

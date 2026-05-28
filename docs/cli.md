@@ -185,6 +185,15 @@ Use `--tool-ref` to pin the Agentfile checkout and `--receipt` to add receipt ve
 agentfile github-actions agentfile.agent --tool-ref v0.1.0 --receipt receipts/latest.receipt.json
 ```
 
+Use `--run-checks` when the project workflow should execute command-backed checks from the contract and emit receipt-ready check artifacts before receipt verification:
+
+```sh
+agentfile github-actions agentfile.agent --run-checks --receipt receipts/latest.receipt.json
+agentfile github-actions agentfile.agent --run-checks --checks-log artifacts/checks.txt --checks-results artifacts/check-results.json
+```
+
+Projects that need dependency installation, services, or environment setup should add those workflow steps before the generated `Run contract checks` step.
+
 ## `agentfile format [file]`
 
 Print canonical Pact `.agent` source for a contract:
