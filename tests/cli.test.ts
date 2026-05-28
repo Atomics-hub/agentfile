@@ -1371,6 +1371,151 @@ describe("agentfile receipt", () => {
     });
   });
 
+  it("fills command-backed proof from structured check results", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-fill-results-"));
+    tempDirs.push(cwd);
+
+    const { stdout: templateJson } = await runCli(["receipt", examplePath, "--format", "json"], cwd);
+    const receiptPath = join(cwd, "receipt.json");
+    const resultsPath = join(cwd, "check-results.json");
+    await writeFile(receiptPath, templateJson, "utf8");
+    await writeFile(resultsPath, `${JSON.stringify({
+      checks: [
+        {
+          id: "npm-test-auth",
+          status: "passed",
+          evidence: "logs/npm-test-auth.txt"
+        },
+        {
+          command: "npm run lint",
+          status: "passed"
+        }
+      ]
+    }, null, 2)}\n`, "utf8");
+
+    const { stdout } = await runCli(["receipt", "fill", examplePath, receiptPath, "--check-results", "check-results.json"], cwd);
+    const filled = JSON.parse(stdout);
+
+    expect(filled.requiredProof).toEqual([
+      expect.objectContaining({
+        id: "npm-test-auth",
+        status: "passed",
+        evidence: "logs/npm-test-auth.txt"
+      }),
+      expect.objectContaining({
+        id: "npm-run-lint",
+        status: "passed",
+        evidence: "check-results.json"
+      })
+    ]);
+    expect(filled.acceptanceEvidence[0]).toMatchObject({
+      status: "pending",
+      evidence: null
+    });
+  });
+
+  it("records failed structured check results without passing receipt verification", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-fill-failed-results-"));
+    tempDirs.push(cwd);
+
+    const { stdout: templateJson } = await runCli(["receipt", examplePath, "--format", "json"], cwd);
+    const receiptPath = join(cwd, "receipt.json");
+    await writeFile(receiptPath, templateJson, "utf8");
+    await writeFile(join(cwd, "check-results.json"), `${JSON.stringify({
+      checks: [
+        {
+          id: "npm-test-auth",
+          status: "failed",
+          evidence: "logs/npm-test-auth.txt"
+        },
+        {
+          id: "npm-run-lint",
+          status: "passed",
+          evidence: "logs/npm-run-lint.txt"
+        }
+      ]
+    }, null, 2)}\n`, "utf8");
+
+    const { stdout } = await runCli([
+      "receipt",
+      "fill",
+      examplePath,
+      receiptPath,
+      "--check-results",
+      "check-results.json",
+      "--write"
+    ], cwd);
+    const receipt = JSON.parse(await readFile(receiptPath, "utf8"));
+
+    expect(stdout).toContain("Filled proof: npm-run-lint");
+    expect(receipt.requiredProof[0]).toMatchObject({
+      id: "npm-test-auth",
+      status: "failed",
+      evidence: "logs/npm-test-auth.txt"
+    });
+
+    await expect(
+      runCli(["receipt", "review", examplePath, receiptPath], cwd)
+    ).rejects.toMatchObject({
+      stdout: expect.stringContaining('requiredProof[npm-test-auth].status: expected "passed", got "failed"')
+    });
+  });
+
+  it("requires exactly one receipt fill input source", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-fill-source-"));
+    tempDirs.push(cwd);
+
+    const { stdout: templateJson } = await runCli(["receipt", examplePath, "--format", "json"], cwd);
+    const receiptPath = join(cwd, "receipt.json");
+    await writeFile(receiptPath, templateJson, "utf8");
+    await writeFile(join(cwd, "checks.log"), "npm test -- auth\n", "utf8");
+    await writeFile(join(cwd, "check-results.json"), "{\"checks\": []}\n", "utf8");
+
+    await expect(
+      runCli(["receipt", "fill", examplePath, receiptPath], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("receipt fill requires --check-log or --check-results")
+    });
+
+    await expect(
+      runCli([
+        "receipt",
+        "fill",
+        examplePath,
+        receiptPath,
+        "--check-log",
+        "checks.log",
+        "--check-results",
+        "check-results.json"
+      ], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("receipt fill accepts only one input")
+    });
+  });
+
+  it("rejects malformed structured check results", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-fill-results-invalid-"));
+    tempDirs.push(cwd);
+
+    const { stdout: templateJson } = await runCli(["receipt", examplePath, "--format", "json"], cwd);
+    const receiptPath = join(cwd, "receipt.json");
+    await writeFile(receiptPath, templateJson, "utf8");
+    await writeFile(join(cwd, "check-results.json"), `${JSON.stringify({
+      checks: [
+        {
+          id: "npm-test-auth",
+          status: "ok"
+        }
+      ]
+    }, null, 2)}\n`, "utf8");
+
+    await expect(
+      runCli(["receipt", "fill", examplePath, receiptPath, "--check-results", "check-results.json"], cwd)
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining('checkResults.checks[0].status: expected "passed", "failed", or "skipped"')
+    });
+  });
+
   it("writes filled proof while leaving acceptance and handoff evidence for review", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "agentfile-receipt-fill-write-"));
     tempDirs.push(cwd);

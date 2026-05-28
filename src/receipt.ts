@@ -82,6 +82,51 @@ export function fillReceiptProofFromCheckLog(
   };
 }
 
+export function fillReceiptProofFromCheckResults(
+  agentfile: Agentfile,
+  receipt: unknown,
+  checkResultsPath: string,
+  checkResults: unknown
+): ReceiptFillResult {
+  const receiptObject = assertReceiptRecord(receipt);
+  const proofEntries = recordArray(receiptObject.requiredProof);
+  const results = parseCheckResults(checkResults);
+  const filledProofIds: string[] = [];
+  const unchangedProofIds: string[] = [];
+
+  for (const check of agentfile.checks) {
+    if (!check.command) {
+      unchangedProofIds.push(check.id);
+      continue;
+    }
+
+    const proof = proofEntries.find((entry) => entry.id === check.id);
+    const result = results.find((entry) =>
+      entry.id === check.id || (check.command !== undefined && entry.command === check.command)
+    );
+
+    if (!proof || !result) {
+      unchangedProofIds.push(check.id);
+      continue;
+    }
+
+    proof.status = result.status;
+    proof.evidence = result.evidence ?? checkResultsPath;
+
+    if (result.status === "passed") {
+      filledProofIds.push(check.id);
+    } else {
+      unchangedProofIds.push(check.id);
+    }
+  }
+
+  return {
+    receipt: receiptObject,
+    filledProofIds,
+    unchangedProofIds
+  };
+}
+
 export function verifyReceipt(agentfile: Agentfile, receipt: unknown): string[] {
   const issues: string[] = [];
   const receiptObject = asRecord(receipt);
@@ -429,6 +474,77 @@ function recordArray(value: unknown): Record<string, unknown>[] {
     const record = asRecord(item);
     return record ? [record] : [];
   });
+}
+
+interface ParsedCheckResult {
+  id?: string;
+  command?: string;
+  status: "passed" | "failed" | "skipped";
+  evidence?: unknown;
+}
+
+function assertReceiptRecord(receipt: unknown): Record<string, unknown> {
+  const receiptObject = asRecord(receipt);
+  if (!receiptObject) {
+    throw new AgentfileError("<root>: receipt must be a JSON object");
+  }
+
+  return receiptObject;
+}
+
+function parseCheckResults(checkResults: unknown): ParsedCheckResult[] {
+  const root = asRecord(checkResults);
+  if (!root) {
+    throw new AgentfileError("checkResults: must be a JSON object");
+  }
+
+  if (!Array.isArray(root.checks)) {
+    throw new AgentfileError("checkResults.checks: must be an array");
+  }
+
+  return root.checks.map((item, index) => parseCheckResult(item, index));
+}
+
+function parseCheckResult(item: unknown, index: number): ParsedCheckResult {
+  const record = asRecord(item);
+  if (!record) {
+    throw new AgentfileError(`checkResults.checks[${index}]: must be an object`);
+  }
+
+  const id = optionalString(record.id, `checkResults.checks[${index}].id`);
+  const command = optionalString(record.command, `checkResults.checks[${index}].command`);
+  const status = parseCheckResultStatus(record.status, `checkResults.checks[${index}].status`);
+
+  if (!id && !command) {
+    throw new AgentfileError(`checkResults.checks[${index}]: must include id or command`);
+  }
+
+  return {
+    id,
+    command,
+    status,
+    evidence: record.evidence
+  };
+}
+
+function optionalString(value: unknown, path: string): string | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (typeof value === "string" && value.trim().length > 0) {
+    return value;
+  }
+
+  throw new AgentfileError(`${path}: must be a non-empty string`);
+}
+
+function parseCheckResultStatus(value: unknown, path: string): ParsedCheckResult["status"] {
+  if (value === "passed" || value === "failed" || value === "skipped") {
+    return value;
+  }
+
+  throw new AgentfileError(`${path}: expected "passed", "failed", or "skipped"`);
 }
 
 function countStatus(records: Record<string, unknown>[], expectedStatus: string): ReceiptReviewCount {

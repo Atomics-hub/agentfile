@@ -17,6 +17,7 @@ import { defaultVscodeSchemaPath, defaultVscodeSettingsPath, renderVscodeSetting
 import { compileJsonSchema } from "./json-schema.js";
 import {
   fillReceiptProofFromCheckLog,
+  fillReceiptProofFromCheckResults,
   parseReceiptFormat,
   receiptHandoffEvidence,
   renderReceipt,
@@ -385,20 +386,20 @@ receiptCommand
 
 receiptCommand
   .command("fill")
-  .description("Fill command-backed receipt proof from a check log.")
+  .description("Fill command-backed receipt proof from check output.")
   .argument("<contract>", "Agentfile contract path")
   .argument("<receipt>", "JSON receipt path")
-  .requiredOption("--check-log <file>", "check log path whose content contains completed proof commands")
+  .option("--check-log <file>", "check log path whose content contains completed proof commands")
+  .option("--check-results <file>", "structured check results JSON path with a checks array")
   .option("--write", "write the updated JSON receipt back to the receipt path", false)
   .action(async (
     contract: string,
     receiptPath: string,
-    options: { checkLog: string; write: boolean }
+    options: { checkLog?: string; checkResults?: string; write: boolean }
   ) => {
     const agentfile = await load(contract);
     const receipt = await loadReceipt(receiptPath);
-    const checkLog = await readTextFile(options.checkLog);
-    const result = fillReceiptProofFromCheckLog(agentfile, receipt, options.checkLog, checkLog);
+    const result = await fillReceiptProof(agentfile, receipt, options);
     const rendered = `${JSON.stringify(result.receipt, null, 2)}\n`;
 
     if (!options.write) {
@@ -442,10 +443,43 @@ async function loadReceipt(filePath: string): Promise<unknown> {
   }
 }
 
+async function fillReceiptProof(
+  agentfile: Agentfile,
+  receipt: unknown,
+  options: { checkLog?: string; checkResults?: string }
+) {
+  if (options.checkLog && options.checkResults) {
+    throw new AgentfileError("receipt fill accepts only one input: use --check-log or --check-results");
+  }
+
+  if (options.checkResults) {
+    const checkResults = await loadJson(options.checkResults, "check results");
+    return fillReceiptProofFromCheckResults(agentfile, receipt, options.checkResults, checkResults);
+  }
+
+  if (options.checkLog) {
+    const checkLog = await readTextFile(options.checkLog);
+    return fillReceiptProofFromCheckLog(agentfile, receipt, options.checkLog, checkLog);
+  }
+
+  throw new AgentfileError("receipt fill requires --check-log or --check-results");
+}
+
 async function readTextFile(filePath: string): Promise<string> {
   return readFile(filePath, "utf8").catch((error: NodeJS.ErrnoException) => {
     throw new AgentfileError(error.message, filePath);
   });
+}
+
+async function loadJson(filePath: string, label: string): Promise<unknown> {
+  const source = await readTextFile(filePath);
+
+  try {
+    return JSON.parse(source);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new AgentfileError(`invalid ${label} JSON: ${message}`, filePath);
+  }
 }
 
 function parseTarget(value: string): CompileTarget {

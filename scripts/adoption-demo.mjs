@@ -90,7 +90,7 @@ try {
 
   await runStep({
     name: "Run project checks",
-    command: "npm test && npm run lint > logs/checks.txt",
+    command: "npm test && npm run lint -> logs/checks.txt + logs/check-results.json",
     run: () => runProjectChecks()
   });
 
@@ -105,16 +105,16 @@ try {
   });
 
   await runStep({
-    name: "Fill proof from check log",
-    command: "node dist/cli.js receipt fill agentfile.agent receipts/latest.receipt.json --check-log logs/checks.txt --write",
+    name: "Fill proof from structured check results",
+    command: "node dist/cli.js receipt fill agentfile.agent receipts/latest.receipt.json --check-results logs/check-results.json --write",
     run: () => execFileAsync("node", [
       join(root, "dist/cli.js"),
       "receipt",
       "fill",
       "agentfile.agent",
       "receipts/latest.receipt.json",
-      "--check-log",
-      "logs/checks.txt",
+      "--check-results",
+      "logs/check-results.json",
       "--write"
     ], {
       cwd: repo,
@@ -274,17 +274,20 @@ async function writeTaskContract() {
 
 async function runProjectChecks() {
   const chunks = [];
-  await runAndCapture(["npm", ["test"]], chunks);
-  await runAndCapture(["npm", ["run", "lint"]], chunks);
+  const checks = [];
+  await runAndCapture(["npm", ["test"]], chunks, checks);
+  await runAndCapture(["npm", ["run", "lint"]], chunks, checks);
   await writeFile(join(repo, "logs", "checks.txt"), chunks.join("\n"), "utf8");
+  await writeFile(join(repo, "logs", "check-results.json"), `${JSON.stringify({ checks }, null, 2)}\n`, "utf8");
   return {
     stdout: chunks.join("\n"),
     stderr: ""
   };
 }
 
-async function runAndCapture([command, args], chunks) {
-  chunks.push(`$ ${[command, ...args].join(" ")}`);
+async function runAndCapture([command, args], chunks, checks) {
+  const displayCommand = [command, ...args].join(" ");
+  chunks.push(`$ ${displayCommand}`);
   const { stdout, stderr } = await execFileAsync(command, args, { cwd: repo, env: process.env, maxBuffer });
   if (stdout.trim()) {
     chunks.push(stdout.trim());
@@ -292,6 +295,11 @@ async function runAndCapture([command, args], chunks) {
   if (stderr.trim()) {
     chunks.push(stderr.trim());
   }
+  checks.push({
+    command: displayCommand,
+    status: "passed",
+    evidence: "logs/checks.txt"
+  });
 }
 
 async function completeReceiptEvidence() {
@@ -372,7 +380,7 @@ function renderReport(failed) {
     "",
     "- `agentfile adopt` can be run inside an existing project without hand-writing editor, harness, or CI surfaces.",
     "- Generated instruction surfaces can be refreshed and drift-checked from the same `.agent` contract.",
-    "- Project checks can feed `receipt fill --check-log`, then explicit acceptance and handoff evidence can make the receipt verifiable.",
+    "- Project checks can feed structured results into `receipt fill --check-results`, then explicit acceptance and handoff evidence can make the receipt verifiable.",
     "- The demo uses a local Node fixture and does not run a live coding agent or publish a package.",
     "",
     ...results.filter((result) => result.status === "fail").flatMap((result) => [

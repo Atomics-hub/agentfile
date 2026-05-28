@@ -449,7 +449,7 @@ function renderDemoEvidence() {
           "A harness can fill the expected receipt file after work finishes instead of hand-building the audit shape."
         ],
         [
-          "`agentfile receipt fill --check-log` updates command-backed proof slots from real check output.",
+          "`agentfile receipt fill --check-log` and `--check-results` update command-backed proof slots from real check output.",
           "Wrappers can reduce manual receipt editing while still leaving acceptance and handoff evidence for review."
         ],
         [

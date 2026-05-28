@@ -468,6 +468,7 @@ agentfile receipt init examples/fix-login-race.agent
 agentfile receipt examples/fix-login-race.agent --output receipts/fix-login.md
 agentfile receipt examples/fix-login-race.agent --format json --output receipts/fix-login.json
 agentfile receipt fill examples/fix-login-race.agent receipts/fix-login.json --check-log logs/checks.txt --write
+agentfile receipt fill examples/fix-login-race.agent receipts/fix-login.json --check-results logs/check-results.json --write
 agentfile receipt review examples/fix-login-race.agent examples/receipts/fix-login-passing.receipt.json
 agentfile receipt review examples/fix-login-race.agent examples/receipts/fix-login-passing.receipt.json --format json
 agentfile receipt verify examples/fix-login-race.agent receipts/fix-login.json
@@ -505,7 +506,7 @@ Agentfile is early. The v0.1 goal is intentionally narrow:
 - `agentfile sync --all` for preflighted generation or freshness checks across every default instruction surface.
 - `agentfile format --check` and `--write` for canonical Pact source hygiene.
 - `agentfile receipt init` for a predictable JSON receipt skeleton that matches the default CI gate path.
-- `agentfile receipt fill --check-log` for updating command-backed proof entries from real check logs while leaving acceptance and handoff evidence reviewable.
+- `agentfile receipt fill --check-log` and `--check-results` for updating command-backed proof entries from real check output while leaving acceptance and handoff evidence reviewable.
 - `agentfile receipt review` for human-readable or JSON receipt completion and verification summaries.
 - A benchmark skeleton that can compare plain issue text against Agentfile-guided tasks without claiming results before data exists.
 
