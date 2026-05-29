@@ -270,12 +270,17 @@ describe("agentfile init", () => {
     ], cwd);
 
     expect(stdout).toContain("Created .github/workflows/agentfile.yml");
+    expect(stdout).toContain("Created schemas/receipt-evidence.schema.json");
 
     const workflow = await readFile(join(cwd, ".github", "workflows", "agentfile.yml"), "utf8");
     expect(workflow).toContain("if: hashFiles('receipts/latest.receipt.json') != ''");
     expect(workflow).toContain("if: hashFiles('schemas/receipt-evidence.schema.json') != ''");
     expect(workflow).toContain("receipt evidence-schema --output 'schemas/receipt-evidence.schema.json' --check");
     expect(workflow).toContain("receipt verify 'agentfile.agent' 'receipts/latest.receipt.json'");
+
+    const evidenceSchema = JSON.parse(await readFile(join(cwd, "schemas", "receipt-evidence.schema.json"), "utf8"));
+    expect(evidenceSchema.title).toBe("Agentfile Receipt Evidence");
+    await runCli(["receipt", "evidence-schema", "--output", "schemas/receipt-evidence.schema.json", "--check"], cwd);
 
     await runCli([
       "github-actions",
@@ -403,11 +408,14 @@ describe("agentfile adopt", () => {
     expect(stdout).toContain("Created .cursor/rules/agentfile.mdc");
     expect(stdout).toContain("Created .github/copilot-instructions.md");
     expect(stdout).toContain("Created .github/workflows/agentfile.yml");
+    expect(stdout).toContain("Created schemas/receipt-evidence.schema.json");
 
     expect(await readFile(join(cwd, "AGENTS.md"), "utf8")).toContain("# my-agent-task");
     expect(await readFile(join(cwd, "CLAUDE.md"), "utf8")).toContain("# my-agent-task");
     expect(await readFile(join(cwd, ".cursor", "rules", "agentfile.mdc"), "utf8")).toContain("# my-agent-task");
     expect(await readFile(join(cwd, ".github", "copilot-instructions.md"), "utf8")).toContain("# my-agent-task");
+    expect(JSON.parse(await readFile(join(cwd, "schemas", "receipt-evidence.schema.json"), "utf8")).title)
+      .toBe("Agentfile Receipt Evidence");
 
     const workflow = await readFile(join(cwd, ".github", "workflows", "agentfile.yml"), "utf8");
     expect(workflow).toContain("sync 'agentfile.agent' --target agents-md --output 'AGENTS.md' --check");
@@ -420,6 +428,7 @@ describe("agentfile adopt", () => {
     await runCli(["sync", "agentfile.agent", "--all", "--check"], cwd);
     await runCli(["schema", "--output", ".vscode/agentfile.schema.json", "--check"], cwd);
     await runCli(["editor", "vscode", "--output", ".vscode/settings.json", "--check"], cwd);
+    await runCli(["receipt", "evidence-schema", "--output", "schemas/receipt-evidence.schema.json", "--check"], cwd);
     await runCli([
       "github-actions",
       "agentfile.agent",
@@ -438,13 +447,23 @@ describe("agentfile adopt", () => {
     tempDirs.push(cwd);
     await writeFile(join(cwd, "package.json"), "{\"private\": true}\n", "utf8");
 
-    await runCli(["adopt", "--run-checks"], cwd);
+    const { stdout } = await runCli(["adopt", "--run-checks"], cwd);
+
+    expect(stdout).toContain("Created schemas/receipt-check-results.schema.json");
+    expect(stdout).toContain("Created schemas/receipt-evidence.schema.json");
 
     const workflow = await readFile(join(cwd, ".github", "workflows", "agentfile.yml"), "utf8");
+    expect(JSON.parse(await readFile(join(cwd, "schemas", "receipt-check-results.schema.json"), "utf8")).title)
+      .toBe("Agentfile Receipt Check Results");
+    expect(JSON.parse(await readFile(join(cwd, "schemas", "receipt-evidence.schema.json"), "utf8")).title)
+      .toBe("Agentfile Receipt Evidence");
     expect(workflow).toContain("receipt check-results-schema --output 'schemas/receipt-check-results.schema.json' --check");
     expect(workflow).toContain("receipt evidence-schema --output 'schemas/receipt-evidence.schema.json' --check");
     expect(workflow).toContain("checks run 'agentfile.agent' --log 'logs/checks.txt' --results 'logs/check-results.json'");
     expect(workflow).toContain("receipt fill 'agentfile.agent' 'receipts/latest.receipt.json' --check-results 'logs/check-results.json' --write");
+
+    await runCli(["receipt", "check-results-schema", "--output", "schemas/receipt-check-results.schema.json", "--check"], cwd);
+    await runCli(["receipt", "evidence-schema", "--output", "schemas/receipt-evidence.schema.json", "--check"], cwd);
 
     await runCli([
       "github-actions",
@@ -475,6 +494,9 @@ describe("agentfile adopt", () => {
       code: "ENOENT"
     });
     await expect(readFile(join(cwd, ".github", "workflows", "agentfile.yml"), "utf8")).rejects.toMatchObject({
+      code: "ENOENT"
+    });
+    await expect(readFile(join(cwd, "schemas", "receipt-evidence.schema.json"), "utf8")).rejects.toMatchObject({
       code: "ENOENT"
     });
   });

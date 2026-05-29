@@ -315,7 +315,7 @@ Adopt Agentfile in an existing repo:
 agentfile adopt
 ```
 
-This creates Pact source, VS Code schema setup, generated AGENTS/Claude/Cursor/Copilot instruction surfaces, and a GitHub Actions workflow that checks contract readiness, generated-surface drift, optional receipt input schemas, and `receipts/latest.receipt.json` when a completed-work receipt exists.
+This creates Pact source, VS Code schema setup, generated AGENTS/Claude/Cursor/Copilot instruction surfaces, receipt input schemas, and a GitHub Actions workflow that checks contract readiness, generated-surface drift, optional schema drift, and `receipts/latest.receipt.json` when a completed-work receipt exists.
 
 Create a starter contract:
 
@@ -502,7 +502,7 @@ Agentfile is early. The v0.1 goal is intentionally narrow:
 - Prompt, JSON, and YAML compilation targets.
 - Canonical Pact `.agent` rendering from the strict IR.
 - Security-first defaults.
-- `agentfile adopt` for a preflighted existing-repo setup with Pact source, editor files, generated instruction surfaces, and a GitHub Actions receipt gate.
+- `agentfile adopt` for a preflighted existing-repo setup with Pact source, editor files, generated instruction surfaces, receipt schemas, and a GitHub Actions receipt gate.
 - Initial risky-authority lint warnings for broad permissions.
 - `agentfile init` for fast adoption.
 - `agentfile init --kit reviewable` for Pact source, VS Code schema setup, and a GitHub Actions validation workflow with a conditional receipt gate in one preflighted starter.

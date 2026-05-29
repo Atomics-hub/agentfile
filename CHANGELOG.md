@@ -6,6 +6,7 @@ The project follows semantic versioning once the first public release is tagged.
 
 ## 0.1.0
 
+- Added receipt input schema files to `agentfile adopt` and reviewable GitHub Actions setup so adopted repos get matching CI schema gates without manual schema generation.
 - Added conditional receipt schema drift checks to generated GitHub Actions workflows when receipt input schema files are committed.
 - Added `agentfile receipt evidence-schema` so wrappers can generate and drift-check the structured receipt evidence file schema.
 - Added `agentfile receipt evidence --evidence-file` so harnesses can fill acceptance, handoff, and generated-surface evidence from one structured JSON artifact.

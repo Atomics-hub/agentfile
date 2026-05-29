@@ -33,8 +33,8 @@ try {
 
   await runStep({
     name: "Adopt Agentfile",
-    command: "node dist/cli.js adopt (cwd existing repo)",
-    run: () => execFileAsync("node", [join(root, "dist/cli.js"), "adopt"], {
+    command: "node dist/cli.js adopt --run-checks (cwd existing repo)",
+    run: () => execFileAsync("node", [join(root, "dist/cli.js"), "adopt", "--run-checks"], {
       cwd: repo,
       env: process.env,
       maxBuffer
@@ -109,22 +109,6 @@ try {
   });
 
   await runStep({
-    name: "Write check-results schema",
-    command: "node dist/cli.js receipt check-results-schema --output schemas/receipt-check-results.schema.json",
-    run: () => execFileAsync("node", [
-      join(root, "dist/cli.js"),
-      "receipt",
-      "check-results-schema",
-      "--output",
-      "schemas/receipt-check-results.schema.json"
-    ], {
-      cwd: repo,
-      env: process.env,
-      maxBuffer
-    })
-  });
-
-  await runStep({
     name: "Check check-results schema",
     command: "node dist/cli.js receipt check-results-schema --output schemas/receipt-check-results.schema.json --check",
     run: () => execFileAsync("node", [
@@ -134,22 +118,6 @@ try {
       "--output",
       "schemas/receipt-check-results.schema.json",
       "--check"
-    ], {
-      cwd: repo,
-      env: process.env,
-      maxBuffer
-    })
-  });
-
-  await runStep({
-    name: "Write receipt evidence schema",
-    command: "node dist/cli.js receipt evidence-schema --output schemas/receipt-evidence.schema.json",
-    run: () => execFileAsync("node", [
-      join(root, "dist/cli.js"),
-      "receipt",
-      "evidence-schema",
-      "--output",
-      "schemas/receipt-evidence.schema.json"
     ], {
       cwd: repo,
       env: process.env,
@@ -449,8 +417,7 @@ function renderReport(failed) {
     "- `agentfile adopt` can be run inside an existing project without hand-writing editor, harness, or CI surfaces.",
     "- Generated instruction surfaces can be refreshed and drift-checked from the same `.agent` contract.",
     "- Generated GitHub Actions workflows can include receipt-ready check runs when a project is ready to execute contract checks in CI.",
-    "- Structured check-result JSON has a generated schema surface that wrappers can write and drift-check before filling receipts.",
-    "- Structured receipt evidence JSON has a generated schema surface that wrappers can write and drift-check before verification.",
+    "- Adopted projects get receipt input schema files that CI can drift-check before filling or verifying receipts.",
     "- `agentfile checks run` can execute command-backed proof checks and feed structured results into `receipt fill --check-results`.",
     "- `agentfile receipt evidence --evidence-file` can attach explicit acceptance and handoff evidence from a structured artifact.",
     "- The demo uses a local Node fixture and does not run a live coding agent or publish a package.",

@@ -1007,6 +1007,21 @@ function buildInitPlan(
 
   if (githubActions.enabled) {
     const agentfile = parseSource(source, file);
+
+    if (githubActions.runChecks) {
+      plan.push({
+        path: defaultGithubActionsCheckResultsSchemaPath,
+        content: compileReceiptCheckResultsSchema()
+      });
+    }
+
+    if (githubActions.receiptPath) {
+      plan.push({
+        path: defaultGithubActionsEvidenceSchemaPath,
+        content: compileReceiptEvidenceSchema()
+      });
+    }
+
     for (const target of githubActions.surfaces) {
       plan.push({
         path: defaultOutputPathForTarget(target),

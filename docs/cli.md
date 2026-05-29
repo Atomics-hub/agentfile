@@ -17,8 +17,9 @@ By default this creates:
 - VS Code schema and settings files.
 - Every default generated instruction surface: `AGENTS.md`, `CLAUDE.md`, Cursor rules, and GitHub Copilot instructions.
 - `.github/workflows/agentfile.yml` with contract inspection, generated-surface drift checks, and a conditional `receipts/latest.receipt.json` verification gate.
+- `schemas/receipt-evidence.schema.json`, plus `schemas/receipt-check-results.schema.json` when `--run-checks` is used, so the generated workflow can drift-check structured receipt inputs.
 
-Use `--schema <file>` to choose the committed schema path, `--surfaces <targets>` to limit generated instruction files, and `--receipt <file>` to choose the receipt path checked by the generated workflow.
+Use `--schema <file>` to choose the committed editor schema path, `--surfaces <targets>` to limit generated instruction files, `--receipt <file>` to choose the receipt path checked by the generated workflow, and `--run-checks` to add command-backed check execution plus structured check-result schema setup.
 
 `adopt` preflights every planned output path before writing, so an existing repo is not partially modified when an Agentfile surface already exists.
 
